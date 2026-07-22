@@ -136,13 +136,13 @@ generates a single shared exit door in the rift the first time any door is used 
 remembering per player which door to send them back through when they walk out — a door
 placed by hand inside the rift just goes to overworld spawn instead. Dark Iron Bars and
 Datura (with Datura Seeds) exist as placeable/harvestable blocks, though neither spawns via
-world-gen yet. Potion of Attunement is brewable (Awkward Potion + Datura Seeds, Redstone for
-the long variant) and the first time it's ever completed in a world it triggers a one-time
-server-wide thunderstorm plus a lightning flash. Its survival mechanic is live: a per-tick
-presence check kills any survival/adventure player standing in the rift without the effect
-active, which covers both walking in unprotected and the potion expiring while you're inside.
-Creative and spectator are exempt, and the kill bypasses armour, enchantments and status
-effects so it can't be tanked.
+world-gen yet. Potion of Attunement is brewable (see the potion pipeline above) and the first time one is ever
+completed in a world it triggers a one-time server-wide thunderstorm plus a lightning flash. Its
+survival mechanic is live: a per-tick presence check ejects any survival/adventure player who is in
+the Null Domain without the effect active — teleporting them to their respawn point (bed/anchor,
+else world spawn) rather than killing them. This covers both walking in unprotected (a door leads
+nowhere for the unattuned) and the potion expiring while you're inside (the trip is simply over).
+Creative and spectator are exempt.
 
 Datura Seeds are also edible, which sets off the "datura trip", driven by a server-side tick
 sequencer since vanilla can't chain one effect into a different one. There are seven symptoms:
@@ -174,9 +174,8 @@ server-side.
 
 Datura now spawns in the wild (savanna/desert/badlands), so the seeds → Devil's Trumpet →
 Attunement chain is obtainable in survival rather than creative-only. Still just design, not built:
-the altar ritual and the Null Domain's altar-only entry; and aligning the shipped dimension with
-the new design (eject-on-expiry instead of the current instant death, and dropping the Rift Door as
-an overworld entrance). The dimension is still registered as `dimdescent:rift` and still kills
-unattuned players rather than ejecting them — both are known and tracked. See
+the altar ritual and the Null Domain's altar-only entry. The Rift Door still works as an overworld
+entrance for now (it's the only way in until the altars exist) and the dimension is still registered
+as `dimdescent:rift` — both are known and tracked. See
 [ROADMAP.md](ROADMAP.md) for the ordered build plan, and the `mc-modding-notes` skill
 (`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.

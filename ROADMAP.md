@@ -45,21 +45,26 @@ The whole chain was creative-only until Datura had no way to spawn; now it does.
       savanna/desert/badlands chunks, and that the full survival path works end to
       end (find Datura → seeds → Awkward → Devil's Trumpet → Attunement)
 
-## Phase 3 — Null Domain behaviour
+## Phase 3 — Null Domain behaviour (partial)
 
-Aligns the shipped dimension with the new design. Each of these *changes existing
-working code*, so they want testing together.
+Aligns the shipped dimension with the new design.
 
-- [ ] Replace instant-death-without-Attunement with **teleport to overworld
-      spawn on expiry** (`RiftLethalityEvents`). Death is a punishment; a hard
-      ejection timer is the push-your-luck loop the Core Concept actually asks for
-- [ ] Remove the **Rift Door as an overworld entrance** — entry is altar-only and
-      has no visible portal. The door survives only as the future voluntary exit
-- [ ] Rename the dimension `dimdescent:rift` → `dimdescent:null_domain`.
-      **Note:** changing the dimension ID orphans any existing saved data in that
-      dimension. Worth doing now while worlds are disposable, not later
-- [ ] Retire `dimdescent:rift_unattuned` damage type and its three tag files if
-      nothing else ends up using them
+- [x] Replaced instant-death-without-Attunement with **ejection to the player's
+      respawn point** (`RiftEjectionEvents`, was `RiftLethalityEvents`). One per-tick
+      check still covers both halves: walking in unattuned bounces you out on the
+      next tick, and the effect expiring inside ejects you the tick it ends. Death
+      was a punishment that taught "don't go in"; a hard timer teaches "how much
+      further dare I push", which is the push-your-luck loop the Core Concept asks for
+- [x] Retired the `dimdescent:rift_unattuned` damage type, its three `bypasses_*`
+      tag files, and the death message — nothing kills any more, so nothing used them
+- [ ] **Deferred**: removing the Rift Door as an overworld entrance. It stays for
+      now — it's the only way in until the altars exist (Phase 4). Ejection already
+      enforces the attunement requirement on it, so an unattuned player gets nowhere
+- [ ] **Deferred**: renaming the dimension `dimdescent:rift` → `dimdescent:null_domain`.
+      Changing the ID orphans saved data in that dimension; batching it with the
+      door removal avoids doing that churn twice
+- [ ] **Needs a human**: confirm ejection works both ways in survival — walk in
+      without Attunement, and let a dose expire while inside
 
 ## Phase 4 — Altars and the ritual
 
