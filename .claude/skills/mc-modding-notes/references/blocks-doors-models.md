@@ -103,6 +103,20 @@ current open state - handy for keeping some other piece of geometry (a rendered 
 anchored to the closed-door frame position even while the door is actually open and the physical
 mesh has rotated away from it.
 
+## Don't shrink a cutout texture's opaque border down to a hairline
+
+Enlarging a transparent "window" cutout in an otherwise-opaque texture (e.g. to make more of a
+custom shader effect show through) has a real ceiling: if the remaining opaque border gets down to
+~1px against a large transparent area, GPU mipmapping blends that thin sliver into visible garbage
+at any distance or oblique angle - it can look like the texture "lost its detail" entirely, or
+show "hollow"/washed-out patches, even though the source PNG is completely correct pixel-for-pixel
+up close. This isn't a code bug and won't show up in any log - it only shows up visually, in-game,
+at a distance/angle. Concretely: two 7x7 window blocks with 1px margins on a 16x16 canvas (meant to
+give bigger ~5x5 transparent interiors) left only a 1px opaque strip around the very edge of the
+texture, which is what caused it. Keep real margin - a rough rule of thumb is the remaining opaque
+border shouldn't be thinner than the cutout itself for the transition to hold up at any viewing
+distance.
+
 ## Texture/asset copyright - never copy Mojang's actual files into the mod
 
 Copying pixel data from Mojang's shipped textures (extracted from the game jar) into our own mod's

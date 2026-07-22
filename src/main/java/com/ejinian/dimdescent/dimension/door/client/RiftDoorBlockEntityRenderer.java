@@ -34,14 +34,19 @@ public class RiftDoorBlockEntityRenderer implements BlockEntityRenderer<RiftDoor
     private static final double FACE_EPSILON = 1.0 / 256.0;
 
     // Pixel bounds of the 4 transparent window cutouts in rift_door_top.png (a 16x16 texture;
-    // see gen_door_textures4.py). Deriving the quad positions from these pixel coordinates
+    // see gen_door_textures3.py). Deriving the quad positions from these pixel coordinates
     // (rather than hand-picked fractions) is what keeps the glow lined up with the actual
     // transparent hole instead of leaving a gap that shows the world behind it.
+    //
+    // Keep these windows small relative to the 16x16 canvas - a prior attempt at bigger windows
+    // (margin=1, touching in the middle) left only a 1px sliver of the actual door texture
+    // visible, which GPU mipmapping blends into visible artifacts at any distance/angle (looked
+    // like the door lost its texture and had "hollow" gaps). Leave real margin on all sides.
     private static final double TEXTURE_SIZE = 16.0;
-    private static final double COL_LEFT_MIN_PX = 1, COL_LEFT_MAX_PX = 8;
-    private static final double COL_RIGHT_MIN_PX = 8, COL_RIGHT_MAX_PX = 15;
-    private static final double ROW_UPPER_MIN_PX = 1, ROW_UPPER_MAX_PX = 8;
-    private static final double ROW_LOWER_MIN_PX = 8, ROW_LOWER_MAX_PX = 15;
+    private static final double COL_LEFT_MIN_PX = 3, COL_LEFT_MAX_PX = 7;
+    private static final double COL_RIGHT_MIN_PX = 9, COL_RIGHT_MAX_PX = 13;
+    private static final double ROW_UPPER_MIN_PX = 3, ROW_UPPER_MAX_PX = 7;
+    private static final double ROW_LOWER_MIN_PX = 9, ROW_LOWER_MAX_PX = 13;
 
     // Extra margin drawn past the cutout's exact edge, in pixels. Harmless (the opaque door
     // texture just occludes the overdrawn sliver) and guards against off-by-a-hair gaps.
