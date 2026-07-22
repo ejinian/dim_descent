@@ -3,17 +3,17 @@ package com.ejinian.dimdescent.dimension;
 import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.brewing.PotionBrewEvent;
@@ -68,14 +68,24 @@ public class AttunementBrewingEvents {
         // clearTime=0, weatherTime=6000 (5 min), raining+thundering - an immediate storm.
         overworld.setWeatherParameters(0, 6000, true, true);
 
-        // Volume/pitch match vanilla's own LightningBolt thunderclap exactly (LightningBolt.java).
-        var thunderSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.LIGHTNING_BOLT_THUNDER);
+        // A real (visual-only) LightningBolt entity spawned right above each player, rather than
+        // a manually-sent sound packet - vanilla's own LightningBolt already bundles the sky flash
+        // (Level.setSkyFlashTime, client-side) with the thunder + impact sound (also client-side,
+        // played once the entity is synced), so spawning one per player gets both for free and
+        // better-synced than faking either separately. visualOnly=true skips fire-starting and
+        // entity damage (LightningBolt.tick) - it still powers nearby lightning rods/cleans
+        // weathered copper as a server-side side effect, but that's harmless out in open air.
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            float pitch = 0.8F + player.level().getRandom().nextFloat() * 0.2F;
-            player.connection.send(new ClientboundSoundPacket(
-                    thunderSound, SoundSource.WEATHER,
-                    player.getX(), player.getY(), player.getZ(),
-                    10000.0F, pitch, player.level().getRandom().nextLong()));
+            ServerLevel playerLevel = player.serverLevel();
+            LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(playerLevel);
+            if (bolt == null) {
+                continue;
+            }
+            BlockPos abovePlayer = player.blockPosition().above(40);
+            int y = Math.min(abovePlayer.getY(), playerLevel.getMaxBuildHeight() - 1);
+            bolt.moveTo(Vec3.atBottomCenterOf(new BlockPos(abovePlayer.getX(), y, abovePlayer.getZ())));
+            bolt.setVisualOnly(true);
+            playerLevel.addFreshEntity(bolt);
         }
     }
 
