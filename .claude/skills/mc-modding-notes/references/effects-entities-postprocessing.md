@@ -143,6 +143,19 @@ lowpassed gaussian noise for "body", but a one-pole filter on noise sustains a l
 whole envelope, and once consecutive beats overlap, that rumble stops reading as a heartbeat and
 starts sounding like shuffling.
 
+**Synthesising whispering** (rather than sourcing a clip, which would mean redistributing someone
+else's audio under unknown licensing): whispered speech is *unvoiced* - there is no vocal-fold buzz
+to model, just turbulent noise shaped by the vocal tract. So it's reachable with lowpassed white
+noise pushed through three resonant bandpass filters (`scipy.signal.iirpeak`, Q~11) tuned to real
+vowel formant triples - /i/ 270-2290-3010, /ɑ/ 730-1090-2440, /u/ 300-870-2240 and so on - gated
+into 90-190ms syllables with a `sin(pi*t)` envelope (a hard gate clicks and reads as static), with
+occasional highpassed bursts standing in for sibilants. Layering three passes at slightly different
+formant scales (x0.88, x1.0, x1.14) and staggered start times reads as several people rather than
+one. The generator lives in the session scratchpad, not the repo.
+
+**Minecraft needs MONO ogg files for anything positional** - and entity-bound sounds are positional.
+A stereo file will not play correctly. Check with `soundfile.read(...)` before shipping.
+
 ## Colouring an item's name (including items you don't own the class of)
 
 The hotbar name comes from `Gui.renderSelectedItemName`, which does:

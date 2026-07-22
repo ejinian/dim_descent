@@ -108,17 +108,21 @@ active, which covers both walking in unprotected and the potion expiring while y
 Creative and spectator are exempt, and the kill bypasses armour, enchantments and status
 effects so it can't be tanked.
 
-Datura Seeds are also edible, which sets off the "datura trip" — an eight-stage poisoning
-sequence (Dry Mouth, Nausea, Tachycardia, Darkness, Poison, Weakness, Hysteria, Hallucination),
-driven by a server-side tick sequencer since vanilla can't chain one effect into a different one.
+Datura Seeds are also edible, which sets off the "datura trip", driven by a server-side tick
+sequencer since vanilla can't chain one effect into a different one. Nothing happens for 10
+seconds, then Dry Mouth always leads, then four more symptoms drawn at random from the remaining
+seven (Nausea, Tachycardia, Darkness, Poison, Weakness, Hysteria, Hallucination) — five events
+total, each running its own real duration, separated by 20 seconds of calm.
 Dry Mouth / Tachycardia / Hysteria are custom effects named for the symptom; Hysteria and the
 Attunement effect each apply a real vanilla effect underneath (night vision, darkness) purely to
 borrow its visual, hidden from the HUD and inventory so the player sees one effect with one name.
 Screen desaturation is a post-process chain reusing vanilla's `color_convolve` program. The final
-stage spawns a silent, faceless, translucent figure that only the tripping player can see and that
-stares without ever looking down, vanishing when the stage ends or the player looks away. All
-stage durations are currently clamped to 10s by `DaturaTrip.DEBUG_UNIFORM` and fire in a fixed
-order; real durations and randomised ordering are the next step.
+stage spawns a silent, translucent, black-eyed figure that only the tripping player can see and
+that stares without ever looking down, vanishing when the stage ends or the player looks away.
+Hysteria also plays 3–6 hallucinated noises per minute drawn from a pool (cave ambience, a zombie
+breaking a door, soul sand valley additions, wither skeleton, creeper fuse, a descending note-block
+run, and original synthesised whispers). Every trip sound is delivered privately to the one player
+and bound to them so it travels with them — none of it is audible to anyone else.
 
 The Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
 lectern lore room are still just design, not built. See the `mc-modding-notes` skill

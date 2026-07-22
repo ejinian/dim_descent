@@ -2,23 +2,20 @@ package com.ejinian.dimdescent.trip;
 
 import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.registry.ModRegistry;
+import com.ejinian.dimdescent.sound.PlayerSounds;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 
-// The ordered "trip" a player goes through after eating Datura Seeds - a rough simulation of real
-// datura (jimsonweed) poisoning, which is genuinely anticholinergic-deliriant: dry mouth, racing
-// heart, photophobia, and vivid hallucinations of people who aren't there.
+// The pool of symptoms a datura trip draws from - a rough simulation of real datura (jimsonweed)
+// poisoning, which is genuinely anticholinergic-deliriant: dry mouth, racing heart, photophobia,
+// and vivid hallucinations of people who aren't there.
 //
-// Each constant carries the duration it should EVENTUALLY have. While DaturaTrip.DEBUG_UNIFORM
-// is on, every stage is clamped to the same short length so the whole chain can be watched end to
-// end in under two minutes; flip that flag off (and later randomise the order) for real play.
+// DaturaTrip owns the ordering: Dry Mouth always leads, then four of the rest at random. Each
+// constant carries its own duration, so a trip's length varies with what it rolled.
 public enum TripStage {
 
     // Slowness I, but named for the symptom rather than borrowing vanilla's effect.
@@ -46,25 +43,12 @@ public enum TripStage {
         }
     },
 
-    // Speed II + Haste II, plus the heartbeat that fades up and back down once at stage start.
+    // Speed II + Haste II. The heartbeat is a 5s swell at onset, not a minute-long loop - its
+    // fade in and out are baked into the audio file rather than driven from here.
     TACHYCARDIA(1200) {
         @Override
         void onStart(ServerPlayer player, int durationTicks) {
-            // Entity-bound, and sent to this player's connection only.
-            //
-            // ClientboundSoundPacket (what playNotifySound sends) bakes in fixed world coordinates,
-            // so the heartbeat would stay pinned to wherever the player was standing when the stage
-            // began and fall behind as they walked away. ClientboundSoundEntityPacket instead makes
-            // the client build an EntityBoundSoundInstance that re-reads the entity's position every
-            // tick - so it travels with them. Since the entity IS the listener, it ends up centred
-            // and effectively non-directional, which is what a heartbeat should be.
-            player.connection.send(new ClientboundSoundEntityPacket(
-                    BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ModRegistry.HEARTBEAT_SOUND.get()),
-                    SoundSource.PLAYERS,
-                    player,
-                    0.9F,
-                    1.0F,
-                    player.getRandom().nextLong()));
+            PlayerSounds.playPrivately(player, ModRegistry.HEARTBEAT_SOUND.get(), 0.9F, 1.0F);
         }
 
         @Override
@@ -114,8 +98,10 @@ public enum TripStage {
         }
     },
 
-    // Night vision + intermittent cave noises. The night vision itself is applied as a hidden
-    // companion effect by CompanionEffectManager, not here.
+    // Night vision plus intermittent noises. Neither is applied here: the night vision is a hidden
+    // companion effect owned by CompanionEffectManager, and the noises are scheduled by
+    // HysteriaSoundScheduler, which keys off the effect's presence rather than off this stage - so
+    // they work identically when the effect is handed out by command.
     HYSTERIA(1200) {
         @Override
         void applyTo(ServerPlayer player, int durationTicks) {
@@ -128,7 +114,7 @@ public enum TripStage {
         }
     },
 
-    // The finale: something is standing near you, and it is looking at you.
+    // Something is standing near you, and it is looking at you.
     HALLUCINATION(200) {
         @Override
         void onStart(ServerPlayer player, int durationTicks) {
@@ -147,14 +133,14 @@ public enum TripStage {
         }
     };
 
-    private final int realDurationTicks;
+    private final int durationTicks;
 
-    TripStage(int realDurationTicks) {
-        this.realDurationTicks = realDurationTicks;
+    TripStage(int durationTicks) {
+        this.durationTicks = durationTicks;
     }
 
     public int durationTicks() {
-        return DaturaTrip.DEBUG_UNIFORM ? DaturaTrip.DEBUG_STAGE_TICKS : this.realDurationTicks;
+        return this.durationTicks;
     }
 
     // Fires once, the moment the stage begins - for one-shot things like a sound or a spawn.

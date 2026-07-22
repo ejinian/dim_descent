@@ -177,6 +177,13 @@ public final class ModRegistry {
             SOUND_EVENTS.register("heartbeat", () -> SoundEvent.createVariableRangeEvent(
                     ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "heartbeat")));
 
+    // Indistinct voices, in the Hysteria noise pool. Synthesised from scratch (see the asset
+    // generator in the scratchpad): whispering is unvoiced speech, i.e. turbulent noise shaped by
+    // vocal-tract formants, which is why it can be built convincingly without recording anything.
+    public static final DeferredHolder<SoundEvent, SoundEvent> WHISPERS_SOUND =
+            SOUND_EVENTS.register("whispers", () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "whispers")));
+
     // MobCategory.MISC keeps it out of natural spawning entirely - this only ever exists because
     // something spawned it deliberately. Sized to match a zombie, since it wears a zombie's model.
     public static final DeferredHolder<EntityType<?>, EntityType<HallucinationGhost>> HALLUCINATION_GHOST =

@@ -8,5 +8,15 @@
         "stream": false
       }
     ]
+  },
+  "whispers": {
+    "category": "ambient",
+    "subtitle": "subtitles.dimdescent.whispers",
+    "sounds": [
+      {
+        "name": "dimdescent:whispers",
+        "stream": false
+      }
+    ]
   }
 }
