@@ -3,14 +3,18 @@ package com.ejinian.dimdescent.registry;
 import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlock;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlockEntity;
+import com.ejinian.dimdescent.item.DaturaSeedsItem;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FlowerBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -68,11 +72,51 @@ public final class ModRegistry {
     public static final DeferredItem<Item> FORSAKEN_FIBER_ITEM = ITEMS.register("forsaken_fiber",
             () -> new BlockItem(FORSAKEN_FIBER.get(), new Item.Properties()));
 
+    // Attunement Gate ruin material: the reinforced bars that cage the rift door until broken.
+    // Same class/geometry as vanilla iron_bars (just a darker texture) with hardness bumped to
+    // obsidian's tier so it can't be shortcut with early tools - requiresCorrectToolForDrops()
+    // + the needs_diamond_tool/mineable_pickaxe tags (see data/minecraft/tags/block) are what
+    // actually enforce that, matching how obsidian itself is tagged.
+    public static final DeferredBlock<Block> DARK_IRON_BARS = BLOCKS.register("dark_iron_bars", () -> new IronBarsBlock(
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .requiresCorrectToolForDrops()
+                    .strength(50.0F, 1200.0F)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
+
+    public static final DeferredItem<Item> DARK_IRON_BARS_ITEM = ITEMS.register("dark_iron_bars",
+            () -> new BlockItem(DARK_IRON_BARS.get(), new Item.Properties()));
+
+    // Source plant for Datura Seeds (potion-brewing ingredient). No special suspicious-stew
+    // effect - SuspiciousStewEffects.EMPTY still gets the plain FlowerBlock behavior (random XZ
+    // placement offset, instabreak) without needing a custom Block subclass.
+    public static final DeferredBlock<Block> DATURA = BLOCKS.register("datura", () -> new FlowerBlock(
+            SuspiciousStewEffects.EMPTY,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .noCollission()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredItem<Item> DATURA_ITEM = ITEMS.register("datura",
+            () -> new BlockItem(DATURA.get(), new Item.Properties()));
+
+    public static final DeferredItem<Item> DATURA_SEEDS = ITEMS.register("datura_seeds",
+            () -> new DaturaSeedsItem(new Item.Properties()));
+
     public static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(RIFT_DOOR_ITEM);
             event.accept(NULLSTONE_ITEM);
             event.accept(FORSAKEN_FIBER_ITEM);
+            event.accept(DARK_IRON_BARS_ITEM);
+        } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
+            event.accept(DATURA_ITEM);
+        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(DATURA_SEEDS);
         }
     }
 

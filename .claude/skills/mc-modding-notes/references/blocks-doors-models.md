@@ -157,6 +157,62 @@ just evenly-spaced samples of one truly periodic function. Smooth (non-pixel-har
 much better than a binary "this pixel is part of the pattern or not" classification - blend colors
 continuously (e.g. `lerp(bg, glow, smoothstep(...))`) rather than assigning pixels to a fixed set.
 
+## Reuse vanilla's actual Block/Item Java classes when the behavior is already exactly right
+
+Don't reflexively write a new Block subclass for something vanilla already implements identically.
+Vanilla block classes are normal public, non-final classes with public `Properties`-taking
+constructors - if you want "obsidian-hard iron bars" or "a plain flower with no stew effect," you
+can register a **new instance of the vanilla class itself** with your own `Properties` and your own
+textures, and get 100% correct behavior (connection logic, placement heuristics, shapes) for free:
+```java
+// Dark Iron Bars: identical connection/shape logic to vanilla iron_bars, just harder.
+BLOCKS.register("dark_iron_bars", () -> new IronBarsBlock(
+    BlockBehaviour.Properties.of().requiresCorrectToolForDrops()
+        .strength(50.0F, 1200.0F).sound(SoundType.METAL).noOcclusion()));
+
+// Datura: FlowerBlock normally takes a MobEffect for its suspicious-stew effect, but there's a
+// second constructor overload taking a SuspiciousStewEffects directly - pass EMPTY for a flower
+// with the standard wobble/instabreak/placement behavior but no stew effect, no custom class needed.
+BLOCKS.register("datura", () -> new FlowerBlock(SuspiciousStewEffects.EMPTY,
+    BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak()
+        .sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ)
+        .pushReaction(PushReaction.DESTROY)));
+```
+Same principle extends to the blockstate/model side: `iron_bars.json`'s multipart blockstate and
+its 6 model files (`iron_bars_post`, `_post_ends`, `_cap`, `_cap_alt`, `_side`, `_side_alt`) can be
+copied verbatim (renamespaced, texture key repointed) with zero geometry changes - the connection
+*logic* lives in the Java class (`CrossCollisionBlock`/`IronBarsBlock`), not the JSON.
+
+## Extending a vanilla tag (tool tiers, mineable-by, etc.) from a mod without touching vanilla's file
+
+Tags merge additively across datapacks/mods that both define the same tag path - you don't need
+(and shouldn't try) to copy vanilla's full tag file. Just ship a small file at the *same*
+`data/minecraft/tags/...` path inside your own mod's resources, containing only your additions:
+```json
+// src/main/resources/data/minecraft/tags/block/needs_diamond_tool.json
+{ "values": ["dimdescent:dark_iron_bars"] }
+```
+No `"replace"` key needed (defaults to `false` = merge). This is how a block gets gated to "needs a
+diamond pickaxe minimum" (paired with `.requiresCorrectToolForDrops()` on the block itself) or
+gets pickaxe mining-speed recognition (`data/minecraft/tags/block/mineable/pickaxe.json`) without
+forking vanilla's tag definitions. Verify vanilla's actual tier-gated block list first (e.g.
+`obsidian`'s tags) before assuming which tag enforces what - `needs_diamond_tool` is what makes a
+pickaxe below diamond simply fail to drop anything, `mineable/pickaxe` is a separate "pickaxe is
+the efficient tool" recognition tag.
+
+## `Item.appendHoverText` for a custom tooltip line (1.21.1 signature)
+
+```java
+@Override
+public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    tooltipComponents.add(Component.translatable("item.dimdescent.datura_seeds.tooltip")
+        .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+}
+```
+Note the second parameter is `Item.TooltipContext` (nested type), not a bare `Level` or a
+top-level `TooltipContext` class - an easy thing to get wrong from stale training-data memory of
+older MC versions where this method's signature was different.
+
 ## Generating placeholder textures
 
 No image-generation tool is available in this environment, but Python 3 + Pillow (PIL) is
