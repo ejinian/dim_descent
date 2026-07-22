@@ -93,5 +93,17 @@ inexplicable place exists."
 - IntelliJ IDEA
 
 ## Status
-Early setup phase — MDK scaffolded, no custom content yet. First milestone:
-custom dimension type + basic depth-tracking mechanic.
+
+Core dimension-travel loop works end to end: a custom Rift dimension (Nullstone floor,
+Forsaken Fiber unbreakable boundary), and a Rift Door with a themed portal effect that
+generates a single shared exit door in the rift the first time any door is used anywhere,
+remembering per player which door to send them back through when they walk out — a door
+placed by hand inside the rift just goes to overworld spawn instead. Dark Iron Bars and
+Datura (with Datura Seeds) exist as placeable/harvestable blocks, though neither spawns via
+world-gen yet. Potion of Attunement is brewable (Awkward Potion + Datura Seeds, Redstone for
+the long variant) and the first time it's ever completed in a world it triggers a one-time
+server-wide thunderstorm plus a lightning flash — but the potion's actual survival mechanic
+(dying without it active in a rift, or when it expires inside one) isn't wired up yet. The
+Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
+lectern lore room are still just design, not built. See the `mc-modding-notes` skill
+(`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.
