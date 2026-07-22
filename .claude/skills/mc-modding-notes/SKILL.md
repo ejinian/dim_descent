@@ -78,6 +78,7 @@ here didn't really get learned.
 | [rendering-shaders-blockentities.md](references/rendering-shaders-blockentities.md) | Custom `BlockEntityRenderer` + custom core shader technique (how vanilla's End Portal effect actually works and how to re-theme it), `@EventBusSubscriber` bus rules, the render-layer/cutout gotcha |
 | [blocks-doors-models.md](references/blocks-doors-models.md) | Reusing vanilla's shared door model templates instead of authoring geometry from scratch, `DoubleHighBlockItem`, door hinge-selection heuristic, texture/IP caution |
 | [block-robustness-checklist.md](references/block-robustness-checklist.md) | Checklist to run new blocks through: loot tables, explosion resistance, piston push behavior, tool tier gating, waterlogging - so correctness doesn't depend on the user finding gaps by hand |
+| [effects-entities-postprocessing.md](references/effects-entities-postprocessing.md) | Custom `MobEffect`s (why effect chaining is impossible, which vanilla effects aren't attribute-driven, hiding a borrowed vanilla effect from the HUD/inventory), full-screen post-process shaders (reusing vanilla's `color_convolve` for saturation, the single global effect slot), and custom mobs (per-player visibility via `broadcastToPlayer`, inert/silent/non-despawning overrides, reusing vanilla model layers and getting translucency right) |
 | [project-facts.md](references/project-facts.md) | Mod identity, naming history, conventions specific to this repo |
 
 ## How to add a new finding

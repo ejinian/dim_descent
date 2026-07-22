@@ -10,8 +10,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 
-// RiftCommands, RiftClientEvents, and AttunementBrewingEvents register themselves on the event
-// bus via @EventBusSubscriber.
+// RiftCommands, RiftClientEvents, AttunementBrewingEvents, DaturaTrip, CompanionEffectManager,
+// TripClientEvents, and ScreenSaturationEffect register themselves on the event bus via
+// @EventBusSubscriber.
 @Mod(DimDescent.MODID)
 public class DimDescent {
     public static final String MODID = "dimdescent";
@@ -23,6 +24,9 @@ public class DimDescent {
         ModRegistry.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModRegistry.MOB_EFFECTS.register(modEventBus);
         ModRegistry.POTIONS.register(modEventBus);
+        ModRegistry.SOUND_EVENTS.register(modEventBus);
+        ModRegistry.ENTITY_TYPES.register(modEventBus);
         modEventBus.addListener(ModRegistry::addCreativeItems);
+        modEventBus.addListener(ModRegistry::registerEntityAttributes);
     }
 }

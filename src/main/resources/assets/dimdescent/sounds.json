@@ -1,0 +1,12 @@
+{
+  "heartbeat": {
+    "category": "player",
+    "subtitle": "subtitles.dimdescent.heartbeat",
+    "sounds": [
+      {
+        "name": "dimdescent:heartbeat",
+        "stream": false
+      }
+    ]
+  }
+}

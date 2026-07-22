@@ -103,7 +103,20 @@ Datura (with Datura Seeds) exist as placeable/harvestable blocks, though neither
 world-gen yet. Potion of Attunement is brewable (Awkward Potion + Datura Seeds, Redstone for
 the long variant) and the first time it's ever completed in a world it triggers a one-time
 server-wide thunderstorm plus a lightning flash — but the potion's actual survival mechanic
-(dying without it active in a rift, or when it expires inside one) isn't wired up yet. The
-Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
+(dying without it active in a rift, or when it expires inside one) isn't wired up yet.
+
+Datura Seeds are also edible, which sets off the "datura trip" — an eight-stage poisoning
+sequence (Dry Mouth, Nausea, Tachycardia, Darkness, Poison, Weakness, Hysteria, Hallucination),
+driven by a server-side tick sequencer since vanilla can't chain one effect into a different one.
+Dry Mouth / Tachycardia / Hysteria are custom effects named for the symptom; Hysteria and the
+Attunement effect each apply a real vanilla effect underneath (night vision, darkness) purely to
+borrow its visual, hidden from the HUD and inventory so the player sees one effect with one name.
+Screen desaturation is a post-process chain reusing vanilla's `color_convolve` program. The final
+stage spawns a silent, faceless, translucent figure that only the tripping player can see and that
+stares without ever looking down, vanishing when the stage ends or the player looks away. All
+stage durations are currently clamped to 10s by `DaturaTrip.DEBUG_UNIFORM` and fire in a fixed
+order; real durations and randomised ordering are the next step.
+
+The Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
 lectern lore room are still just design, not built. See the `mc-modding-notes` skill
 (`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.

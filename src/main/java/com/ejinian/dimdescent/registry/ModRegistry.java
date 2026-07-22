@@ -4,11 +4,20 @@ import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlock;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlockEntity;
 import com.ejinian.dimdescent.effect.AttunementMobEffect;
+import com.ejinian.dimdescent.effect.DryMouthMobEffect;
+import com.ejinian.dimdescent.effect.HysteriaMobEffect;
+import com.ejinian.dimdescent.effect.TachycardiaMobEffect;
+import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.item.DaturaSeedsItem;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
@@ -25,6 +34,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -40,6 +50,10 @@ public final class ModRegistry {
             DeferredRegister.create(Registries.MOB_EFFECT, DimDescent.MODID);
     public static final DeferredRegister<Potion> POTIONS =
             DeferredRegister.create(Registries.POTION, DimDescent.MODID);
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
+            DeferredRegister.create(Registries.SOUND_EVENT, DimDescent.MODID);
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
+            DeferredRegister.create(Registries.ENTITY_TYPE, DimDescent.MODID);
 
     public static final DeferredBlock<RiftDoorBlock> RIFT_DOOR = BLOCKS.register("rift_door", () -> new RiftDoorBlock(
             BlockBehaviour.Properties.of()
@@ -114,8 +128,18 @@ public final class ModRegistry {
     public static final DeferredItem<Item> DATURA_ITEM = ITEMS.register("datura",
             () -> new BlockItem(DATURA.get(), new Item.Properties()));
 
+    // Edible, but not food: nutrition 0 and alwaysEdible() so it can be eaten on a full hunger bar
+    // (you don't eat datura because you're hungry). fast() keeps the eat animation short - the
+    // punishment is what comes after, not the two seconds of chewing.
+    private static final FoodProperties DATURA_SEEDS_FOOD = new FoodProperties.Builder()
+            .nutrition(0)
+            .saturationModifier(0.0F)
+            .alwaysEdible()
+            .fast()
+            .build();
+
     public static final DeferredItem<Item> DATURA_SEEDS = ITEMS.register("datura_seeds",
-            () -> new DaturaSeedsItem(new Item.Properties()));
+            () -> new DaturaSeedsItem(new Item.Properties().food(DATURA_SEEDS_FOOD)));
 
     // Marker effect for "safe to be inside a rift dimension right now" - the rift-lethality check
     // (not built yet) will look for this on the player. 3600 ticks (3 min) matches vanilla's base
@@ -133,6 +157,40 @@ public final class ModRegistry {
     // it shows as "Potion of Attunement" with the longer duration in the tooltip, not a renamed item.
     public static final DeferredHolder<Potion, Potion> LONG_POTION_OF_ATTUNEMENT = POTIONS.register("long_attunement",
             () -> new Potion("attunement", new MobEffectInstance(ATTUNEMENT_EFFECT, 9600)));
+
+    // --- Datura trip: the symptom effects (see com.ejinian.dimdescent.trip.TripStage) ---
+    // Each is its own registered effect rather than a vanilla one so it reads by symptom name in the
+    // status list. Where a vanilla VISUAL is needed too (Hysteria's night vision), the real vanilla
+    // effect is applied alongside and hidden - see CompanionEffectManager.
+
+    public static final DeferredHolder<MobEffect, DryMouthMobEffect> DRY_MOUTH_EFFECT =
+            MOB_EFFECTS.register("dry_mouth", DryMouthMobEffect::new);
+
+    public static final DeferredHolder<MobEffect, TachycardiaMobEffect> TACHYCARDIA_EFFECT =
+            MOB_EFFECTS.register("tachycardia", TachycardiaMobEffect::new);
+
+    public static final DeferredHolder<MobEffect, HysteriaMobEffect> HYSTERIA_EFFECT =
+            MOB_EFFECTS.register("hysteria", HysteriaMobEffect::new);
+
+    // Heartbeat that fades up and back down, played once when Tachycardia starts.
+    public static final DeferredHolder<SoundEvent, SoundEvent> HEARTBEAT_SOUND =
+            SOUND_EVENTS.register("heartbeat", () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "heartbeat")));
+
+    // MobCategory.MISC keeps it out of natural spawning entirely - this only ever exists because
+    // something spawned it deliberately. Sized to match a zombie, since it wears a zombie's model.
+    public static final DeferredHolder<EntityType<?>, EntityType<HallucinationGhost>> HALLUCINATION_GHOST =
+            ENTITY_TYPES.register("hallucination_ghost", () -> EntityType.Builder
+                    .of(HallucinationGhost::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .eyeHeight(1.74F)
+                    .fireImmune()
+                    .clientTrackingRange(8)
+                    .build("hallucination_ghost"));
+
+    public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
+        event.put(HALLUCINATION_GHOST.get(), HallucinationGhost.createAttributes().build());
+    }
 
     public static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {

@@ -7,5 +7,10 @@
   "item.dimdescent.datura_seeds": "Datura Seeds",
   "item.dimdescent.datura_seeds.tooltip": "Doesn't smell like a seed should. Someone once thought to brew it.",
   "effect.dimdescent.attunement": "Attunement",
-  "item.minecraft.potion.effect.attunement": "Potion of Attunement"
+  "effect.dimdescent.dry_mouth": "Dry Mouth",
+  "effect.dimdescent.tachycardia": "Tachycardia",
+  "effect.dimdescent.hysteria": "Hysteria",
+  "entity.dimdescent.hallucination_ghost": "Hallucination",
+  "item.minecraft.potion.effect.attunement": "Potion of Attunement",
+  "subtitles.dimdescent.heartbeat": "Heart pounds"
 }
