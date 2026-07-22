@@ -26,8 +26,9 @@ Ordered so that each phase leaves the mod in a coherent, testable state.
 - [x] Psychosis gets a 20s floor in potion trips, and its first noise now comes sooner than
       subsequent ones, so the symptom can never end before anything is heard
 - [x] Tachycardia's heartbeat repeats at irregular intervals rather than firing once
-- [x] Warped soundscape during Psychosis: pitch-down, random detune, random dropout, random
-      substitution, applied to every non-music sound in the game via `PlaySoundEvent`
+- [x] Warped soundscape during Psychosis: pitch-down, random detune and 12% dropout, applied via
+      `PlaySoundEvent` to every non-music sound the outside world makes. The hallucinated sounds
+      are deliberately exempt — they're the one thing meant to come through clearly
 
 ## Phase 2 — Make the chain reachable ⚠️ BLOCKER
 

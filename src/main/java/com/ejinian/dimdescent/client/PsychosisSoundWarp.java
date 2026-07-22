@@ -5,11 +5,8 @@ import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -28,8 +25,9 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 // the game.
 //
 // What IS reachable is total interception. PlaySoundEvent fires for every sound the client is about
-// to play and lets the instance be swapped or dropped, which covers literally everything - water,
-// footsteps, eating, mobs, blocks - and that's what the four distortions below are built on.
+// to play and lets the instance be swapped or dropped, which covers literally everything the world
+// makes - water, footsteps, eating, mobs, blocks. Two distortions are built on it: everything is
+// dragged down in pitch and knocked off-key, and some of it simply never arrives.
 //
 // CAREFUL: the event fires BEFORE SoundEngine.play calls resolve() on the instance, and
 // AbstractSoundInstance.getVolume()/getPitch() both dereference the Sound that resolve() populates.
@@ -49,22 +47,6 @@ public final class PsychosisSoundWarp {
     private static final float VOLUME_SPREAD = 0.25F;
 
     private static final int DROPOUT_PERCENT = 12;
-    private static final int SUBSTITUTE_PERCENT = 10;
-
-    // A substituted sound is a different sound entirely, so there is no original loudness to scale
-    // from - and the original's own volume cannot be read here anyway (see below).
-    private static final float SUBSTITUTE_VOLUME = 0.7F;
-
-    // Short, wrong sounds. The point isn't that these are scary in themselves - it's that hearing
-    // one where a footstep should have been makes the player doubt what they heard.
-    private static final SoundEvent[] SUBSTITUTES = {
-        SoundEvents.WOODEN_DOOR_OPEN,
-        SoundEvents.CHEST_OPEN,
-        SoundEvents.ZOMBIE_AMBIENT,
-        SoundEvents.SKELETON_AMBIENT,
-        SoundEvents.BAT_AMBIENT,
-        SoundEvents.NOTE_BLOCK_BASS.value(),
-    };
 
     @SubscribeEvent
     public static void onPlaySound(PlaySoundEvent event) {
@@ -83,11 +65,27 @@ public final class PsychosisSoundWarp {
             return;
         }
 
-        // Tickable instances recompute their own position and volume every tick (entity-bound
-        // sounds, minecart loops, boss music); wrapping one would strip that behaviour. This also
-        // conveniently protects our own hallucinated sounds, which are all entity-bound - dropping
-        // or re-pitching those would undermine the very symptom being simulated.
+        // Only the outside world gets warped. The voices in the player's head are supposed to be the
+        // one thing coming through clearly, so everything PlayerSounds emits has to pass untouched.
+        //
+        // The discriminator is the INSTANCE TYPE, not the sound's name, and it has to be: half the
+        // hallucination pool is borrowed vanilla sounds (a zombie forcing a door, wither skeleton
+        // ambience, a creeper fuse), so by resource location a hallucinated one is indistinguishable
+        // from the real thing happening nearby. What separates them is delivery -
+        // ClientboundSoundEntityPacket resolves to an EntityBoundSoundInstance, which is tickable,
+        // whereas ordinary world sounds arrive as plain SimpleSoundInstances.
+        //
+        // Skipping tickables is required for its own sake anyway: they recompute position and volume
+        // every tick (entity-bound sounds, minecart loops, boss music) and a static wrapper would
+        // strip that. The two requirements happen to coincide exactly.
         if (sound instanceof TickableSoundInstance) {
+            return;
+        }
+
+        // Belt and braces for our own sounds specifically, so this still holds if PlayerSounds ever
+        // switches away from entity-bound delivery. Doesn't help the borrowed vanilla ones above -
+        // nothing name-based could - which is why the tickable check is the real guarantee.
+        if (sound.getLocation().getNamespace().equals(DimDescent.MODID)) {
             return;
         }
 
@@ -99,15 +97,6 @@ public final class PsychosisSoundWarp {
 
         float pitch = Mth.clamp(PITCH_BASE + (RANDOM.nextFloat() - 0.5F) * PITCH_SPREAD, 0.5F, 2.0F);
         float volumeScale = 1.0F - RANDOM.nextFloat() * VOLUME_SPREAD;
-
-        if (RANDOM.nextInt(100) < SUBSTITUTE_PERCENT) {
-            SoundEvent replacement = SUBSTITUTES[RANDOM.nextInt(SUBSTITUTES.length)];
-            event.setSound(new SimpleSoundInstance(
-                    replacement, sound.getSource(), SUBSTITUTE_VOLUME * volumeScale, pitch, RANDOM,
-                    sound.getX(), sound.getY(), sound.getZ()));
-            return;
-        }
-
         event.setSound(new WarpedSoundInstance(sound, pitch, volumeScale));
     }
 

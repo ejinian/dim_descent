@@ -155,8 +155,9 @@ Psychosis carries the hallucinations: 3–6 noises per minute from a pool (cave 
 breaking a door, soul sand valley additions, wither skeleton, creeper fuse, a descending note-block
 run, and three original synthesised whisper takes); an 85% chance of a silent, translucent,
 black-eyed figure appearing partway through, visible only to the afflicted player, staring without
-ever looking down; and a warped soundscape — every other sound in the game is pitched down, randomly
-detuned, occasionally dropped outright, and occasionally swapped for something else entirely.
+ever looking down; and a warped soundscape — every sound the *outside world* makes is pitched down,
+randomly detuned, and 12% of the time simply never arrives. The hallucinated sounds themselves come
+through clean, which is the point: the voices are the only thing you hear clearly.
 
 Every trip sound is delivered privately to the one player and bound to them so it travels with them
 — none of it is audible to anyone else. For the whole trip, including the gaps between symptoms,
