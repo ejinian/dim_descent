@@ -10,7 +10,7 @@ Ordered so that each phase leaves the mod in a coherent, testable state.
 ## Phase 1 — Potion pipeline ✅
 
 - [x] **Potion of the Devil's Trumpet**: Awkward + Datura Seeds, pitch black
-- [x] Drinking it starts the trip 10s later, with all 8 symptoms compressed into
+- [x] Drinking it starts the trip 10s later, with all 7 symptoms compressed into
       the potion's duration at random order and random lengths (min 10s each)
 - [x] **Potion of Attunement**: Devil's Trumpet + Fermented Spider Eye
 - [x] Redstone extends both (3 min → 8 min)

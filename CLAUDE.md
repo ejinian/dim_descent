@@ -165,6 +165,10 @@ black fractal cracks creep in from the corners of the screen, fading in and out 
 way; an invisible marker effect carries that state to the client, since the sequencer is
 server-side.
 
-The Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
-lectern lore room are still just design, not built. See the `mc-modding-notes` skill
+Still just design, not built: the altar ritual and the Null Domain's altar-only entry; Datura
+world-gen (which currently makes the whole chain creative-only); and aligning the shipped
+dimension with the new design (eject-on-expiry instead of the current instant death, and dropping
+the Rift Door as an overworld entrance). The dimension is still registered as `dimdescent:rift`
+and still kills unattuned players rather than ejecting them — both are known and tracked. See
+[ROADMAP.md](ROADMAP.md) for the ordered build plan, and the `mc-modding-notes` skill
 (`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.
