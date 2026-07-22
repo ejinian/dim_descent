@@ -113,6 +113,37 @@ If the same block class is used on both sides of the portal (e.g. one door in th
 mirror in the custom dimension), branch on `level.dimension()` inside `getPortalDestination` to
 decide direction - don't hardcode a single target.
 
+## `entityInside` fires for the whole block cell, not just the visible/collision shape
+
+`Block.entityInside(state, level, pos, entity)` is called for every block position an entity's
+bounding box overlaps, **regardless of that block's actual `VoxelShape`**. It is NOT pre-filtered
+to only fire where the block is actually "solid" or visually present. This bit us building a
+portal door: gating a teleport purely on `isOpen(state) && entity.canUsePortal(false)` triggered
+for an entity standing anywhere in the door's 1x1x2 cell, not just where the glowing portal effect
+was actually rendered - so walking past an open door without touching the visible effect still
+teleported the player.
+
+Fix (same pattern vanilla's `EndPortalBlock` uses, which explicitly intersects against its own
+shape rather than trusting an implicit filter): compute the specific `AABB` you want to be the
+"real" trigger zone, and manually check `entityBoundingBox.intersects(triggerBounds)` (or use
+`Shapes.joinIsNotEmpty` for a true `VoxelShape`) before calling `setAsInsidePortal`. Don't assume
+the engine does this restriction for you.
+
+## Gotcha: local-space geometry for a 2-tall block must anchor to one consistent half
+
+`entityInside` (and `newBlockEntity`) fire independently for EACH block position a multi-block
+structure occupies - for a door, that means it can be called once with `pos` = the lower half and
+separately with `pos` = the upper half, both carrying the *same* `BlockState` values (facing,
+hinge, open) since those are shared, but a *different* `pos`. If you're computing some local-space
+geometry (e.g. "the window is at Y=[1.5, 1.8] relative to the block") and blending world-position
+math into it, resolve to a single canonical anchor first:
+```java
+BlockPos lowerPos = state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
+```
+then always offset your local coordinates by `lowerPos`, never by whichever `pos` happened to
+trigger the call - otherwise geometry computed relative to the upper half ends up off by a full
+block when the lower half is what actually triggered, or vice versa.
+
 ## Extracting shared logic
 
 If both a debug command (`/rift enter`) and an in-world block (a door) need to compute "where does

@@ -64,6 +64,45 @@ public static final BlockSetType MY_DOOR_SET = new BlockSetType(
 (`SoundType` is `net.minecraft.world.level.block.SoundType`, NOT `net.minecraft.sounds.SoundType`
 - that's an easy import mistake since `SoundEvents` lives in `net.minecraft.sounds`.)
 
+## Forcing a hinge side, and finding where the swung-open panel actually sits
+
+You *can* override where a custom door's hinge ends up, cleanly, without touching the placement
+heuristic itself - `DoorBlock.getStateForPlacement` is public and overridable, so just call
+`super` and patch the result:
+```java
+@Override
+public BlockState getStateForPlacement(BlockPlaceContext context) {
+    BlockState state = super.getStateForPlacement(context);
+    return state == null ? null : state.setValue(HINGE, DoorHingeSide.LEFT);
+}
+```
+(`state` can be `null` if placement is invalid, e.g. no room for the upper half - preserve that.)
+Since `setPlacedBy` copies this same state up to the upper half, one override covers both.
+
+Separately, `DoorBlock.getShape` (its actual `VoxelShape`/collision method) is a small, exhaustive
+switch table worth reading directly rather than reverse-engineering from rotation math:
+```java
+protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    Direction direction = state.getValue(FACING);
+    boolean closed = !state.getValue(OPEN);
+    boolean hingeRight = state.getValue(HINGE) == DoorHingeSide.RIGHT;
+    return switch (direction) {
+        case SOUTH -> closed ? SOUTH_AABB : (hingeRight ? EAST_AABB : WEST_AABB);
+        case WEST -> closed ? WEST_AABB : (hingeRight ? SOUTH_AABB : NORTH_AABB);
+        case NORTH -> closed ? NORTH_AABB : (hingeRight ? WEST_AABB : EAST_AABB);
+        default -> closed ? EAST_AABB : (hingeRight ? NORTH_AABB : SOUTH_AABB); // EAST
+    };
+}
+```
+This is the reliable way to find out **where the physically swung-open door panel sits** (useful
+if you're rendering something that needs to avoid or track it): don't hand-derive it, just query
+`state.setValue(OPEN, true).getShape(level, pos).bounds()` and read the resulting `AABB` off the
+real block, rather than working out the geometry yourself. Same trick works for "where does the
+CLOSED slab sit" via `state.setValue(OPEN, false).getShape(...)` regardless of the block's actual
+current open state - handy for keeping some other piece of geometry (a rendered effect, a hitbox)
+anchored to the closed-door frame position even while the door is actually open and the physical
+mesh has rotated away from it.
+
 ## Texture/asset copyright - never copy Mojang's actual files into the mod
 
 Copying pixel data from Mojang's shipped textures (extracted from the game jar) into our own mod's
@@ -78,6 +117,31 @@ this distinction:
 - If part of the vanilla look needs to be selectively modified (e.g., punching transparent
   "windows" into part of an otherwise iron-door-styled texture), the safe path is to author
   original artwork with a similar palette/style, not to start from a copy of their file.
+
+## Animated block/item textures don't need a shader - just a taller PNG + a `.mcmeta`
+
+Don't reach for the custom-shader machinery (see `rendering-shaders-blockentities.md`) for a
+normal animated texture (glowing veins, flowing liquid, anything vanilla's lava/fire/etc. do) -
+that technique is specifically for parallax/view-angle-dependent effects like the End Portal. A
+regular animated texture is much simpler: a single PNG taller than it is wide (16 wide x 16*N
+tall, one frame per 16px band stacked top-to-bottom) plus a sidecar file at the same path with
+`.mcmeta` appended, e.g. `textures/block/my_block.png` + `textures/block/my_block.png.mcmeta`:
+```json
+{ "animation": { "frametime": 4, "interpolate": true } }
+```
+`frametime` is in game ticks per frame (20 ticks/sec). `interpolate: true` blends between frames
+(including the last-frame-back-to-first wraparound) instead of hard-cutting, which matters a lot
+for how smooth it reads.
+
+For the animation to actually look like *movement* rather than "pulsing brightness in place," each
+frame's pattern needs to be procedurally shifted, not just recolored at a fixed position - e.g.
+compute pixel color from a continuous function of `(x, y, frame/FRAMES)` where the frame term
+shifts a periodic pattern's phase. Parametrize the animated term as `frame/FRAMES * K` (K = an
+integer number of full cycles over the whole loop) rather than some other derived quantity - that
+guarantees the sequence is seamless across the frame-23-to-frame-0 wraparound for free, since it's
+just evenly-spaced samples of one truly periodic function. Smooth (non-pixel-hard) gradients read
+much better than a binary "this pixel is part of the pattern or not" classification - blend colors
+continuously (e.g. `lerp(bg, glow, smoothstep(...))`) rather than assigning pixels to a fixed set.
 
 ## Generating placeholder textures
 

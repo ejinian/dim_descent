@@ -22,22 +22,39 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
 
 - **Custom dimension** (`dimdescent:rift`): data-driven via `data/dimdescent/dimension_type/rift.json`
   + `data/dimdescent/dimension/rift.json`. No skylight, has a ceiling, fixed night-time lighting,
-  flat stone-floor generator (guaranteed landing platform, not void). See
+  flat generator with `dimdescent:forsaken_fiber` (bottom, unbreakable boundary) and
+  `dimdescent:nullstone` (the walkable "floor," insta-break void look) as its layers. See
   `dimensions-teleportation-portals.md` for the general technique.
+- **Spawn platform**: since the flat generator's floor is an insta-break void block everywhere, a
+  10x10x1 stone-brick patch is stamped in imperatively (plain `level.setBlock` calls, not real
+  worldgen) around the rift's fixed spawn point the first time anyone arrives there - see
+  `RiftTeleporter.ensureSpawnPlatform`. Not a permanent solution; revisit once real room
+  generation/placement is being designed.
 - **Rift door block** (`dimdescent:rift_door`): extends vanilla `DoorBlock`, implements `Portal`
   for bidirectional overworld<->rift teleport, has a `BlockEntityRenderer` drawing a re-themed
-  (red/orange) End-Portal-style shader effect through transparent window cutouts in its texture.
-  See `rendering-shaders-blockentities.md` and `blocks-doors-models.md`.
+  (red/orange) End-Portal-style shader effect through transparent window cutouts in its texture -
+  small 4-window "peekaboo" boxes while closed, one big box filling the doorway once open. Hinge
+  is forced to always be LEFT regardless of placement context (this is a special door, not meant
+  to behave like a real one). The teleport hitbox is intentionally scoped to just the visible glow
+  box, not the door's whole 1x1x2 cell - see the `entityInside`-fires-for-the-whole-cell gotcha in
+  `dimensions-teleportation-portals.md`. See also `rendering-shaders-blockentities.md` and
+  `blocks-doors-models.md`.
 - **Shared teleport logic** lives in a `RiftTeleporter` helper class, used by both the `/rift
   enter|leave` debug command and the door block's `Portal.getPortalDestination` - avoid
   duplicating dimension-selection logic across entry points.
+- **Nullstone** (`dimdescent:nullstone`): Dimensional Doors' "Fabric of Reality" equivalent -
+  insta-break (`Properties.instabreak()`), pure uniform `(0,0,0)` black texture (explicitly no
+  noise/variation - a black texture stays black under every one of Minecraft's per-face lighting
+  multipliers, satisfying "zero reflection from light" without needing emissive/fullbright
+  rendering tricks).
+- **Forsaken Fiber** (`dimdescent:forsaken_fiber`): Dimensional Doors' "Ancient Fabric" equivalent
+  - unbreakable (`strength(-1, 3600000F)`, `.noLootTable()`, `.isValidSpawn(Blocks::never)`, same
+  as vanilla bedrock), animated texture (dark maroon base, a barely-visible dark-orange vein
+  pattern that actually scrolls across frames - see the animated-texture note in
+  `blocks-doors-models.md`).
 
-## Naming/flavor decisions pending or in discussion
+## Naming decisions made
 
-- Dimensional Doors' "Fabric of Reality" (insta-break void-look floor block) and "Ancient Fabric"
-  (unbreakable dungeon-boundary block, bedrock-equivalent) need our own equivalents. Direction as
-  of the last discussion: tie the void-floor block's look to the depth mechanic rather than flat
-  black; boundary block should be mechanically identical to bedrock
-  (`Block.Properties.strength(-1, 3600000F)`-style unbreakable) with original flavor/name (ideas
-  floated: "Frayed Bedrock", "Seam Stone") and a reddish-orange flowing/veiny texture - not yet
-  implemented as of this writing.
+Chosen and implemented (see also the `block-naming-fabric-analogues` memory entry, which has the
+same info for cross-session recall outside this repo): **Nullstone** = Fabric of Reality
+equivalent, **Forsaken Fiber** = Ancient Fabric equivalent.

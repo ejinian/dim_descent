@@ -55,6 +55,11 @@ here didn't really get learned.
    reference their asset by resource location without duplicating the file. Details in
    [references/blocks-doors-models.md](references/blocks-doors-models.md).
 
+7. **Commit and push after any significant change - don't wait to be asked.** Standing instruction
+   from the user. "Significant" means a working feature/fix landed and was verified (compiled,
+   client booted clean), not every intermediate edit mid-debugging. Write a real commit message
+   (what changed and why), not a placeholder.
+
 ## Reference files
 
 | File | Covers |
