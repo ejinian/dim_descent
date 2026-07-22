@@ -10,7 +10,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 
-// RiftCommands and RiftClientEvents register themselves on the event bus via @EventBusSubscriber.
+// RiftCommands, RiftClientEvents, and AttunementBrewingEvents register themselves on the event
+// bus via @EventBusSubscriber.
 @Mod(DimDescent.MODID)
 public class DimDescent {
     public static final String MODID = "dimdescent";
@@ -20,6 +21,8 @@ public class DimDescent {
         ModRegistry.BLOCKS.register(modEventBus);
         ModRegistry.ITEMS.register(modEventBus);
         ModRegistry.BLOCK_ENTITY_TYPES.register(modEventBus);
+        ModRegistry.MOB_EFFECTS.register(modEventBus);
+        ModRegistry.POTIONS.register(modEventBus);
         modEventBus.addListener(ModRegistry::addCreativeItems);
     }
 }

@@ -3,13 +3,17 @@ package com.ejinian.dimdescent.registry;
 import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlock;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlockEntity;
+import com.ejinian.dimdescent.effect.AttunementMobEffect;
 import com.ejinian.dimdescent.item.DaturaSeedsItem;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -32,6 +36,10 @@ public final class ModRegistry {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(DimDescent.MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, DimDescent.MODID);
+    public static final DeferredRegister<MobEffect> MOB_EFFECTS =
+            DeferredRegister.create(Registries.MOB_EFFECT, DimDescent.MODID);
+    public static final DeferredRegister<Potion> POTIONS =
+            DeferredRegister.create(Registries.POTION, DimDescent.MODID);
 
     public static final DeferredBlock<RiftDoorBlock> RIFT_DOOR = BLOCKS.register("rift_door", () -> new RiftDoorBlock(
             BlockBehaviour.Properties.of()
@@ -106,6 +114,15 @@ public final class ModRegistry {
 
     public static final DeferredItem<Item> DATURA_SEEDS = ITEMS.register("datura_seeds",
             () -> new DaturaSeedsItem(new Item.Properties()));
+
+    // Marker effect for "safe to be inside a rift dimension right now" - the rift-lethality check
+    // (not built yet) will look for this on the player. 3600 ticks (3 min) matches vanilla's base
+    // duration for other awkward-potion-derived effects like Night Vision; easy to retune later.
+    public static final DeferredHolder<MobEffect, AttunementMobEffect> ATTUNEMENT_EFFECT =
+            MOB_EFFECTS.register("attunement", AttunementMobEffect::new);
+
+    public static final DeferredHolder<Potion, Potion> POTION_OF_ATTUNEMENT = POTIONS.register("attunement",
+            () -> new Potion(new MobEffectInstance(ATTUNEMENT_EFFECT, 3600)));
 
     public static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {

@@ -5,5 +5,7 @@
   "block.dimdescent.dark_iron_bars": "Dark Iron Bars",
   "block.dimdescent.datura": "Datura",
   "item.dimdescent.datura_seeds": "Datura Seeds",
-  "item.dimdescent.datura_seeds.tooltip": "Doesn't smell like a seed should. Someone once thought to brew it."
+  "item.dimdescent.datura_seeds.tooltip": "Doesn't smell like a seed should. Someone once thought to brew it.",
+  "effect.dimdescent.attunement": "Attunement",
+  "item.minecraft.potion.effect.attunement": "Potion of Attunement"
 }
