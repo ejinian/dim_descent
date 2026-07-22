@@ -80,3 +80,9 @@ back to the game window), rather than asking permission before doing it.
 This doesn't extend to anything more destructive than killing the dev client process itself - it
 doesn't authorize touching world save files, `eula.txt`, or anything outside of "restart the
 client so new code takes effect."
+
+**This applies even if the user is visibly mid-session** (just sent a screenshot from inside the
+game, clearly mid-testing something). The general instinct to check before force-killing a process
+someone might be actively using does not apply here - the user has explicitly confirmed, more than
+once, that speed of iteration matters more than protecting an in-progress play session. Restart
+immediately, don't pause to ask "are you still testing?" first.

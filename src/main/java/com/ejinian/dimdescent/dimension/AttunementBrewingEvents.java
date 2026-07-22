@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -28,6 +29,10 @@ public class AttunementBrewingEvents {
                 net.minecraft.world.item.alchemy.Potions.AWKWARD,
                 ModRegistry.DATURA_SEEDS.get(),
                 ModRegistry.POTION_OF_ATTUNEMENT);
+        event.getBuilder().addMix(
+                ModRegistry.POTION_OF_ATTUNEMENT,
+                Items.REDSTONE,
+                ModRegistry.LONG_POTION_OF_ATTUNEMENT);
     }
 
     // The very first time a Potion of Attunement is ever completed in a world, crack a
@@ -41,7 +46,8 @@ public class AttunementBrewingEvents {
             ItemStack stack = event.getItem(i);
             PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
             if (contents != null && contents.potion().isPresent()
-                    && contents.potion().get().value() == ModRegistry.POTION_OF_ATTUNEMENT.get()) {
+                    && (contents.potion().get().value() == ModRegistry.POTION_OF_ATTUNEMENT.get()
+                            || contents.potion().get().value() == ModRegistry.LONG_POTION_OF_ATTUNEMENT.get())) {
                 brewedAttunement = true;
                 break;
             }

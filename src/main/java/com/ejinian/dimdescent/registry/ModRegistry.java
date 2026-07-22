@@ -57,12 +57,14 @@ public final class ModRegistry {
 
     // Rift-dimension equivalent of Dimensional Doors' "Fabric of Reality": an insta-break void
     // floor. Look is meant to tie into the depth mechanic later (more unstable the deeper you
-    // are) rather than being flat black.
+    // are) rather than being flat black. noLootTable() makes the no-drop intentional and explicit
+    // (matching its sibling FORSAKEN_FIBER below) instead of silently missing a loot table file.
     public static final DeferredBlock<Block> NULLSTONE = BLOCKS.register("nullstone", () -> new Block(
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLACK)
                     .instabreak()
-                    .sound(SoundType.GLASS)));
+                    .sound(SoundType.GLASS)
+                    .noLootTable()));
 
     public static final DeferredItem<Item> NULLSTONE_ITEM = ITEMS.register("nullstone",
             () -> new BlockItem(NULLSTONE.get(), new Item.Properties()));
@@ -123,6 +125,14 @@ public final class ModRegistry {
 
     public static final DeferredHolder<Potion, Potion> POTION_OF_ATTUNEMENT = POTIONS.register("attunement",
             () -> new Potion(new MobEffectInstance(ATTUNEMENT_EFFECT, 3600)));
+
+    // Redstone-extended variant, same 3600 -> 9600 tick (3 -> 8 min) ratio vanilla uses for every
+    // other awkward-derived potion (Night Vision, Swiftness, etc). The "name" constructor param
+    // reuses "attunement" rather than "long_attunement" deliberately - that's what vanilla itself
+    // does for its own long potions (confirmed: there's no long_night_vision lang key either), so
+    // it shows as "Potion of Attunement" with the longer duration in the tooltip, not a renamed item.
+    public static final DeferredHolder<Potion, Potion> LONG_POTION_OF_ATTUNEMENT = POTIONS.register("long_attunement",
+            () -> new Potion("attunement", new MobEffectInstance(ATTUNEMENT_EFFECT, 9600)));
 
     public static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {

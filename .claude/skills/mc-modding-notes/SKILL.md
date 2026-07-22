@@ -32,9 +32,10 @@ here didn't really get learned.
 
 2. **Java code changes need a full client restart; JSON/texture changes don't.**
    Resource-only changes hot-reload in-game with F3+T. Any `.java` change requires killing the
-   dev client and re-running `runClient` - **do this automatically, don't ask first** (standing
-   instruction from the user). Full verification workflow (and what we *can't* verify without the
-   human's eyes) is in
+   dev client and re-running `runClient` - **do this automatically, don't ask first, even if the
+   user is visibly mid-session testing something** (standing instruction from the user, confirmed
+   more than once). Full verification workflow (and what we *can't* verify without the human's
+   eyes) is in
    [references/testing-and-verification.md](references/testing-and-verification.md).
 
 3. **A block with transparent (alpha=0) texture pixels still renders them as opaque black unless
@@ -60,15 +61,23 @@ here didn't really get learned.
    client booted clean), not every intermediate edit mid-debugging. Write a real commit message
    (what changed and why), not a placeholder.
 
+8. **New blocks should behave correctly with the rest of the game (loot, explosions, pistons,
+   tools) by deliberate property choices, not by accident.** Standing instruction from the user -
+   run new blocks (and a periodic pass over existing ones) through
+   [references/block-robustness-checklist.md](references/block-robustness-checklist.md). Missing
+   loot tables are the single most common silent gap (no compile error, no boot-log warning, just
+   "breaking this drops nothing").
+
 ## Reference files
 
 | File | Covers |
 |---|---|
 | [finding-ground-truth-source.md](references/finding-ground-truth-source.md) | Exact Gradle-cache jar paths for decompiled vanilla + NeoForge + FancyModLoader source; how to extract and read a class |
-| [testing-and-verification.md](references/testing-and-verification.md) | What we can verify ourselves (compile, log-grepping) vs. what needs the human in-game; restart rules; EULA caution; don't kill an active play session without asking |
+| [testing-and-verification.md](references/testing-and-verification.md) | What we can verify ourselves (compile, log-grepping) vs. what needs the human in-game; restart rules (always restart automatically, no exceptions); EULA caution |
 | [dimensions-teleportation-portals.md](references/dimensions-teleportation-portals.md) | Data-driven dimension JSON structure, `DimensionTransition`/`changeDimension`, the `Portal` interface pattern for custom portal blocks |
 | [rendering-shaders-blockentities.md](references/rendering-shaders-blockentities.md) | Custom `BlockEntityRenderer` + custom core shader technique (how vanilla's End Portal effect actually works and how to re-theme it), `@EventBusSubscriber` bus rules, the render-layer/cutout gotcha |
 | [blocks-doors-models.md](references/blocks-doors-models.md) | Reusing vanilla's shared door model templates instead of authoring geometry from scratch, `DoubleHighBlockItem`, door hinge-selection heuristic, texture/IP caution |
+| [block-robustness-checklist.md](references/block-robustness-checklist.md) | Checklist to run new blocks through: loot tables, explosion resistance, piston push behavior, tool tier gating, waterlogging - so correctness doesn't depend on the user finding gaps by hand |
 | [project-facts.md](references/project-facts.md) | Mod identity, naming history, conventions specific to this repo |
 
 ## How to add a new finding
