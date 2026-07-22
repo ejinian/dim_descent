@@ -86,7 +86,13 @@ public class RiftDoorBlock extends DoorBlock implements EntityBlock, Portal {
     @Nullable
     @Override
     public DimensionTransition getPortalDestination(ServerLevel level, Entity entity, BlockPos pos) {
-        return RiftTeleporter.getTransitionFor(level, entity);
+        // Normalize to the door's lower half regardless of which half the entity actually
+        // triggered the portal from - a door is one logical unit for pairing purposes, and using
+        // whichever half happened to fire would split a single physical door into two different
+        // link keys.
+        BlockState triggerState = level.getBlockState(pos);
+        BlockPos lowerPos = triggerState.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
+        return RiftTeleporter.getTransitionFor(level, entity, lowerPos);
     }
 
     @Override
