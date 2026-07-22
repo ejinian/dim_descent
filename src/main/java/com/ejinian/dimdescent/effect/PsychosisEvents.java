@@ -8,35 +8,57 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ejinian.dimdescent.DimDescent;
+import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.registry.ModRegistry;
 import com.ejinian.dimdescent.sound.PlayerSounds;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-// Hearing things that aren't there, for as long as Hysteria lasts.
+// Everything Psychosis does on a timer: hearing things, and seeing someone.
 //
-// Rate is expressed as a GAP rather than a count, which makes it scale with duration for free:
-// a gap drawn uniformly from 10-20s yields between 3 and 6 sounds per minute by construction, so a
-// 60s Hysteria gives 3-6 and a 5-minute one given by command gives 15-30, with no special casing.
-// The minimum gap is also what guarantees two sounds never land on top of each other.
+// The hallucinated figure used to be its own trip stage. It's folded in here because a hallucination
+// genuinely is part of this symptom rather than a separate one - and because it lets the figure
+// arrive partway through, once the noises have already put the player on edge, rather than
+// announcing itself the moment the effect lands.
 @EventBusSubscriber(modid = DimDescent.MODID)
-public final class HysteriaSoundScheduler {
+public final class PsychosisEvents {
 
     // 20s between sounds -> 3/min; 10s -> 6/min.
     private static final int MIN_GAP_TICKS = 200;
     private static final int MAX_GAP_TICKS = 400;
 
+    // The FIRST sound comes sooner than the rest. Without this, a short Psychosis could roll a
+    // full-length opening gap and end on the very tick its first sound was due - so a 20s dose would
+    // be silent about as often as not. Only the opening interval is affected, so the 3-6 per minute
+    // rate over any meaningful duration is untouched.
+    private static final int FIRST_GAP_MIN_TICKS = 100;
+    private static final int FIRST_GAP_MAX_TICKS = 300;
+
+    // Odds that a given Psychosis produces a figure at all.
+    private static final float GHOST_CHANCE = 0.85F;
+
+    // Where in the effect's span the figure can appear, as a fraction. Never at the very start (the
+    // noises should land first) and never so late that it has no time to be seen.
+    private static final float GHOST_EARLIEST = 0.15F;
+    private static final float GHOST_LATEST = 0.75F;
+
+    private static final int GHOST_LIFETIME_TICKS = 200;
+
     private static final Map<UUID, State> STATES = new HashMap<>();
 
     private static final class State {
         int ticksUntilNext;
+        // Negative once the figure has been spawned, or if this Psychosis rolled no figure at all.
+        int ticksUntilGhost = -1;
         // Only the note-block cascade needs to emit more than one sound, so pending entries are
         // kept as a tiny queue rather than giving every entry in the pool its own scheduler.
         final List<Pending> pending = new ArrayList<>();
@@ -63,7 +85,8 @@ public final class HysteriaSoundScheduler {
         }
         UUID id = player.getUUID();
 
-        if (!player.hasEffect(ModRegistry.HYSTERIA_EFFECT)) {
+        MobEffectInstance instance = player.getEffect(ModRegistry.PSYCHOSIS_EFFECT);
+        if (instance == null) {
             STATES.remove(id);
             return;
         }
@@ -71,8 +94,7 @@ public final class HysteriaSoundScheduler {
         RandomSource random = player.getRandom();
         State state = STATES.get(id);
         if (state == null) {
-            state = new State();
-            state.ticksUntilNext = nextGap(random);
+            state = newState(instance, random);
             STATES.put(id, state);
         }
 
@@ -85,15 +107,36 @@ public final class HysteriaSoundScheduler {
             }
         }
 
+        if (state.ticksUntilGhost >= 0 && --state.ticksUntilGhost <= 0) {
+            state.ticksUntilGhost = -1;
+            // Don't let the figure outlive the symptom that conjured it.
+            HallucinationGhost.spawnNear(player, Math.min(GHOST_LIFETIME_TICKS, instance.getDuration()));
+        }
+
         if (--state.ticksUntilNext > 0) {
             return;
         }
         // Some entries in the pool run long (vanilla's cave ambiences reach ~10s, and our whispers
-        // are 7.5s), which could tail-overlap the next sound at the bottom of the gap range. Each
+        // are 7.5-9s), which could tail-overlap the next sound at the bottom of the gap range. Each
         // entry therefore reports how much room it needs, and the gap is widened to fit. Since
         // every such floor sits below MAX_GAP_TICKS, the 3-6 per minute rate still holds.
         int minSeparation = playRandomHallucinatedSound(player, state, random);
         state.ticksUntilNext = Math.max(nextGap(random), minSeparation);
+    }
+
+    private static State newState(MobEffectInstance instance, RandomSource random) {
+        State state = new State();
+        state.ticksUntilNext = FIRST_GAP_MIN_TICKS
+                + random.nextInt(FIRST_GAP_MAX_TICKS - FIRST_GAP_MIN_TICKS + 1);
+
+        if (random.nextFloat() < GHOST_CHANCE) {
+            // Whatever is left of the effect right now is effectively its full span, since this runs
+            // on the first tick the effect is seen.
+            int window = instance.getDuration();
+            float fraction = GHOST_EARLIEST + random.nextFloat() * (GHOST_LATEST - GHOST_EARLIEST);
+            state.ticksUntilGhost = Mth.clamp((int) (window * fraction), 20, Math.max(20, window - 20));
+        }
+        return state;
     }
 
     private static int nextGap(RandomSource random) {
@@ -175,6 +218,6 @@ public final class HysteriaSoundScheduler {
         STATES.remove(event.getEntity().getUUID());
     }
 
-    private HysteriaSoundScheduler() {
+    private PsychosisEvents() {
     }
 }

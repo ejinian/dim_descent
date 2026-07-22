@@ -8,7 +8,7 @@ import java.util.List;
 import com.ejinian.dimdescent.effect.AttunementMobEffect;
 import com.ejinian.dimdescent.effect.DaturaTripMobEffect;
 import com.ejinian.dimdescent.effect.DryMouthMobEffect;
-import com.ejinian.dimdescent.effect.HysteriaMobEffect;
+import com.ejinian.dimdescent.effect.PsychosisMobEffect;
 import com.ejinian.dimdescent.effect.TachycardiaMobEffect;
 import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.item.DaturaSeedsItem;
@@ -181,7 +181,7 @@ public final class ModRegistry {
 
     // --- Datura trip: the symptom effects (see com.ejinian.dimdescent.trip.TripStage) ---
     // Each is its own registered effect rather than a vanilla one so it reads by symptom name in the
-    // status list. Where a vanilla VISUAL is needed too (Hysteria's night vision), the real vanilla
+    // status list. Where a vanilla VISUAL is needed too (Psychosis's night vision), the real vanilla
     // effect is applied alongside and hidden - see CompanionEffectManager.
 
     public static final DeferredHolder<MobEffect, DryMouthMobEffect> DRY_MOUTH_EFFECT =
@@ -190,15 +190,15 @@ public final class ModRegistry {
     public static final DeferredHolder<MobEffect, TachycardiaMobEffect> TACHYCARDIA_EFFECT =
             MOB_EFFECTS.register("tachycardia", TachycardiaMobEffect::new);
 
-    public static final DeferredHolder<MobEffect, HysteriaMobEffect> HYSTERIA_EFFECT =
-            MOB_EFFECTS.register("hysteria", HysteriaMobEffect::new);
+    public static final DeferredHolder<MobEffect, PsychosisMobEffect> PSYCHOSIS_EFFECT =
+            MOB_EFFECTS.register("psychosis", PsychosisMobEffect::new);
 
     // Heartbeat that fades up and back down, played once when Tachycardia starts.
     public static final DeferredHolder<SoundEvent, SoundEvent> HEARTBEAT_SOUND =
             SOUND_EVENTS.register("heartbeat", () -> SoundEvent.createVariableRangeEvent(
                     ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "heartbeat")));
 
-    // Indistinct voices, in the Hysteria noise pool. Synthesised from scratch (see the asset
+    // Indistinct voices, in the Psychosis noise pool. Synthesised from scratch (see the asset
     // generator in the scratchpad): whispering is unvoiced speech, i.e. turbulent noise shaped by
     // vocal-tract formants, which is why it can be built convincingly without recording anything.
     //

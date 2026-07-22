@@ -25,7 +25,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 //     MobEffects.NIGHT_VISION directly.
 //
 // So the only way to get the genuine article is to apply the genuine vanilla effect. To keep the
-// player's status list reading as ONE effect (Attunement / Hysteria) rather than two, the companion
+// player's status list reading as ONE effect (Attunement / Psychosis) rather than two, the companion
 // is applied with showIcon=false (hides it from the HUD) and hidden from the inventory list by
 // ModClientExtensions. This class owns applying and, crucially, retracting those companions.
 @EventBusSubscriber(modid = DimDescent.MODID)
@@ -35,8 +35,8 @@ public final class CompanionEffectManager {
     private static final int ATTUNEMENT_WINDOW_TICKS = 200;
 
     // Kept comfortably above 200 because vanilla flickers night vision during its final 200 ticks
-    // (GameRenderer.getNightVisionScale). Refreshed every tick while Hysteria lasts, so the player
-    // never sees the flicker - Hysteria's night vision should be flat and total.
+    // (GameRenderer.getNightVisionScale). Refreshed every tick while Psychosis lasts, so the player
+    // never sees the flicker - Psychosis's night vision should be flat and total.
     private static final int NIGHT_VISION_REFRESH_TICKS = 400;
 
     private static final Set<UUID> OUR_DARKNESS = Collections.synchronizedSet(new HashSet<>());
@@ -78,8 +78,8 @@ public final class CompanionEffectManager {
             OUR_DARKNESS.remove(id);
         }
 
-        // --- Hysteria -> Night Vision ---
-        if (player.hasEffect(ModRegistry.HYSTERIA_EFFECT)) {
+        // --- Psychosis -> Night Vision ---
+        if (player.hasEffect(ModRegistry.PSYCHOSIS_EFFECT)) {
             MobEffectInstance nightVision = player.getEffect(MobEffects.NIGHT_VISION);
             if (nightVision == null || nightVision.getDuration() < NIGHT_VISION_REFRESH_TICKS / 2) {
                 player.addEffect(new MobEffectInstance(

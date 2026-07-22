@@ -17,6 +17,18 @@ Ordered so that each phase leaves the mod in a coherent, testable state.
 - [x] Splash and Lingering for both (free — vanilla's container recipes are generic)
 - [x] First-ever Attunement brew still triggers the one-time thunderstorm
 
+## Phase 1b — Symptom pass ✅
+
+- [x] Renamed Hysteria → **Psychosis** (hysteria is an obsolete, discredited diagnosis that
+      describes emotional excess rather than hallucination)
+- [x] Folded the Hallucination stage into Psychosis, at 85% odds, arriving partway through
+      rather than at onset — seven symptoms now, not eight
+- [x] Psychosis gets a 20s floor in potion trips, and its first noise now comes sooner than
+      subsequent ones, so the symptom can never end before anything is heard
+- [x] Tachycardia's heartbeat repeats at irregular intervals rather than firing once
+- [x] Warped soundscape during Psychosis: pitch-down, random detune, random dropout, random
+      substitution, applied to every non-music sound in the game via `PlaySoundEvent`
+
 ## Phase 2 — Make the chain reachable ⚠️ BLOCKER
 
 Nothing below Phase 1 is obtainable in survival right now, because **Datura does

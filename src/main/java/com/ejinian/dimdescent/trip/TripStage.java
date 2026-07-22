@@ -1,8 +1,6 @@
 package com.ejinian.dimdescent.trip;
 
-import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.registry.ModRegistry;
-import com.ejinian.dimdescent.sound.PlayerSounds;
 
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,14 +41,9 @@ public enum TripStage {
         }
     },
 
-    // Speed II + Haste II. The heartbeat is a 5s swell at onset, not a minute-long loop - its
-    // fade in and out are baked into the audio file rather than driven from here.
+    // Speed II + Haste II. The heartbeat surges are driven by TachycardiaEvents off the effect
+    // itself, so they work identically when the effect is handed out by command.
     TACHYCARDIA(1200) {
-        @Override
-        void onStart(ServerPlayer player, int durationTicks) {
-            PlayerSounds.playPrivately(player, ModRegistry.HEARTBEAT_SOUND.get(), 0.9F, 1.0F);
-        }
-
         @Override
         void applyTo(ServerPlayer player, int durationTicks) {
             apply(player, ModRegistry.TACHYCARDIA_EFFECT, durationTicks);
@@ -98,49 +91,53 @@ public enum TripStage {
         }
     },
 
-    // Night vision plus intermittent noises. Neither is applied here: the night vision is a hidden
-    // companion effect owned by CompanionEffectManager, and the noises are scheduled by
-    // HysteriaSoundScheduler, which keys off the effect's presence rather than off this stage - so
-    // they work identically when the effect is handed out by command.
-    HYSTERIA(1200) {
+    // Night vision, intermittent noises, a warped soundscape, and - usually - a figure watching you
+    // partway through. None of it is applied here: the night vision is a hidden companion effect
+    // owned by CompanionEffectManager, and the rest is driven by PsychosisEvents and
+    // PsychosisSoundWarp off the effect's presence rather than off this stage, so it all works
+    // identically when the effect is handed out by command.
+    //
+    // The hallucinated figure used to be a separate stage. It was folded in here because it's part
+    // of this symptom rather than a distinct one, which also frees up a slot in a potion trip's
+    // window - eight symptoms in three minutes left each of them barely twenty seconds.
+    //
+    // The 20s potion floor exists so the symptom always outlasts its own first noise; below that,
+    // a Psychosis could plausibly end before anything was heard.
+    PSYCHOSIS(1200, 400) {
         @Override
         void applyTo(ServerPlayer player, int durationTicks) {
-            apply(player, ModRegistry.HYSTERIA_EFFECT, durationTicks);
+            apply(player, ModRegistry.PSYCHOSIS_EFFECT, durationTicks);
         }
 
         @Override
         boolean isActiveOn(ServerPlayer player) {
-            return player.hasEffect(ModRegistry.HYSTERIA_EFFECT);
-        }
-    },
-
-    // Something is standing near you, and it is looking at you.
-    HALLUCINATION(200) {
-        @Override
-        void onStart(ServerPlayer player, int durationTicks) {
-            HallucinationGhost.spawnNear(player, durationTicks);
-        }
-
-        @Override
-        void applyTo(ServerPlayer player, int durationTicks) {
-            // No status effect - the ghost IS the stage.
-        }
-
-        @Override
-        boolean isActiveOn(ServerPlayer player) {
-            // Nothing to keep topped up; the ghost manages its own lifetime.
-            return true;
+            return player.hasEffect(ModRegistry.PSYCHOSIS_EFFECT);
         }
     };
 
+    private static final int DEFAULT_MIN_POTION_TICKS = 200;
+
     private final int durationTicks;
+    private final int minimumPotionTicks;
 
     TripStage(int durationTicks) {
-        this.durationTicks = durationTicks;
+        this(durationTicks, DEFAULT_MIN_POTION_TICKS);
     }
 
+    TripStage(int durationTicks, int minimumPotionTicks) {
+        this.durationTicks = durationTicks;
+        this.minimumPotionTicks = minimumPotionTicks;
+    }
+
+    // Used by a raw-seed trip, where every symptom runs its natural length.
     public int durationTicks() {
         return this.durationTicks;
+    }
+
+    // The smallest slice of a potion's window this symptom may be given when the window is carved
+    // up at random.
+    public int minimumPotionTicks() {
+        return this.minimumPotionTicks;
     }
 
     // Fires once, the moment the stage begins - for one-shot things like a sound or a spawn.

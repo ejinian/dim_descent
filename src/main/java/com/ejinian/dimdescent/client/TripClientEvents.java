@@ -25,7 +25,7 @@ public final class TripClientEvents {
         event.registerEntityRenderer(ModRegistry.HALLUCINATION_GHOST.get(), GhostRenderer::new);
     }
 
-    // Attunement and Hysteria each apply a real vanilla effect under the hood to borrow its
+    // Attunement and Psychosis each apply a real vanilla effect under the hood to borrow its
     // client-side visual (Darkness' vignette, night vision's brightening) - see
     // CompanionEffectManager. showIcon=false already keeps those off the HUD, but the inventory
     // screen lists every active effect regardless of showIcon, which would give away the trick by
@@ -38,7 +38,7 @@ public final class TripClientEvents {
     @SubscribeEvent
     public static void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
         event.registerMobEffect(hiddenWhile(ModRegistry.ATTUNEMENT_EFFECT), MobEffects.DARKNESS.value());
-        event.registerMobEffect(hiddenWhile(ModRegistry.HYSTERIA_EFFECT), MobEffects.NIGHT_VISION.value());
+        event.registerMobEffect(hiddenWhile(ModRegistry.PSYCHOSIS_EFFECT), MobEffects.NIGHT_VISION.value());
 
         // The trip marker is never meant to be seen at all - it's a client-side signal, not a
         // symptom. Without this it would sit in the inventory list for the entire trip, spoiling

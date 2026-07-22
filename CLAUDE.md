@@ -138,23 +138,31 @@ Creative and spectator are exempt, and the kill bypasses armour, enchantments an
 effects so it can't be tanked.
 
 Datura Seeds are also edible, which sets off the "datura trip", driven by a server-side tick
-sequencer since vanilla can't chain one effect into a different one. Nothing happens for 10
-seconds, then Dry Mouth always leads, then four more symptoms drawn at random from the remaining
-seven (Nausea, Tachycardia, Darkness, Poison, Weakness, Hysteria, Hallucination) — five events
-total, each running its own real duration, separated by 20 seconds of calm.
-Dry Mouth / Tachycardia / Hysteria are custom effects named for the symptom; Hysteria and the
+sequencer since vanilla can't chain one effect into a different one. There are seven symptoms:
+Dry Mouth, Nausea, Tachycardia, Darkness, Poison, Weakness and Psychosis. Eating raw seeds gives
+10 seconds of nothing, then Dry Mouth always leads, then four more drawn at random from the other
+six — five events, each at its natural duration, separated by 20 seconds of calm. Drinking Devil's
+Trumpet instead runs *all seven*, in random order at random lengths, packed back to back inside the
+potion's own window.
+
+Dry Mouth / Tachycardia / Psychosis are custom effects named for the symptom; Psychosis and the
 Attunement effect each apply a real vanilla effect underneath (night vision, darkness) purely to
 borrow its visual, hidden from the HUD and inventory so the player sees one effect with one name.
-Screen desaturation is a post-process chain reusing vanilla's `color_convolve` program. The final
-stage spawns a silent, translucent, black-eyed figure that only the tripping player can see and
-that stares without ever looking down, vanishing when the stage ends or the player looks away.
-Hysteria also plays 3–6 hallucinated noises per minute drawn from a pool (cave ambience, a zombie
+Screen desaturation is a post-process chain reusing vanilla's `color_convolve` program. Tachycardia
+surges a heartbeat on arrival and again at irregular intervals.
+
+Psychosis carries the hallucinations: 3–6 noises per minute from a pool (cave ambience, a zombie
 breaking a door, soul sand valley additions, wither skeleton, creeper fuse, a descending note-block
-run, and three original synthesised whisper takes). Every trip sound is delivered privately to the
-one player and bound to them so it travels with them — none of it is audible to anyone else. For
-the whole trip, including the gaps between symptoms, black fractal cracks creep in from the corners
-of the screen, fading in and out over 8 seconds each way; an invisible marker effect carries that
-state to the client, since the sequencer itself is server-side.
+run, and three original synthesised whisper takes); an 85% chance of a silent, translucent,
+black-eyed figure appearing partway through, visible only to the afflicted player, staring without
+ever looking down; and a warped soundscape — every other sound in the game is pitched down, randomly
+detuned, occasionally dropped outright, and occasionally swapped for something else entirely.
+
+Every trip sound is delivered privately to the one player and bound to them so it travels with them
+— none of it is audible to anyone else. For the whole trip, including the gaps between symptoms,
+black fractal cracks creep in from the corners of the screen, fading in and out over 8 seconds each
+way; an invisible marker effect carries that state to the client, since the sequencer is
+server-side.
 
 The Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
 lectern lore room are still just design, not built. See the `mc-modding-notes` skill

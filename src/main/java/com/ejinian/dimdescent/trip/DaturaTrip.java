@@ -90,7 +90,15 @@ public final class DaturaTrip {
 
         List<TripStage> plan = new ArrayList<>(List.of(TripStage.values()));
         shuffle(plan, plan.size(), random);
-        int[] durations = partition(windowTicks - ONSET_TICKS, plan.size(), random);
+
+        // Minimums are read off the shuffled plan rather than being uniform, because some symptoms
+        // need longer than others to be worth having at all - Psychosis has to outlast its own first
+        // hallucinated noise, or it can end before anything is heard.
+        int[] minimums = new int[plan.size()];
+        for (int i = 0; i < plan.size(); i++) {
+            minimums[i] = plan.get(i).minimumPotionTicks();
+        }
+        int[] durations = partition(windowTicks - ONSET_TICKS, minimums, random);
 
         begin(player, plan, durations, false, windowTicks);
     }
@@ -110,23 +118,31 @@ public final class DaturaTrip {
         return progress;
     }
 
-    // Splits `total` ticks into `count` parts, each at least MIN_POTION_STAGE_TICKS, by handing every
-    // part the floor and then sharing the slack out on random weights. If the window is too short to
-    // give everyone the floor, it degrades to an even split rather than dropping symptoms - the
-    // promise is that all eight happen.
-    private static int[] partition(int total, int count, RandomSource random) {
+    // Splits `total` ticks into parts honouring each entry's own minimum, by handing every part its
+    // floor and then sharing the slack out on random weights. If the window is too short to cover
+    // every floor it degrades to a proportional split rather than dropping symptoms - the promise is
+    // that all of them happen.
+    private static int[] partition(int total, int[] minimums, RandomSource random) {
+        int count = minimums.length;
         int[] parts = new int[count];
-        if (total < count * MIN_POTION_STAGE_TICKS) {
-            int even = Math.max(1, total / count);
-            java.util.Arrays.fill(parts, even);
+
+        int floorSum = 0;
+        for (int minimum : minimums) {
+            floorSum += minimum;
+        }
+
+        if (total <= floorSum) {
+            for (int i = 0; i < count; i++) {
+                parts[i] = Math.max(1, (int) ((long) minimums[i] * total / floorSum));
+            }
             return parts;
         }
 
-        int slack = total - count * MIN_POTION_STAGE_TICKS;
+        int slack = total - floorSum;
         float[] weights = new float[count];
         float weightSum = 0.0F;
         for (int i = 0; i < count; i++) {
-            // The floor keeps any one symptom from being handed essentially none of the slack.
+            // The offset keeps any one symptom from being handed essentially none of the slack.
             weights[i] = random.nextFloat() + 0.2F;
             weightSum += weights[i];
         }
@@ -135,7 +151,7 @@ public final class DaturaTrip {
         for (int i = 0; i < count; i++) {
             int extra = i == count - 1 ? slack - handedOut : Math.round(slack * weights[i] / weightSum);
             handedOut += extra;
-            parts[i] = MIN_POTION_STAGE_TICKS + extra;
+            parts[i] = minimums[i] + extra;
         }
         return parts;
     }
