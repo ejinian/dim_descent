@@ -2,6 +2,7 @@ package com.ejinian.dimdescent.dimension;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -12,24 +13,27 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 
-// Persistent one-to-one pairing between a door that was walked through and the door generated on
-// the other side of the rift for it, so walking back through that specific generated door always
-// returns to the exact door that created it - the same way a Nether portal remembers its partner.
-// A door with no entry here (e.g. one the player placed by hand inside the rift) isn't "linked" to
-// anything and falls back to the default overworld-spawn exit.
+// There is exactly ONE generated exit door in the rift, ever - not one per overworld door. Every
+// door walked through from outside the rift lands at that same single door. What makes the return
+// trip go to the right place is per-player tracking of "where did THIS player most recently enter
+// from" - so walking back through the shared exit door always sends you to whichever door you
+// personally came in through, without needing a separate generated door for every entry point.
+// A door with no recorded entry (or any door inside the rift that isn't the shared exit door)
+// falls back to the default overworld-spawn exit and doesn't touch any of this state.
 public class RiftDoorLinkData extends SavedData {
 
     private static final String STORAGE_KEY = "dimdescent_rift_door_links";
-    private static final String TAG_LINKS = "links";
-    private static final String TAG_FROM = "from";
-    private static final String TAG_TO = "to";
-    private static final String TAG_NEXT_INDEX = "next_generated_index";
+    private static final String TAG_GENERATED_DOOR = "generated_door";
+    private static final String TAG_LAST_ENTRY = "last_entry";
+    private static final String TAG_PLAYER = "player";
+    private static final String TAG_DOOR = "door";
 
     public static final SavedData.Factory<RiftDoorLinkData> FACTORY =
             new SavedData.Factory<>(RiftDoorLinkData::new, RiftDoorLinkData::load);
 
-    private final Map<DoorLocation, DoorLocation> links = new HashMap<>();
-    private int nextGeneratedIndex;
+    @Nullable
+    private DoorLocation generatedExitDoor;
+    private final Map<UUID, DoorLocation> lastEntryByPlayer = new HashMap<>();
 
     public static RiftDoorLinkData get(ServerLevel anyLevel) {
         ServerLevel overworld = anyLevel.getServer().overworld();
@@ -37,48 +41,53 @@ public class RiftDoorLinkData extends SavedData {
     }
 
     @Nullable
-    public DoorLocation getLinkedDoor(DoorLocation from) {
-        return links.get(from);
+    public DoorLocation getGeneratedExitDoor() {
+        return generatedExitDoor;
     }
 
-    public void link(DoorLocation a, DoorLocation b) {
-        links.put(a, b);
-        links.put(b, a);
+    public void setGeneratedExitDoor(DoorLocation location) {
+        this.generatedExitDoor = location;
         setDirty();
     }
 
-    // Each generated rift-side door gets its own index so placement never collides with an
-    // earlier one - see RiftTeleporter's door generation.
-    public int allocateGeneratedDoorIndex() {
-        int index = nextGeneratedIndex++;
+    public void recordEntry(UUID playerId, DoorLocation enteredFrom) {
+        lastEntryByPlayer.put(playerId, enteredFrom);
         setDirty();
-        return index;
+    }
+
+    @Nullable
+    public DoorLocation getLastEntry(UUID playerId) {
+        return lastEntryByPlayer.get(playerId);
     }
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-        ListTag linkList = new ListTag();
-        links.forEach((from, to) -> {
+        if (generatedExitDoor != null) {
+            tag.put(TAG_GENERATED_DOOR, generatedExitDoor.toNbt());
+        }
+        ListTag entries = new ListTag();
+        lastEntryByPlayer.forEach((playerId, door) -> {
             CompoundTag entry = new CompoundTag();
-            entry.put(TAG_FROM, from.toNbt());
-            entry.put(TAG_TO, to.toNbt());
-            linkList.add(entry);
+            entry.putUUID(TAG_PLAYER, playerId);
+            entry.put(TAG_DOOR, door.toNbt());
+            entries.add(entry);
         });
-        tag.put(TAG_LINKS, linkList);
-        tag.putInt(TAG_NEXT_INDEX, nextGeneratedIndex);
+        tag.put(TAG_LAST_ENTRY, entries);
         return tag;
     }
 
     private static RiftDoorLinkData load(CompoundTag tag, HolderLookup.Provider registries) {
         RiftDoorLinkData data = new RiftDoorLinkData();
-        ListTag linkList = tag.getList(TAG_LINKS, Tag.TAG_COMPOUND);
-        for (int i = 0; i < linkList.size(); i++) {
-            CompoundTag entry = linkList.getCompound(i);
-            DoorLocation from = DoorLocation.fromNbt(entry.getCompound(TAG_FROM));
-            DoorLocation to = DoorLocation.fromNbt(entry.getCompound(TAG_TO));
-            data.links.put(from, to);
+        if (tag.contains(TAG_GENERATED_DOOR)) {
+            data.generatedExitDoor = DoorLocation.fromNbt(tag.getCompound(TAG_GENERATED_DOOR));
         }
-        data.nextGeneratedIndex = tag.getInt(TAG_NEXT_INDEX);
+        ListTag entries = tag.getList(TAG_LAST_ENTRY, Tag.TAG_COMPOUND);
+        for (int i = 0; i < entries.size(); i++) {
+            CompoundTag entry = entries.getCompound(i);
+            UUID playerId = entry.getUUID(TAG_PLAYER);
+            DoorLocation door = DoorLocation.fromNbt(entry.getCompound(TAG_DOOR));
+            data.lastEntryByPlayer.put(playerId, door);
+        }
         return data;
     }
 }

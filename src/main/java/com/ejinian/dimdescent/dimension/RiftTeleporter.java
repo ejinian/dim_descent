@@ -1,7 +1,5 @@
 package com.ejinian.dimdescent.dimension;
 
-import javax.annotation.Nullable;
-
 import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
@@ -11,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -38,12 +37,10 @@ public final class RiftTeleporter {
     private static final int PLATFORM_MAX = 4;
     private static final int PLATFORM_Y = 6;
 
-    // Each auto-generated exit door (one per distinct door ever walked through from outside the
-    // rift) gets its own little platform, laid out in a simple line so they never collide. Same
-    // "not real worldgen yet" caveat as the main spawn platform above.
-    private static final int GENERATED_DOOR_SPACING = 6;
-    private static final int GENERATED_DOOR_BASE_Z = 12;
-    private static final int GENERATED_DOOR_PLATFORM_RADIUS = 2;
+    // There is only ever ONE generated exit door, placed once on the same default platform -
+    // not one per overworld door (see RiftDoorLinkData for how the single door still returns
+    // each player to wherever they personally entered from).
+    private static final BlockPos GENERATED_DOOR_POS = new BlockPos(0, PLATFORM_Y + 1, -4);
 
     private RiftTeleporter() {
     }
@@ -53,7 +50,7 @@ public final class RiftTeleporter {
     }
 
     // Default transition with no specific door involved (used by /rift enter|leave, and as the
-    // fallback when a door has no linked partner): rift -> overworld spawn, anywhere else -> the
+    // fallback whenever door-pairing doesn't apply): rift -> overworld spawn, anywhere else -> the
     // rift's default platform.
     public static DimensionTransition getTransitionFor(ServerLevel level, Entity entity) {
         boolean leavingRift = isInRift(level);
@@ -67,7 +64,7 @@ public final class RiftTeleporter {
         if (leavingRift) {
             targetPos = Vec3.atBottomCenterOf(targetLevel.getSharedSpawnPos());
         } else {
-            ensurePlatformAt(targetLevel, BlockPos.ZERO, PLATFORM_MIN, PLATFORM_MAX, PLATFORM_MIN, PLATFORM_MAX, PLATFORM_Y);
+            ensureSpawnPlatform(targetLevel);
             targetPos = RIFT_SPAWN_POS;
         }
 
@@ -76,77 +73,77 @@ public final class RiftTeleporter {
                 DimensionTransition.DO_NOTHING);
     }
 
-    // Door-aware transition: walking through a specific door. Each door that's ever used from
-    // outside the rift gets its own paired exit door generated on the other side the first time,
-    // and walking through either door of a pair always sends you back to the other one - a stable
-    // one-to-one link, the same way a Nether portal remembers its partner. A door with no link
-    // (e.g. one placed by hand inside the rift) falls back to the default rift -> overworld-spawn
-    // exit and does NOT get linked to anything.
+    // Door-aware transition: walking through a specific door.
+    //
+    // Entering (from anywhere outside the rift): always lands at the single shared generated exit
+    // door, creating it the first time ever it's needed. Remembers, per player, which door they
+    // personally just entered from.
+    //
+    // Leaving (from inside the rift): if the door is that one shared generated door AND this
+    // player has a recorded entry point, sends them back to exactly that door. Any other door
+    // inside the rift (e.g. one placed by hand) - or a player with no recorded entry - just gets
+    // the default overworld-spawn exit, same as before, with no pairing created.
     public static DimensionTransition getTransitionFor(ServerLevel level, Entity entity, BlockPos doorPos) {
         RiftDoorLinkData linkData = RiftDoorLinkData.get(level);
-        DoorLocation from = new DoorLocation(level.dimension(), doorPos.immutable());
-        DoorLocation linked = linkData.getLinkedDoor(from);
-
-        if (linked != null) {
-            ServerLevel targetLevel = level.getServer().getLevel(linked.dimension());
-            if (targetLevel == null) {
-                return null;
-            }
-            Vec3 targetPos = Vec3.atBottomCenterOf(linked.pos());
-            return new DimensionTransition(
-                    targetLevel, targetPos, entity.getDeltaMovement(), entity.getYRot(), entity.getXRot(),
-                    DimensionTransition.DO_NOTHING);
-        }
 
         if (isInRift(level)) {
-            // An unlinked door inside the rift - just the default exit, no pairing created.
+            DoorLocation generatedDoor = linkData.getGeneratedExitDoor();
+            boolean isGeneratedDoor = generatedDoor != null && generatedDoor.pos().equals(doorPos);
+            if (isGeneratedDoor && entity instanceof ServerPlayer player) {
+                DoorLocation lastEntry = linkData.getLastEntry(player.getUUID());
+                if (lastEntry != null) {
+                    ServerLevel targetLevel = level.getServer().getLevel(lastEntry.dimension());
+                    if (targetLevel != null) {
+                        Vec3 targetPos = Vec3.atBottomCenterOf(lastEntry.pos());
+                        return new DimensionTransition(
+                                targetLevel, targetPos, entity.getDeltaMovement(), entity.getYRot(), entity.getXRot(),
+                                DimensionTransition.DO_NOTHING);
+                    }
+                }
+            }
             return getTransitionFor(level, entity);
         }
 
-        // First time this door has been used from outside the rift - generate its paired exit.
         ServerLevel riftLevel = level.getServer().getLevel(RIFT_LEVEL);
         if (riftLevel == null) {
             return null;
         }
-        BlockPos generatedDoorPos = generateExitDoor(riftLevel, linkData.allocateGeneratedDoorIndex());
-        linkData.link(from, new DoorLocation(RIFT_LEVEL, generatedDoorPos));
 
-        Vec3 targetPos = Vec3.atBottomCenterOf(generatedDoorPos);
+        DoorLocation generatedDoor = linkData.getGeneratedExitDoor();
+        if (generatedDoor == null) {
+            generateExitDoor(riftLevel);
+            generatedDoor = new DoorLocation(RIFT_LEVEL, GENERATED_DOOR_POS);
+            linkData.setGeneratedExitDoor(generatedDoor);
+        }
+        if (entity instanceof ServerPlayer player) {
+            linkData.recordEntry(player.getUUID(), new DoorLocation(level.dimension(), doorPos.immutable()));
+        }
+
+        Vec3 targetPos = Vec3.atBottomCenterOf(generatedDoor.pos());
         return new DimensionTransition(
                 riftLevel, targetPos, entity.getDeltaMovement(), entity.getYRot(), entity.getXRot(),
                 DimensionTransition.DO_NOTHING);
     }
 
-    // Places a new rift door (both halves, closed, facing south) on its own small platform, at a
-    // position derived from `index` so it never overlaps an earlier generated door.
-    private static BlockPos generateExitDoor(ServerLevel riftLevel, int index) {
-        int x = index * GENERATED_DOOR_SPACING;
-        int z = GENERATED_DOOR_BASE_Z;
-        BlockPos platformCenter = new BlockPos(x, PLATFORM_Y, z);
-        ensurePlatformAt(riftLevel, platformCenter,
-                -GENERATED_DOOR_PLATFORM_RADIUS, GENERATED_DOOR_PLATFORM_RADIUS,
-                -GENERATED_DOOR_PLATFORM_RADIUS, GENERATED_DOOR_PLATFORM_RADIUS, PLATFORM_Y);
+    // Places the single generated door (both halves, closed, facing south) on the default
+    // platform, ensuring that platform exists first.
+    private static void generateExitDoor(ServerLevel riftLevel) {
+        ensureSpawnPlatform(riftLevel);
 
-        BlockPos doorPos = new BlockPos(x, PLATFORM_Y + 1, z);
         BlockState lowerState = ModRegistry.RIFT_DOOR.get().defaultBlockState()
                 .setValue(DoorBlock.FACING, Direction.SOUTH)
                 .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER)
                 .setValue(DoorBlock.HINGE, DoorHingeSide.LEFT)
                 .setValue(DoorBlock.OPEN, false);
-        riftLevel.setBlock(doorPos, lowerState, 3);
-        riftLevel.setBlock(doorPos.above(), lowerState.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), 3);
-
-        return doorPos;
+        riftLevel.setBlock(GENERATED_DOOR_POS, lowerState, 3);
+        riftLevel.setBlock(GENERATED_DOOR_POS.above(), lowerState.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), 3);
     }
 
-    // Stamps a stone-brick platform in the X/Z ranges (relative to `center`) at `platformY`,
-    // shared by both the fixed default-spawn platform and each generated door's own platform.
-    private static void ensurePlatformAt(ServerLevel riftLevel, BlockPos center,
-                                          int minX, int maxX, int minZ, int maxZ, int platformY) {
+    private static void ensureSpawnPlatform(ServerLevel riftLevel) {
         BlockState stoneBricks = Blocks.STONE_BRICKS.defaultBlockState();
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                BlockPos pos = new BlockPos(center.getX() + x, platformY, center.getZ() + z);
+        for (int x = PLATFORM_MIN; x <= PLATFORM_MAX; x++) {
+            for (int z = PLATFORM_MIN; z <= PLATFORM_MAX; z++) {
+                BlockPos pos = new BlockPos(x, PLATFORM_Y, z);
                 if (riftLevel.getBlockState(pos).getBlock() != Blocks.STONE_BRICKS) {
                     riftLevel.setBlock(pos, stoneBricks, 3);
                 }
