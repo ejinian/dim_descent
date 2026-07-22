@@ -223,3 +223,26 @@ swap for real hand-painted art later. Note: the Bash tool's Git-Bash environment
 Python don't share the same view of `/tmp` - write scripts/read outputs using actual Windows paths
 (the project's own scratchpad directory, or resolve with `cygpath -w`) so both sides can see the
 same files.
+
+### Drawing a symmetric geometric emblem on a 16x16 face
+
+Two hard-won points, from putting an octagram on the altar blocks:
+
+1. **Line-art and sharp-pointed shapes dissolve at 16px.** A thin-line star polygon ({n/k} drawn as
+   segments) has its lines merge into blobs once they get near each other, and a *solid* star with
+   points reaching the block edge breaks its thin diagonal spikes into disconnected dots while the
+   centre fills into a lump. What survives is a **thicker, blockier construction**: an octagram reads
+   cleanly when drawn as the {8/2} form - an axis-aligned square outline overlaid with a 45-degrees
+   diamond outline (their 8 combined tips are the star's points, with a natural octagon void in the
+   middle). Pick the coarsest construction that still says the shape, not the mathematically pure one.
+
+2. **Centre and symmetry on an even grid.** The true centre of a 16px face is at 7.5 (between pixels),
+   so a design placed at integer-8 or with an odd apex pixel lands visibly off-centre. Don't fight
+   the rounding - **draw into a pixel set, then union it with its three mirror images**
+   (`(x,y),(15-x,y),(x,15-y),(15-x,15-y)`) before painting. That guarantees exact bi-axial symmetry
+   regardless of how any individual line rounded. (If instead you're doing a per-pixel point-in-shape
+   test, sample at pixel *centres* `(x+0.5, y+0.5)` against a shape centred on `8.0` - pixel centres
+   are symmetric about 8.0 - but the mirror-the-mask approach is simpler and foolproof.)
+
+Preview at ~12-14x nearest-neighbour scale and actually look before committing; several visually
+distinct attempts all "compiled" fine and only the eye told them apart.
