@@ -38,8 +38,14 @@ public class RiftClientEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        // Cutout (not solid) so the window pixels' alpha=0 actually renders as transparent
-        // instead of showing their raw (black) RGB.
-        event.enqueueWork(() -> ItemBlockRenderTypes.setRenderLayer(ModRegistry.RIFT_DOOR.get(), RenderType.cutout()));
+        // Cutout (not solid) so alpha=0 pixels actually render as transparent instead of showing
+        // their raw (black) RGB. New custom blocks default to solid regardless of model/texture -
+        // vanilla's own flowers only look right out of the box because vanilla hardcodes them into
+        // this same list on its own blocks; ours needs the same registration explicitly.
+        event.enqueueWork(() -> {
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.RIFT_DOOR.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.DATURA.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.DARK_IRON_BARS.get(), RenderType.cutout());
+        });
     }
 }

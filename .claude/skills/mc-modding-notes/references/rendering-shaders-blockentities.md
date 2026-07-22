@@ -45,6 +45,30 @@ standard way non-vanilla blocks register their render layer, even though it's ma
 current NeoForge (still functional; no clean replacement found yet - re-check this if NeoForge
 ships a new pattern later).
 
+**This bites any new block with transparent texture pixels, not just doors** - hit it three times
+now: the door windows, a `block/cross`-parented flower (Datura), and a reused-vanilla-geometry
+`IronBarsBlock` (Dark Iron Bars). Every time, the symptom is the same - transparent regions render
+as solid black instead of see-through. Vanilla's own blocks that use these exact same
+models/parents (poppy's `block/cross`, real `iron_bars`) look correct out of the box only because
+vanilla hardcodes its *own* blocks into this render-layer list internally - that coverage does
+**not** extend to a mod's blocks just because the model/parent/geometry is identical. **Any custom
+block with alpha-cutout pixels needs its own explicit `setRenderLayer(..., RenderType.cutout())`
+call, full stop, regardless of whether it reuses a vanilla model.** Cheap to batch multiple blocks
+in one `enqueueWork` call - just keep adding to the same lambda as new alpha-using blocks are added,
+don't create a new `FMLClientSetupEvent` handler per block.
+
+**For multipart-connected geometry (fences, walls, iron bars), design the texture as a
+tileable lattice, not "a small bar icon on a big background."** The individual "post" piece (a lone,
+unconnected block) only ever samples a thin strip of the texture, but the "side"/"cap" connector
+pieces used when blocks link together (a wall of bars, which is the normal case for something like
+a cage) stretch a MUCH WIDER UV sample - roughly half the texture - across each connecting panel.
+If most of the texture outside that thin center strip is a flat "background" fill color, a wall of
+connected bars reads as a solid opaque panel instead of a lattice, even with correct
+`RenderType.cutout()`, because the wide-sampled region just doesn't contain any transparent pixels
+to show through. Fix: make the *entire* 16x16 canvas a repeating criss-cross pattern (e.g. opaque
+2px stripes / transparent 2px gaps on both axes) so that ANY sub-rectangle any model piece samples
+still reads as "metal with real gaps," regardless of which exact UV window it happens to be.
+
 ## Custom BlockEntityRenderer + custom core shader (portal-style effects)
 
 Vanilla's End Portal swirl is **not** a simple animated texture. It's a `BlockEntityRenderer`
