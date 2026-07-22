@@ -30,19 +30,20 @@ Ordered so that each phase leaves the mod in a coherent, testable state.
       `PlaySoundEvent` to every non-music sound the outside world makes. The hallucinated sounds
       are deliberately exempt — they're the one thing meant to come through clearly
 
-## Phase 2 — Make the chain reachable ⚠️ BLOCKER
+## Phase 2 — Make the chain reachable ✅
 
-Nothing below Phase 1 is obtainable in survival right now, because **Datura does
-not spawn.** The entire progression currently requires creative mode to start.
-This is the highest-value unblocking work in the project.
+The whole chain was creative-only until Datura had no way to spawn; now it does.
 
-- [ ] World-gen placement for **Datura**, rarity comparable to uncommon vanilla
-      flowers — exact comparison to settle at implementation time
-- [ ] Decide which biomes it belongs in (thematically: dry, disturbed, roadside —
-      real datura is a weed of waste ground, which suits "found where people used
-      to be")
-- [ ] Verify the full survival path end to end: find Datura → seeds → Awkward →
-      Devil's Trumpet → Attunement
+- [x] World-gen placement for **Datura**: small, uncommon stands (`random_patch`,
+      8 tries) at `rarity_filter` chance 12, gated to the dry biomes via a
+      `neoforge:add_features` biome modifier and a `#dimdescent:has_datura` biome tag
+- [x] Biomes: savanna, desert and badlands families (arid, off the temperate
+      beaten path — the "eerie, out-of-place weed" reading)
+- [x] `DaturaBlock` widens valid ground to sand and terracotta, or it would have
+      silently placed nothing in desert/badlands (a plain flower only takes dirt)
+- [ ] **Needs a human**: confirm in-game that stands actually generate in fresh
+      savanna/desert/badlands chunks, and that the full survival path works end to
+      end (find Datura → seeds → Awkward → Devil's Trumpet → Attunement)
 
 ## Phase 3 — Null Domain behaviour
 

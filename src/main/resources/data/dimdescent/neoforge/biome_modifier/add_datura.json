@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#dimdescent:has_datura",
+  "features": "dimdescent:datura",
+  "step": "vegetal_decoration"
+}

@@ -11,6 +11,7 @@ import com.ejinian.dimdescent.effect.DryMouthMobEffect;
 import com.ejinian.dimdescent.effect.PsychosisMobEffect;
 import com.ejinian.dimdescent.effect.TachycardiaMobEffect;
 import com.ejinian.dimdescent.entity.HallucinationGhost;
+import com.ejinian.dimdescent.block.DaturaBlock;
 import com.ejinian.dimdescent.item.DaturaSeedsItem;
 
 import net.minecraft.core.registries.Registries;
@@ -29,7 +30,6 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -115,10 +115,12 @@ public final class ModRegistry {
     public static final DeferredItem<Item> DARK_IRON_BARS_ITEM = ITEMS.register("dark_iron_bars",
             () -> new BlockItem(DARK_IRON_BARS.get(), new Item.Properties()));
 
-    // Source plant for Datura Seeds (potion-brewing ingredient). No special suspicious-stew
-    // effect - SuspiciousStewEffects.EMPTY still gets the plain FlowerBlock behavior (random XZ
-    // placement offset, instabreak) without needing a custom Block subclass.
-    public static final DeferredBlock<Block> DATURA = BLOCKS.register("datura", () -> new FlowerBlock(
+    // Source plant for Datura Seeds (potion-brewing ingredient). A FlowerBlock, except DaturaBlock
+    // widens the ground it grows on to include sand and terracotta, so it can actually inhabit the
+    // desert and badlands biomes it's seeded into (a plain flower only takes dirt/grass). No
+    // suspicious-stew effect - SuspiciousStewEffects.EMPTY keeps the plain flower behaviour (random
+    // XZ placement offset, instabreak).
+    public static final DeferredBlock<Block> DATURA = BLOCKS.register("datura", () -> new DaturaBlock(
             SuspiciousStewEffects.EMPTY,
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT)

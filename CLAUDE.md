@@ -96,6 +96,13 @@ bell, and then not being there any more.
 
 Nothing else. Resist adding a third.
 
+The **Datura plant** spawns in the dry biomes — savanna, desert and badlands — as
+small, uncommon stands, and nowhere else. Keeping it off the temperate biomes
+where players base preserves its "eerie, out-of-place weed" reading and makes
+finding it a deliberate errand rather than an accident. The block grows on sand
+and terracotta as well as dirt, both to survive those biomes and because real
+datura is a weed of sandy waste ground.
+
 ### The allegory
 
 The moral is blunt: **do not take deliriants.**
@@ -165,10 +172,11 @@ black fractal cracks creep in from the corners of the screen, fading in and out 
 way; an invisible marker effect carries that state to the client, since the sequencer is
 server-side.
 
-Still just design, not built: the altar ritual and the Null Domain's altar-only entry; Datura
-world-gen (which currently makes the whole chain creative-only); and aligning the shipped
-dimension with the new design (eject-on-expiry instead of the current instant death, and dropping
-the Rift Door as an overworld entrance). The dimension is still registered as `dimdescent:rift`
-and still kills unattuned players rather than ejecting them — both are known and tracked. See
+Datura now spawns in the wild (savanna/desert/badlands), so the seeds → Devil's Trumpet →
+Attunement chain is obtainable in survival rather than creative-only. Still just design, not built:
+the altar ritual and the Null Domain's altar-only entry; and aligning the shipped dimension with
+the new design (eject-on-expiry instead of the current instant death, and dropping the Rift Door as
+an overworld entrance). The dimension is still registered as `dimdescent:rift` and still kills
+unattuned players rather than ejecting them — both are known and tracked. See
 [ROADMAP.md](ROADMAP.md) for the ordered build plan, and the `mc-modding-notes` skill
 (`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.
