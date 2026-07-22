@@ -140,9 +140,11 @@ public final class HysteriaSoundScheduler {
             }
 
             default -> {
-                PlayerSounds.playPrivately(player, ModRegistry.WHISPERS_SOUND.get(),
-                        0.8F, 0.95F + random.nextFloat() * 0.1F);
-                return 220;
+                // One of the three takes, picked per occurrence.
+                int variant = random.nextInt(ModRegistry.WHISPER_SOUNDS.size());
+                PlayerSounds.playPrivately(player, ModRegistry.WHISPER_SOUNDS.get(variant).get(),
+                        0.85F, 0.97F + random.nextFloat() * 0.06F);
+                return 240;
             }
         }
     }

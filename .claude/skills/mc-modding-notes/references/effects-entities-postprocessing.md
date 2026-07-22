@@ -196,6 +196,47 @@ is 100% reduction. Add the type to `minecraft:bypasses_armor`, `bypasses_effects
 `bypasses_enchantments` via `data/minecraft/tags/damage_type/*.json` (tag files from a mod merge
 additively with vanilla's, same as the block tags this project already ships).
 
+## Full-screen HUD overlays (frost-style vignettes)
+
+Vanilla's powder-snow frost effect is just one full-screen texture blitted at a varying alpha -
+`Gui.renderTextureOverlay`, driven by `player.getPercentFrozen()`. Any "something is wrong with your
+vision" overlay can copy it directly:
+
+```java
+@SubscribeEvent
+public static void onRenderGui(RenderGuiEvent.Pre event) {   // Pre -> HUD draws on top, as frost does
+    GuiGraphics g = event.getGuiGraphics();
+    RenderSystem.disableDepthTest();
+    RenderSystem.depthMask(false);
+    RenderSystem.enableBlend();
+    g.setColor(1, 1, 1, alpha);
+    g.blit(TEXTURE, 0, 0, -90, 0.0F, 0.0F, g.guiWidth(), g.guiHeight(), g.guiWidth(), g.guiHeight());
+    g.setColor(1, 1, 1, 1);
+    RenderSystem.disableBlend();
+    RenderSystem.depthMask(true);
+    RenderSystem.enableDepthTest();
+}
+```
+
+The state dance matters - restore all of it, or it leaks into the rest of the HUD. The overload
+used is `blit(ResourceLocation, int x, int y, int blitOffset, float u, float v, int uWidth,
+int vHeight, int texWidth, int texHeight)`.
+
+The texture is stretched to the screen, so it distorts with aspect ratio. Design accordingly:
+organic/irregular art (cracks, frost) hides the stretch, geometric art does not. Keep the centre
+fully transparent and mask alpha by distance from the corners so it never obstructs the crosshair.
+
+For a linear fade whose two directions are genuinely identical in speed, step by `1f / FADE_TICKS`
+per client tick rather than using `Mth.lerp` - lerp is exponential and never quite arrives.
+
+**Getting server-side state to a client overlay without networking:** if the driving state is a
+server-side sequencer, the client has no idea it's running. Rather than registering a custom payload,
+apply an invisible marker `MobEffect` for exactly the state's duration - effect sync is already
+handled by vanilla, and the client just checks `player.hasEffect(MARKER)`. Hide it with
+`showIcon=false` plus an `IClientMobEffectExtensions` returning false from both visibility methods.
+Remember to strip it on logout if the server-side state is dropped there, or the player logs back in
+to an overlay with nothing behind it.
+
 ## Per-player entity visibility (things only one player can see)
 
 `Entity.broadcastToPlayer(ServerPlayer)` is a plain overridable returning `true` by default, and

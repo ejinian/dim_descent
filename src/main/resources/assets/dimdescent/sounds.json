@@ -9,12 +9,32 @@
       }
     ]
   },
-  "whispers": {
+  "whispers_1": {
     "category": "ambient",
     "subtitle": "subtitles.dimdescent.whispers",
     "sounds": [
       {
-        "name": "dimdescent:whispers",
+        "name": "dimdescent:whispers_1",
+        "stream": false
+      }
+    ]
+  },
+  "whispers_2": {
+    "category": "ambient",
+    "subtitle": "subtitles.dimdescent.whispers",
+    "sounds": [
+      {
+        "name": "dimdescent:whispers_2",
+        "stream": false
+      }
+    ]
+  },
+  "whispers_3": {
+    "category": "ambient",
+    "subtitle": "subtitles.dimdescent.whispers",
+    "sounds": [
+      {
+        "name": "dimdescent:whispers_3",
         "stream": false
       }
     ]

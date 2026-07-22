@@ -3,7 +3,10 @@ package com.ejinian.dimdescent.registry;
 import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlock;
 import com.ejinian.dimdescent.dimension.door.RiftDoorBlockEntity;
+import java.util.List;
+
 import com.ejinian.dimdescent.effect.AttunementMobEffect;
+import com.ejinian.dimdescent.effect.DaturaTripMobEffect;
 import com.ejinian.dimdescent.effect.DryMouthMobEffect;
 import com.ejinian.dimdescent.effect.HysteriaMobEffect;
 import com.ejinian.dimdescent.effect.TachycardiaMobEffect;
@@ -180,9 +183,24 @@ public final class ModRegistry {
     // Indistinct voices, in the Hysteria noise pool. Synthesised from scratch (see the asset
     // generator in the scratchpad): whispering is unvoiced speech, i.e. turbulent noise shaped by
     // vocal-tract formants, which is why it can be built convincingly without recording anything.
-    public static final DeferredHolder<SoundEvent, SoundEvent> WHISPERS_SOUND =
-            SOUND_EVENTS.register("whispers", () -> SoundEvent.createVariableRangeEvent(
-                    ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "whispers")));
+    //
+    // Three separate events rather than one event with three variants, deliberately: vanilla would
+    // pick among variants of a single event at random, which is fine in play but makes an individual
+    // take impossible to audition with /playsound.
+    public static final List<DeferredHolder<SoundEvent, SoundEvent>> WHISPER_SOUNDS = List.of(
+            registerSound("whispers_1"),
+            registerSound("whispers_2"),
+            registerSound("whispers_3"));
+
+    private static DeferredHolder<SoundEvent, SoundEvent> registerSound(String name) {
+        return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(
+                ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, name)));
+    }
+
+    // Invisible, and runs for the whole trip including the gaps between symptoms - it's what tells
+    // the client to draw the crack vignette. See DaturaTripMobEffect.
+    public static final DeferredHolder<MobEffect, DaturaTripMobEffect> DATURA_TRIP_EFFECT =
+            MOB_EFFECTS.register("datura_trip", DaturaTripMobEffect::new);
 
     // MobCategory.MISC keeps it out of natural spawning entirely - this only ever exists because
     // something spawned it deliberately. Sized to match a zombie, since it wears a zombie's model.

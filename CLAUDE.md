@@ -121,8 +121,11 @@ stage spawns a silent, translucent, black-eyed figure that only the tripping pla
 that stares without ever looking down, vanishing when the stage ends or the player looks away.
 Hysteria also plays 3–6 hallucinated noises per minute drawn from a pool (cave ambience, a zombie
 breaking a door, soul sand valley additions, wither skeleton, creeper fuse, a descending note-block
-run, and original synthesised whispers). Every trip sound is delivered privately to the one player
-and bound to them so it travels with them — none of it is audible to anyone else.
+run, and three original synthesised whisper takes). Every trip sound is delivered privately to the
+one player and bound to them so it travels with them — none of it is audible to anyone else. For
+the whole trip, including the gaps between symptoms, black fractal cracks creep in from the corners
+of the screen, fading in and out over 8 seconds each way; an invisible marker effect carries that
+state to the client, since the sequencer itself is server-side.
 
 The Attunement Gate structure, world-gen placement for Dark Iron Bars/Datura, and the village
 lectern lore room are still just design, not built. See the `mc-modding-notes` skill

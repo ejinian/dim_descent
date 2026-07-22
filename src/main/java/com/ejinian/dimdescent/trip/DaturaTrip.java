@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ejinian.dimdescent.DimDescent;
+import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -50,6 +52,8 @@ public final class DaturaTrip {
         int index = -1;
         int ticksLeft;
         boolean cooling;
+        // Whole-trip countdown, used to keep the client-facing marker effect topped up.
+        int totalTicksLeft;
     }
 
     // Eating again mid-trip restarts from the top with a freshly rolled plan.
@@ -59,7 +63,28 @@ public final class DaturaTrip {
         progress.index = -1;
         progress.ticksLeft = ONSET_TICKS;
         progress.cooling = false;
+        progress.totalTicksLeft = totalTicks(progress.plan);
         ACTIVE.put(player.getUUID(), progress);
+
+        applyTripMarker(player, progress.totalTicksLeft);
+    }
+
+    // Because the whole plan is rolled up front, the exact length of this trip is known now - which
+    // is what lets the marker effect be applied once with a real duration instead of being refreshed
+    // blindly forever.
+    private static int totalTicks(List<TripStage> plan) {
+        int total = ONSET_TICKS + COOLDOWN_TICKS * (plan.size() - 1);
+        for (TripStage stage : plan) {
+            total += stage.durationTicks();
+        }
+        return total;
+    }
+
+    // Invisible on both the HUD (showIcon=false) and the inventory list (TripClientEvents). Its only
+    // job is to let the client know a trip is running so it can draw the vignette.
+    private static void applyTripMarker(ServerPlayer player, int durationTicks) {
+        player.addEffect(new MobEffectInstance(
+                ModRegistry.DATURA_TRIP_EFFECT, durationTicks, 0, false, false, false));
     }
 
     // Dry Mouth first, then a partial Fisher-Yates shuffle over the rest to draw the others without
@@ -97,6 +122,13 @@ public final class DaturaTrip {
         Progress progress = ACTIVE.get(player.getUUID());
         if (progress == null) {
             return;
+        }
+
+        // The marker is subject to the same milk immunity as the symptoms themselves - otherwise a
+        // bucket of milk would clear the vignette while the trip carried on underneath it.
+        progress.totalTicksLeft--;
+        if (progress.totalTicksLeft > 0 && !player.hasEffect(ModRegistry.DATURA_TRIP_EFFECT)) {
+            applyTripMarker(player, progress.totalTicksLeft);
         }
 
         // Mid-stage: hold the symptom in place. The trip is deliberately immune to milk (and to
@@ -145,7 +177,12 @@ public final class DaturaTrip {
 
     @SubscribeEvent
     public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        ACTIVE.remove(event.getEntity().getUUID());
+        if (ACTIVE.remove(event.getEntity().getUUID()) != null
+                && event.getEntity() instanceof ServerPlayer player) {
+            // The marker outlives the sequencer otherwise, and the player would log back in to a
+            // vignette with no trip behind it.
+            player.removeEffect(ModRegistry.DATURA_TRIP_EFFECT);
+        }
     }
 
     private DaturaTrip() {

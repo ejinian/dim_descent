@@ -39,7 +39,24 @@ public final class TripClientEvents {
     public static void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
         event.registerMobEffect(hiddenWhile(ModRegistry.ATTUNEMENT_EFFECT), MobEffects.DARKNESS.value());
         event.registerMobEffect(hiddenWhile(ModRegistry.HYSTERIA_EFFECT), MobEffects.NIGHT_VISION.value());
+
+        // The trip marker is never meant to be seen at all - it's a client-side signal, not a
+        // symptom. Without this it would sit in the inventory list for the entire trip, spoiling
+        // both the surprise and the illusion that the symptoms are unrelated events.
+        event.registerMobEffect(ALWAYS_HIDDEN, ModRegistry.DATURA_TRIP_EFFECT.get());
     }
+
+    private static final IClientMobEffectExtensions ALWAYS_HIDDEN = new IClientMobEffectExtensions() {
+        @Override
+        public boolean isVisibleInInventory(MobEffectInstance instance) {
+            return false;
+        }
+
+        @Override
+        public boolean isVisibleInGui(MobEffectInstance instance) {
+            return false;
+        }
+    };
 
     private static IClientMobEffectExtensions hiddenWhile(Holder<MobEffect> owner) {
         return new IClientMobEffectExtensions() {
