@@ -66,14 +66,23 @@ Aligns the shipped dimension with the new design.
 - [ ] **Needs a human**: confirm ejection works both ways in survival — walk in
       without Attunement, and let a dose expire while inside
 
-## Phase 4 — Altars and the ritual
+## Phase 4 — Altars and the ritual (in progress)
 
 The largest phase. Depends on Phase 2 (you need Attunement to test entry).
 
-- [ ] Author the altar structure in-game, export via structure block to NBT
-- [ ] Altar blocks unbreakable in survival
-- [ ] World-gen placement, rarity comparable to villages
+Decisions locked: a **small custom block set** for the altar (not one block, not
+vanilla-only), and a **player-struck bell only** as the trigger (no redstone).
+
+- [x] Altar block set: `altar_stone`, `carved_altar_stone`, and `altar_heart`
+      (the ritual's focal/anchor block, low red glow). All unbreakable in survival
+      via the FORSAKEN_FIBER strength(-1)+noLootTable pattern, editable in creative
+- [ ] **Author the altar structure in-game** (human task): build with the blocks
+      above + vanilla dark blocks + candles + a bell, capture with a structure block
+      to `dimdescent:altar`, hand over the `.nbt`
+- [ ] Register the structure + a `random_spread` structure_set at village-like
+      rarity (villages are spacing 34 / separation 8)
 - [ ] Ritual condition checks: attuned **now**, candles lit, night, bell struck
+      near an `altar_heart`
 - [ ] Bell as the trigger → 3s delay → pull everyone in range who is attuned
 - [ ] Per-condition narrated failure feedback
 - [ ] Candles go out at dawn (not destroyed, not consumed)

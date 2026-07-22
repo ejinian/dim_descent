@@ -115,6 +115,37 @@ public final class ModRegistry {
     public static final DeferredItem<Item> DARK_IRON_BARS_ITEM = ITEMS.register("dark_iron_bars",
             () -> new BlockItem(DARK_IRON_BARS.get(), new Item.Properties()));
 
+    // Altar block set (Phase 4). Unbreakable in survival - same strength(-1) + noLootTable() that
+    // makes FORSAKEN_FIBER bedrock-like - so a naturally-spawned altar can't be dismantled for its
+    // (unbreakable) blocks, while still being editable in creative for authoring. DEEPSLATE sound
+    // to match the black-basalt look.
+    private static BlockBehaviour.Properties altarProps() {
+        return BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_BLACK)
+                .strength(-1.0F, 3600000.0F)
+                .noLootTable()
+                .isValidSpawn(Blocks::never)
+                .sound(SoundType.DEEPSLATE);
+    }
+
+    public static final DeferredBlock<Block> ALTAR_STONE = BLOCKS.register("altar_stone",
+            () -> new Block(altarProps()));
+    public static final DeferredItem<Item> ALTAR_STONE_ITEM = ITEMS.register("altar_stone",
+            () -> new BlockItem(ALTAR_STONE.get(), new Item.Properties()));
+
+    public static final DeferredBlock<Block> CARVED_ALTAR_STONE = BLOCKS.register("carved_altar_stone",
+            () -> new Block(altarProps()));
+    public static final DeferredItem<Item> CARVED_ALTAR_STONE_ITEM = ITEMS.register("carved_altar_stone",
+            () -> new BlockItem(CARVED_ALTAR_STONE.get(), new Item.Properties()));
+
+    // The ritual's focal block and spatial anchor: the bell has to be struck near one of these for
+    // the ritual to fire (so the check has a definite altar to look outward from). Emits a low red
+    // glow to read as the "live" heart of the altar.
+    public static final DeferredBlock<Block> ALTAR_HEART = BLOCKS.register("altar_heart",
+            () -> new Block(altarProps().lightLevel(state -> 7)));
+    public static final DeferredItem<Item> ALTAR_HEART_ITEM = ITEMS.register("altar_heart",
+            () -> new BlockItem(ALTAR_HEART.get(), new Item.Properties()));
+
     // Source plant for Datura Seeds (potion-brewing ingredient). A FlowerBlock, except DaturaBlock
     // widens the ground it grows on to include sand and terracotta, so it can actually inhabit the
     // desert and badlands biomes it's seeded into (a plain flower only takes dirt/grass). No
@@ -239,6 +270,9 @@ public final class ModRegistry {
             event.accept(NULLSTONE_ITEM);
             event.accept(FORSAKEN_FIBER_ITEM);
             event.accept(DARK_IRON_BARS_ITEM);
+            event.accept(ALTAR_STONE_ITEM);
+            event.accept(CARVED_ALTAR_STONE_ITEM);
+            event.accept(ALTAR_HEART_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
             event.accept(DATURA_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
