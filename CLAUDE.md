@@ -25,66 +25,95 @@ just a flat pool of scary rooms.
 
 ## Progression Framework
 
-### Overworld hook: the Attunement Gate
+The dimension is called **The Null Domain**.
 
-The only way into a rift (for now) is a naturally-spawning structure called the
-**Attunement Gate** — an abandoned industrial facility built around a sealed
-rift door. Spawn rarity target: comparable to villages (placeholder, tune once
-world-gen is actually built). Aesthetic: abandoned/liminal industrial — should
-read as unsettling and deterring, not inviting. Built primarily from vanilla
-blocks (stone brick, quartz block, iron block, gray concrete, deepslate,
-chains, hoppers, pistons — dead/non-functional automation implying the
-facility stopped abruptly), plus one new block:
+Build order and open questions live in [ROADMAP.md](ROADMAP.md); this section is
+the design itself.
 
-- **Dark Iron Bars** (custom block): visually vanilla `iron_bars` (copy the
-  real model/blockstate/properties from decompiled vanilla source, don't
-  guess), just a darker texture, and hardness bumped to obsidian-tier. Fully
-  encases the rift door inside the structure — the door is physically
-  inaccessible until every bar around it is broken. This is the "gear and
-  patience" gate: no shortcutting it with early tools.
+### Potion pipeline
 
-### Survival gate: Potion of Attunement
+Two potions, brewed in sequence. Both still require Nether Wart for the Awkward
+base, same as every vanilla potion.
 
-Even after breaking into the gate, entering the rift itself is lethal without
-protection — this is deliberate, and for now there is no in-game explanation
-of why (a lore/quest book explaining the mechanic is planned for later, but
-intentionally does not exist yet — the first playtesters are meant to find
-this out the hard way).
+- **Potion of the Devil's Trumpet** (Awkward Potion + Datura Seeds). Pitch
+  black. Inflicts the same non-lethal poisoning as eating raw Datura Seeds, but
+  stronger: *all eight* symptoms occur within the potion's duration, in random
+  order and at random lengths (minimum 10s each), starting 10 seconds after
+  drinking. 3 minutes base, 8 minutes with Redstone.
+- **Potion of Attunement** (Devil's Trumpet + Fermented Spider Eye). Fermented
+  Spider Eye is vanilla's established "corrupt this potion" reagent, which is
+  exactly what this step is narratively. The first time one is ever completed in
+  a world it triggers a one-time server-wide thunderstorm and lightning flash.
+- Both support **Splash** and **Lingering** (vanilla's container recipes are
+  generic, so this is free) and both extend with **Redstone**.
+- Splash/Lingering Attunement means a player can be attuned — or dosed with the
+  trip — **involuntarily**. This is intended.
 
-- **Potion of Attunement**: gray potion, brewed normally (Awkward Potion +
-  Datura Seeds, the same slot Blaze Powder/Ghast Tear/etc. occupy for other
-  potions — still requires Nether Wart first for the Awkward Potion base,
-  same as every other potion).
-- **Datura Seeds**: harvested from a new plant resembling real-world datura
-  (poisonous, eerie flowering plant — thematically deliberate). Spawn rarity
-  comparable to existing uncommon vanilla flowers/plants — exact comparison
-  TBD at implementation time.
-- **Effect**: while the potion's duration is active, the player can enter and
-  exist inside rift dimensions safely. If the duration runs out while the
-  player is still inside a rift, or if a player enters a rift with no active
-  potion at all, they are instantly killed.
+Attunement is deliberately *the same poisoning* as Devil's Trumpet, at full
+strength. That is the whole trick of the design: there is no separate "the
+dimension hurts you" rule, because being in the Null Domain simply requires
+being poisoned.
 
-### Environmental storytelling: the village lectern room
+### Entry: the altars
 
-Every village gets one additional small room: a table with a lectern and a
-book. The book is a terse, menacing account of "the legend of the industrial
-entrance" (the Attunement Gate) — foreshadowing without explaining game
-mechanics. This is the primary lore-delivery mechanism for now; no NPCs, no
-quest system.
+Naturally-spawning **altars**, rarity comparable to villages. Ominous
+black/dark, warlock-style; blocks unbreakable in survival. The structure is
+authored in-game and imported as NBT rather than hand-written.
+
+The ritual needs all four, and the bell is the trigger:
+
+1. The player is **currently under** the Potion of Attunement's effect (having
+   drunk it before is not enough)
+2. **Candles** placed and lit on the altar
+3. **Nighttime**
+4. A **bell struck** near the altar — exactly 3 seconds later, everyone in
+   range who is under the effect is taken to the Null Domain
+
+Missing or wrong conditions each give their own narrated failure, so the ritual
+teaches itself. At dawn, candles simply go out — not destroyed, not consumed.
+
+**There is no visible or persistent portal.** Entry is a personal event,
+perceptible and enterable only by players currently under Attunement within
+range. A sober bystander sees nothing but someone lighting candles, ringing a
+bell, and then not being there any more.
+
+### Inside the Null Domain
+
+- Players are always under Attunement, so no in-place danger mechanic is needed
+- The Darkness in Attunement's final 10 seconds is the built-in warning that
+  time is nearly up
+- The moment Attunement expires the player is instantly returned to their
+  overworld spawn — no death, no Wither, no lingering danger. The trip is simply
+  over, unless they redose in time
+- Returning to the *specific* altar you came in by is reserved for a separate,
+  not-yet-built voluntary exit (a door). Expiry and voluntary exit are different
+  things
+
+### Datura Seeds — exactly two functions
+
+1. Brewing, via the pipeline above
+2. Eaten raw, inducing the Datura Trip
+
+Nothing else. Resist adding a third.
 
 ### The allegory
 
-The Attunement Gate ruins are the remains of a relatively recent industrial
-operation that tried to study, contain, or extract from the rifts, and failed
-by pushing too deep. The ruins are the warning; the player repeating the same
-mistake (pushing deeper into a rift for better loot despite escalating danger)
-is the story playing out live, entirely through the existing depth mechanic —
-no dialogue or quest system needed to deliver the theme. What separates this
-from generic "backrooms"-style liminal horror is the contrast: the entrance
-performs order and control (clinical, engineered, industrial), while what's
-behind the gate is the opposite (unstable, hostile, worse with depth) — the
-horror is "someone thought they could master this, and failed," not "an
-inexplicable place exists."
+The moral is blunt: **do not take deliriants.**
+
+Everything occult in this mod is the delusion, not the setting. Real deliriant
+poisoning is characterised by people wholly believing in places and entities
+that are not there, and by an inability to tell that anything is wrong — so the
+altar, the ritual, the demonic staging and the Null Domain itself are all
+rendered exactly as the poisoned player experiences them, with no authorial
+confirmation that any of it is real. Sober bystanders see a person lighting
+candles and then behaving as though they had gone somewhere.
+
+The mod never resolves whether the player travelled anywhere or simply became
+unreachable, because to the player it makes no difference. What it does confirm
+is the cost: the deeper they push the worse it gets, the only thing keeping them
+alive in there is the poison itself, and the poison is on a timer. The depth
+mechanic delivers this on its own — no dialogue, no quest system, no narrator
+telling anyone what to think.
 
 ## Tech Stack
 - Minecraft 1.21.1

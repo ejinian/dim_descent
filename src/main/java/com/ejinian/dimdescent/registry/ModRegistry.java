@@ -150,6 +150,24 @@ public final class ModRegistry {
     public static final DeferredHolder<MobEffect, AttunementMobEffect> ATTUNEMENT_EFFECT =
             MOB_EFFECTS.register("attunement", AttunementMobEffect::new);
 
+    // Invisible, and runs for the whole trip including the gaps between symptoms - it's what tells
+    // the client to draw the crack vignette, and what the Devil's Trumpet potion carries. Declared
+    // above the potions because Java forbids a forward reference to it from their initialisers.
+    public static final DeferredHolder<MobEffect, DaturaTripMobEffect> DATURA_TRIP_EFFECT =
+            MOB_EFFECTS.register("datura_trip", DaturaTripMobEffect::new);
+
+    // The weaker half of the pipeline: the same poisoning Attunement represents at full strength.
+    // Its only payload is the (invisible) trip marker, which does three jobs at once - it colours
+    // the bottle pitch black, it drives the client's crack vignette, and its application is what
+    // tells DaturaTrip to roll a potion trip. That last part is why splash and lingering variants
+    // work with no extra code: they apply the effect to everyone they touch.
+    public static final DeferredHolder<Potion, Potion> POTION_OF_DEVILS_TRUMPET = POTIONS.register("devils_trumpet",
+            () -> new Potion(new MobEffectInstance(DATURA_TRIP_EFFECT, 3600)));
+
+    public static final DeferredHolder<Potion, Potion> LONG_POTION_OF_DEVILS_TRUMPET =
+            POTIONS.register("long_devils_trumpet",
+                    () -> new Potion("devils_trumpet", new MobEffectInstance(DATURA_TRIP_EFFECT, 9600)));
+
     public static final DeferredHolder<Potion, Potion> POTION_OF_ATTUNEMENT = POTIONS.register("attunement",
             () -> new Potion(new MobEffectInstance(ATTUNEMENT_EFFECT, 3600)));
 
@@ -197,10 +215,6 @@ public final class ModRegistry {
                 ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, name)));
     }
 
-    // Invisible, and runs for the whole trip including the gaps between symptoms - it's what tells
-    // the client to draw the crack vignette. See DaturaTripMobEffect.
-    public static final DeferredHolder<MobEffect, DaturaTripMobEffect> DATURA_TRIP_EFFECT =
-            MOB_EFFECTS.register("datura_trip", DaturaTripMobEffect::new);
 
     // MobCategory.MISC keeps it out of natural spawning entirely - this only ever exists because
     // something spawned it deliberately. Sized to match a zombie, since it wears a zombie's model.

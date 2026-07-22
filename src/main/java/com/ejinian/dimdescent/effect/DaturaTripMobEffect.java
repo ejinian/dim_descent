@@ -15,7 +15,9 @@ import net.minecraft.world.effect.MobEffectCategory;
 // Never shown: applied with showIcon=false, and hidden from the inventory list by TripClientEvents.
 public class DaturaTripMobEffect extends MobEffect {
 
-    private static final int COLOR = 0x2A2630;
+    // Near-pure black. This is also what makes the Potion of the Devil's Trumpet read as pitch
+    // black in the bottle - a potion's liquid colour is derived from the effects it contains.
+    private static final int COLOR = 0x0A0810;
 
     public DaturaTripMobEffect() {
         super(MobEffectCategory.HARMFUL, COLOR);

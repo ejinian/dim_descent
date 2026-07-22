@@ -23,12 +23,33 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 @EventBusSubscriber(modid = DimDescent.MODID)
 public class AttunementBrewingEvents {
 
+    // Two steps, not one. Datura Seeds get you the weak poisoning; corrupting THAT is what gets you
+    // Attunement. Fermented Spider Eye is vanilla's established "invert/corrupt this potion" reagent,
+    // which is exactly what the step is narratively.
+    //
+    // Splash and Lingering variants need no registration here - vanilla's container recipes
+    // (POTION + gunpowder -> SPLASH_POTION, SPLASH + dragon's breath -> LINGERING) are generic over
+    // every registered potion.
     @SubscribeEvent
     public static void onRegisterBrewingRecipes(RegisterBrewingRecipesEvent event) {
         event.getBuilder().addMix(
                 net.minecraft.world.item.alchemy.Potions.AWKWARD,
                 ModRegistry.DATURA_SEEDS.get(),
+                ModRegistry.POTION_OF_DEVILS_TRUMPET);
+        event.getBuilder().addMix(
+                ModRegistry.POTION_OF_DEVILS_TRUMPET,
+                Items.REDSTONE,
+                ModRegistry.LONG_POTION_OF_DEVILS_TRUMPET);
+
+        event.getBuilder().addMix(
+                ModRegistry.POTION_OF_DEVILS_TRUMPET,
+                Items.FERMENTED_SPIDER_EYE,
                 ModRegistry.POTION_OF_ATTUNEMENT);
+        // Corrupting an already-extended dose keeps the extension, so the two upgrade paths commute.
+        event.getBuilder().addMix(
+                ModRegistry.LONG_POTION_OF_DEVILS_TRUMPET,
+                Items.FERMENTED_SPIDER_EYE,
+                ModRegistry.LONG_POTION_OF_ATTUNEMENT);
         event.getBuilder().addMix(
                 ModRegistry.POTION_OF_ATTUNEMENT,
                 Items.REDSTONE,
