@@ -32,6 +32,9 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+### Claude Code ###
+.claude/settings.local.json
+
 ### Minecraft Modding ###
 run/
 !**/src/**/run/

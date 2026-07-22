@@ -1,0 +1,15 @@
+{
+  "type": "dimdescent:rift",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:the_void",
+      "lakes": false,
+      "features": false,
+      "layers": [
+        { "block": "dimdescent:forsaken_fiber", "height": 1 },
+        { "block": "dimdescent:nullstone", "height": 5 }
+      ]
+    }
+  }
+}
