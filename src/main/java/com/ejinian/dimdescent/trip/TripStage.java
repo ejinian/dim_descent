@@ -4,6 +4,8 @@ import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffect;
@@ -48,7 +50,21 @@ public enum TripStage {
     TACHYCARDIA(1200) {
         @Override
         void onStart(ServerPlayer player, int durationTicks) {
-            player.playNotifySound(ModRegistry.HEARTBEAT_SOUND.get(), SoundSource.PLAYERS, 0.9F, 1.0F);
+            // Entity-bound, and sent to this player's connection only.
+            //
+            // ClientboundSoundPacket (what playNotifySound sends) bakes in fixed world coordinates,
+            // so the heartbeat would stay pinned to wherever the player was standing when the stage
+            // began and fall behind as they walked away. ClientboundSoundEntityPacket instead makes
+            // the client build an EntityBoundSoundInstance that re-reads the entity's position every
+            // tick - so it travels with them. Since the entity IS the listener, it ends up centred
+            // and effectively non-directional, which is what a heartbeat should be.
+            player.connection.send(new ClientboundSoundEntityPacket(
+                    BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ModRegistry.HEARTBEAT_SOUND.get()),
+                    SoundSource.PLAYERS,
+                    player,
+                    0.9F,
+                    1.0F,
+                    player.getRandom().nextLong()));
         }
 
         @Override

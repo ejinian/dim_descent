@@ -102,8 +102,11 @@ placed by hand inside the rift just goes to overworld spawn instead. Dark Iron B
 Datura (with Datura Seeds) exist as placeable/harvestable blocks, though neither spawns via
 world-gen yet. Potion of Attunement is brewable (Awkward Potion + Datura Seeds, Redstone for
 the long variant) and the first time it's ever completed in a world it triggers a one-time
-server-wide thunderstorm plus a lightning flash — but the potion's actual survival mechanic
-(dying without it active in a rift, or when it expires inside one) isn't wired up yet.
+server-wide thunderstorm plus a lightning flash. Its survival mechanic is live: a per-tick
+presence check kills any survival/adventure player standing in the rift without the effect
+active, which covers both walking in unprotected and the potion expiring while you're inside.
+Creative and spectator are exempt, and the kill bypasses armour, enchantments and status
+effects so it can't be tanked.
 
 Datura Seeds are also edible, which sets off the "datura trip" — an eight-stage poisoning
 sequence (Dry Mouth, Nausea, Tachycardia, Darkness, Poison, Weakness, Hysteria, Hallucination),

@@ -11,6 +11,10 @@
   "effect.dimdescent.tachycardia": "Tachycardia",
   "effect.dimdescent.hysteria": "Hysteria",
   "entity.dimdescent.hallucination_ghost": "Hallucination",
-  "item.minecraft.potion.effect.attunement": "Potion of Attunement",
+  "item.minecraft.potion.effect.attunement": "§4Potion of Attunement",
+  "item.minecraft.splash_potion.effect.attunement": "§4Splash Potion of Attunement",
+  "item.minecraft.lingering_potion.effect.attunement": "§4Lingering Potion of Attunement",
+  "item.minecraft.tipped_arrow.effect.attunement": "§4Arrow of Attunement",
+  "death.attack.riftUnattuned": "%1$s was unmade by the rift",
   "subtitles.dimdescent.heartbeat": "Heart pounds"
 }

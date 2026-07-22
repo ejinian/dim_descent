@@ -111,6 +111,78 @@ check `currentEffect().getName().equals(yourChain.toString())` (the name is the 
 Failures are swallowed into a log warning rather than a crash, so a malformed chain shows up as
 "the effect silently does nothing" - grep the client log for the chain's path.
 
+## Sounds that follow one player and only that player
+
+`ServerPlayer.playNotifySound` sends a `ClientboundSoundPacket`, which **bakes in fixed world
+coordinates**. For anything meant to be "inside the player's head" (a heartbeat, tinnitus, a
+whisper) that's wrong twice over - it stays behind when they walk away, and while it is only sent to
+that one player, it's still positional.
+
+Use `ClientboundSoundEntityPacket` instead, sent straight to the one connection:
+
+```java
+player.connection.send(new ClientboundSoundEntityPacket(
+        BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ModRegistry.MY_SOUND.get()),
+        SoundSource.PLAYERS, player, volume, pitch, player.getRandom().nextLong()));
+```
+
+`ClientPacketListener.handleSoundEntityEvent` turns this into an `EntityBoundSoundInstance`, which
+re-reads the entity's position every tick. Bind it to the player themselves and it's permanently at
+the listener's position - i.e. centred and effectively non-directional. Sending to a single
+`connection` is what keeps it private; nobody nearby hears it.
+
+Note the `wrapAsHolder` - vanilla's own `playNotifySound` does the same, and it sidesteps any
+question of whether a `DeferredHolder` serialises correctly through the packet's registry codec.
+
+Fade-in/fade-out is best baked into the audio file itself rather than driven by repeated packets at
+changing volumes.
+
+**Synthesising a convincing heartbeat**: use a pure pitch-swept sine (~95Hz falling to ~36Hz over
+about 50ms) with a soft ~6ms attack and an exponential tail - no noise layer. An early attempt added
+lowpassed gaussian noise for "body", but a one-pole filter on noise sustains a low rumble across the
+whole envelope, and once consecutive beats overlap, that rumble stops reading as a heartbeat and
+starts sounding like shuffling.
+
+## Colouring an item's name (including items you don't own the class of)
+
+The hotbar name comes from `Gui.renderSelectedItemName`, which does:
+
+```java
+Component.empty().append(stack.getHoverName()).withStyle(stack.getRarity().getStyleModifier())
+```
+
+so the colour normally comes from **`Rarity`**, and only the four vanilla colours exist there.
+NeoForge does make `Rarity` an `IExtensibleEnum` (with a `UnaryOperator<Style>` constructor, so a
+custom rarity could carry any colour), but that needs an `enumextensions.json` wired into
+`neoforge.mods.toml` - and it wouldn't help for potions anyway, since every potion is the same
+`minecraft:potion` item and the rarity would have to be attached per-stack via `DataComponents.RARITY`.
+
+**For a potion, just put a legacy `§` code in the lang value:**
+
+```json
+"item.minecraft.potion.effect.attunement": "§4Potion of Attunement"
+```
+
+`StringDecomposer` processes `§` codes in a component's literal content at render time, and an
+explicit code inside the string wins over the style applied to the wrapping component - so the
+rarity colour doesn't override it. This colours the hotbar popup and the tooltip title together.
+Remember potions have four name keys (`potion`, `splash_potion`, `lingering_potion`,
+`tipped_arrow`), all of which need it.
+
+## Custom damage types
+
+A damage type is a datapack registry entry, not code: `data/<modid>/damage_type/<name>.json` with
+`exhaustion`, `message_id`, and `scaling`. Reference it from Java with a `ResourceKey<DamageType>`
+and apply via `level.damageSources().source(KEY)`.
+
+The death message key is `death.attack.<message_id>` (note `message_id` is camelCase by vanilla
+convention, e.g. `genericKill`, not the resource path).
+
+For a kill that genuinely cannot be survived, `Float.MAX_VALUE` alone is not enough - Resistance V
+is 100% reduction. Add the type to `minecraft:bypasses_armor`, `bypasses_effects`, and
+`bypasses_enchantments` via `data/minecraft/tags/damage_type/*.json` (tag files from a mod merge
+additively with vanilla's, same as the block tags this project already ships).
+
 ## Per-player entity visibility (things only one player can see)
 
 `Entity.broadcastToPlayer(ServerPlayer)` is a plain overridable returning `true` by default, and
