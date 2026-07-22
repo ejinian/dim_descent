@@ -61,6 +61,14 @@ first, even though it's "just a local dev file."
   world-gen registries (like a `dimension`/`dimension_type` JSON) are only read at world-load
   time, so those specifically need a fresh world load (not necessarily a full client restart) to
   pick up changes.
+  - **F3+T caveat (bit us):** the running dev client serves the mod's resources from
+    `build/resources/main`, NOT from `src/main/resources`. F3+T reloads from that build directory.
+    A `.java` change triggers a full build (which re-runs `processResources`), so restart-driven
+    workflows always have fresh resources - but editing *only* a texture/JSON and pressing F3+T
+    shows the OLD asset, because nothing copied the edit into `build/resources/main`. Fix: run
+    `./gradlew processResources` after the edit, THEN F3+T. Confirm with an md5 of the src vs build
+    copy of the file if unsure. (Symptom: "I changed the texture but the game still shows the old
+    one" with no error anywhere.)
 
 To restart the client from this environment:
 ```bash
