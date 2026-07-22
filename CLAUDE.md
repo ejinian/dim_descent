@@ -134,9 +134,9 @@ Core dimension-travel loop works end to end: a custom Rift dimension (Nullstone 
 Forsaken Fiber unbreakable boundary), and a Rift Door with a themed portal effect that
 generates a single shared exit door in the rift the first time any door is used anywhere,
 remembering per player which door to send them back through when they walk out — a door
-placed by hand inside the rift just goes to overworld spawn instead. Dark Iron Bars and
-Datura (with Datura Seeds) exist as placeable/harvestable blocks, though neither spawns via
-world-gen yet. Potion of Attunement is brewable (see the potion pipeline above) and the first time one is ever
+placed by hand inside the rift just goes to overworld spawn instead. Datura spawns in the wild
+(see below); Dark Iron Bars exists as a placeable block awaiting reuse as altar/Null Domain decor,
+now that the mining gate it was built for is gone. Potion of Attunement is brewable (see the potion pipeline above) and the first time one is ever
 completed in a world it triggers a one-time server-wide thunderstorm plus a lightning flash. Its
 survival mechanic is live: a per-tick presence check ejects any survival/adventure player who is in
 the Null Domain without the effect active — teleporting them to their respawn point (bed/anchor,
