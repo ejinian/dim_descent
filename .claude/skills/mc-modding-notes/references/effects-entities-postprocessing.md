@@ -156,6 +156,42 @@ one. The generator lives in the session scratchpad, not the repo.
 **Minecraft needs MONO ogg files for anything positional** - and entity-bound sounds are positional.
 A stereo file will not play correctly. Check with `soundfile.read(...)` before shipping.
 
+## Intercepting/altering every sound the client plays
+
+`PlaySoundEvent` (client, GAME bus) fires for every sound about to play and exposes
+`setSound(@Nullable SoundInstance)` - pass a replacement to alter it, or `null` to drop it entirely.
+This is the only way to affect sounds globally: the engine has **no DSP hooks at all**. There is no
+reverse playback, no reverb, no filter; `com.mojang.blaze3d.audio.Channel` exposes only `setPitch`
+and `setVolume`. (And note that literal *phase* inversion - multiplying a mono waveform by -1 - is
+inaudible, so "invert the sound" cannot be done the way it sounds like it should be.)
+
+**The trap that crashed us:** `SoundEngine.play` posts the event **before** it calls `resolve()`:
+
+```java
+p_sound = ClientHooks.playSound(this, p_sound);   // <- event fires here
+if (p_sound != null && p_sound.canPlaySound()) {
+    p_sound.resolve(this.soundManager);           // <- Sound populated only now
+    float f = p_sound.getVolume();
+```
+
+`AbstractSoundInstance.getVolume()` and `getPitch()` both do `this.volume * this.sound.getX()...`,
+and `this.sound` is null until `resolve()` runs. **Calling either one inside the event handler is a
+guaranteed NPE** - it crashed on water ambience within a minute of starting. Only the plain fields
+are safe there: `getSource()`, `getLocation()`, `getX()/getY()/getZ()`, `isLooping()`, `getDelay()`.
+
+So anything volume- or pitch-derived must be *deferred into the replacement instance*: have the
+wrapper take a volume **multiplier** and compute `delegate.getVolume() * scale` inside its own
+`getVolume()`, which the engine calls after it has resolved the wrapper (resolution delegates
+through, so the underlying instance is resolved by then).
+
+**Wrap, don't rebuild.** A `SoundInstance` carries looping, attenuation mode, relative-position flag
+and world position; reconstructing one from a `SoundEvent` silently drops whichever of those the
+original set. Implement `SoundInstance` and delegate everything except the fields being changed.
+
+**Skip `TickableSoundInstance`.** Those recompute position/volume every tick (entity-bound sounds,
+minecart loops, boss music) and a plain wrapper strips that behaviour. Skipping them also
+conveniently protects your own entity-bound sounds from your own distortion.
+
 ## Colouring an item's name (including items you don't own the class of)
 
 The hotbar name comes from `Gui.renderSelectedItemName`, which does:

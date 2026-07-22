@@ -30,6 +30,13 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 // What IS reachable is total interception. PlaySoundEvent fires for every sound the client is about
 // to play and lets the instance be swapped or dropped, which covers literally everything - water,
 // footsteps, eating, mobs, blocks - and that's what the four distortions below are built on.
+//
+// CAREFUL: the event fires BEFORE SoundEngine.play calls resolve() on the instance, and
+// AbstractSoundInstance.getVolume()/getPitch() both dereference the Sound that resolve() populates.
+// Calling either one in this handler is an instant NullPointerException (it crashed on water
+// ambience the first time round). Only the plain fields - getSource, getLocation, getX/Y/Z - are
+// safe to read here; anything volume- or pitch-derived has to be deferred into the replacement
+// instance, which is why WarpedSoundInstance takes a volume MULTIPLIER rather than a value.
 @EventBusSubscriber(modid = DimDescent.MODID, value = Dist.CLIENT)
 public final class PsychosisSoundWarp {
 
@@ -43,6 +50,10 @@ public final class PsychosisSoundWarp {
 
     private static final int DROPOUT_PERCENT = 12;
     private static final int SUBSTITUTE_PERCENT = 10;
+
+    // A substituted sound is a different sound entirely, so there is no original loudness to scale
+    // from - and the original's own volume cannot be read here anyway (see below).
+    private static final float SUBSTITUTE_VOLUME = 0.7F;
 
     // Short, wrong sounds. The point isn't that these are scary in themselves - it's that hearing
     // one where a footstep should have been makes the player doubt what they heard.
@@ -87,17 +98,17 @@ public final class PsychosisSoundWarp {
         }
 
         float pitch = Mth.clamp(PITCH_BASE + (RANDOM.nextFloat() - 0.5F) * PITCH_SPREAD, 0.5F, 2.0F);
-        float volume = sound.getVolume() * (1.0F - RANDOM.nextFloat() * VOLUME_SPREAD);
+        float volumeScale = 1.0F - RANDOM.nextFloat() * VOLUME_SPREAD;
 
         if (RANDOM.nextInt(100) < SUBSTITUTE_PERCENT) {
             SoundEvent replacement = SUBSTITUTES[RANDOM.nextInt(SUBSTITUTES.length)];
             event.setSound(new SimpleSoundInstance(
-                    replacement, sound.getSource(), volume, pitch, RANDOM,
+                    replacement, sound.getSource(), SUBSTITUTE_VOLUME * volumeScale, pitch, RANDOM,
                     sound.getX(), sound.getY(), sound.getZ()));
             return;
         }
 
-        event.setSound(new WarpedSoundInstance(sound, pitch, volume));
+        event.setSound(new WarpedSoundInstance(sound, pitch, volumeScale));
     }
 
     private PsychosisSoundWarp() {
