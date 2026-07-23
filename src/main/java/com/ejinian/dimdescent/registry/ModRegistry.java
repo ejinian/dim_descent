@@ -11,6 +11,8 @@ import com.ejinian.dimdescent.effect.DryMouthMobEffect;
 import com.ejinian.dimdescent.effect.PsychosisMobEffect;
 import com.ejinian.dimdescent.effect.TachycardiaMobEffect;
 import com.ejinian.dimdescent.entity.HallucinationGhost;
+import com.ejinian.dimdescent.block.DaemonlightBlock;
+import com.ejinian.dimdescent.block.DaemonlightWallBlock;
 import com.ejinian.dimdescent.block.DaturaBlock;
 import com.ejinian.dimdescent.item.DaturaSeedsItem;
 
@@ -38,8 +40,6 @@ import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.TorchBlock;
-import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -215,13 +215,13 @@ public final class ModRegistry {
                 .pushReaction(PushReaction.DESTROY);
     }
 
-    public static final DeferredBlock<TorchBlock> DAEMONLIGHT = BLOCKS.register("daemonlight",
-            () -> new TorchBlock(DAEMON_FLAME, daemonlightProps()));
+    public static final DeferredBlock<DaemonlightBlock> DAEMONLIGHT = BLOCKS.register("daemonlight",
+            () -> new DaemonlightBlock(DAEMON_FLAME, daemonlightProps()));
 
     // lootFrom (not a loot table of its own) so breaking a wall-mounted one drops the same item,
     // exactly as vanilla's wall torches do.
-    public static final DeferredBlock<WallTorchBlock> DAEMONLIGHT_WALL = BLOCKS.register("daemonlight_wall",
-            () -> new WallTorchBlock(DAEMON_FLAME, daemonlightProps().lootFrom(DAEMONLIGHT)));
+    public static final DeferredBlock<DaemonlightWallBlock> DAEMONLIGHT_WALL = BLOCKS.register("daemonlight_wall",
+            () -> new DaemonlightWallBlock(DAEMON_FLAME, daemonlightProps().lootFrom(DAEMONLIGHT)));
 
     // One item for both blocks. StandingAndWallBlockItem picks the wall variant when placed against
     // a side, and maps BOTH blocks to this item, so the wall version reports the right name too.

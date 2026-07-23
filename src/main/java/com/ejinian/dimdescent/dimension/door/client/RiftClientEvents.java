@@ -38,11 +38,13 @@ public class RiftClientEvents {
         event.registerBlockEntityRenderer(ModRegistry.RIFT_DOOR_BLOCK_ENTITY.get(), RiftDoorBlockEntityRenderer::new);
     }
 
-    // Reuses vanilla's own FlameParticle behaviour (rise, shrink, flicker out) with our red sprite,
-    // so the Daemonlight's flame moves exactly like a real torch flame without reimplementing it.
+    // Reuses vanilla's own flame behaviour (rise, shrink, flicker out) with our red sprite, so the
+    // Daemonlight's flame moves exactly like a real torch flame without reimplementing it.
+    // SmallFlameProvider rather than Provider: it calls scale(0.5F), which SingleQuadParticle turns
+    // into a halved quadSize - the same modest flame vanilla uses for candles.
     @SubscribeEvent
     public static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
-        event.registerSpriteSet(ModRegistry.DAEMON_FLAME, FlameParticle.Provider::new);
+        event.registerSpriteSet(ModRegistry.DAEMON_FLAME, FlameParticle.SmallFlameProvider::new);
     }
 
     @SubscribeEvent
