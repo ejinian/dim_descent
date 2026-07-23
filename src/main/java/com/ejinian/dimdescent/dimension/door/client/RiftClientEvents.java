@@ -46,6 +46,10 @@ public class RiftClientEvents {
             ItemBlockRenderTypes.setRenderLayer(ModRegistry.RIFT_DOOR.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(ModRegistry.DATURA.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(ModRegistry.DARK_IRON_BARS.get(), RenderType.cutout());
+            // The Daemonlight's flame billboard is alpha-cutout; without this the transparent
+            // region around the flame renders as opaque black.
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.DAEMONLIGHT.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.DAEMONLIGHT_WALL.get(), RenderType.cutout());
         });
     }
 }

@@ -30,10 +30,15 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.TorchBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -180,6 +185,35 @@ public final class ModRegistry {
             ITEMS.register("altar_stone_brick_stairs",
                     () -> new BlockItem(ALTAR_STONE_BRICK_STAIRS.get(), new Item.Properties()));
 
+    // Daemonlight: a demonic torch. Ordinary torch mechanics on purpose - it is a light and nothing
+    // else. Plain TorchBlock/WallTorchBlock rather than RedstoneTorchBlock, so it carries no lit
+    // state, emits no redstone signal and can't be used as a redstone component; only the light
+    // LEVEL (7) is borrowed from the redstone torch. Otherwise it matches vanilla torch behaviour:
+    // no collision, instabreak, wood sound, popped off by pistons, and placeable on floor or wall.
+    // CRIMSON_SPORE is the flame particle - a drifting red mote; TorchBlock adds dark smoke itself.
+    private static BlockBehaviour.Properties daemonlightProps() {
+        return BlockBehaviour.Properties.of()
+                .noCollission()
+                .instabreak()
+                .lightLevel(state -> 7)
+                .sound(SoundType.WOOD)
+                .pushReaction(PushReaction.DESTROY);
+    }
+
+    public static final DeferredBlock<TorchBlock> DAEMONLIGHT = BLOCKS.register("daemonlight",
+            () -> new TorchBlock(ParticleTypes.CRIMSON_SPORE, daemonlightProps()));
+
+    // lootFrom (not a loot table of its own) so breaking a wall-mounted one drops the same item,
+    // exactly as vanilla's wall torches do.
+    public static final DeferredBlock<WallTorchBlock> DAEMONLIGHT_WALL = BLOCKS.register("daemonlight_wall",
+            () -> new WallTorchBlock(ParticleTypes.CRIMSON_SPORE, daemonlightProps().lootFrom(DAEMONLIGHT)));
+
+    // One item for both blocks. StandingAndWallBlockItem picks the wall variant when placed against
+    // a side, and maps BOTH blocks to this item, so the wall version reports the right name too.
+    public static final DeferredItem<Item> DAEMONLIGHT_ITEM = ITEMS.register("daemonlight",
+            () -> new StandingAndWallBlockItem(DAEMONLIGHT.get(), DAEMONLIGHT_WALL.get(),
+                    new Item.Properties(), Direction.DOWN));
+
     // Source plant for Datura Seeds (potion-brewing ingredient). A FlowerBlock, except DaturaBlock
     // widens the ground it grows on to include sand and terracotta, so it can actually inhabit the
     // desert and badlands biomes it's seeded into (a plain flower only takes dirt/grass). No
@@ -311,6 +345,7 @@ public final class ModRegistry {
             event.accept(CRACKED_ALTAR_STONE_BRICKS_ITEM);
             event.accept(ALTAR_STONE_BRICK_SLAB_ITEM);
             event.accept(ALTAR_STONE_BRICK_STAIRS_ITEM);
+            event.accept(DAEMONLIGHT_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
             event.accept(DATURA_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {

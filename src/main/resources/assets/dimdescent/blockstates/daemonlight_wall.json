@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "dimdescent:block/daemonlight_wall"
+    },
+    "facing=north": {
+      "model": "dimdescent:block/daemonlight_wall",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "dimdescent:block/daemonlight_wall",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "dimdescent:block/daemonlight_wall",
+      "y": 180
+    }
+  }
+}

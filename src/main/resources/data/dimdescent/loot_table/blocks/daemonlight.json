@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "dimdescent:blocks/daemonlight",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "dimdescent:daemonlight"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}
