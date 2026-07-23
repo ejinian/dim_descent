@@ -26,6 +26,7 @@ public class DimDescent {
         ModRegistry.POTIONS.register(modEventBus);
         ModRegistry.SOUND_EVENTS.register(modEventBus);
         ModRegistry.ENTITY_TYPES.register(modEventBus);
+        ModRegistry.PARTICLE_TYPES.register(modEventBus);
         modEventBus.addListener(ModRegistry::addCreativeItems);
         modEventBus.addListener(ModRegistry::registerEntityAttributes);
     }

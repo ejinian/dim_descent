@@ -7,6 +7,7 @@ import com.ejinian.dimdescent.registry.ModRegistry;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
+import net.minecraft.client.particle.FlameParticle;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -16,6 +17,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 
 @EventBusSubscriber(modid = DimDescent.MODID, value = Dist.CLIENT)
@@ -34,6 +36,13 @@ public class RiftClientEvents {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModRegistry.RIFT_DOOR_BLOCK_ENTITY.get(), RiftDoorBlockEntityRenderer::new);
+    }
+
+    // Reuses vanilla's own FlameParticle behaviour (rise, shrink, flicker out) with our red sprite,
+    // so the Daemonlight's flame moves exactly like a real torch flame without reimplementing it.
+    @SubscribeEvent
+    public static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModRegistry.DAEMON_FLAME, FlameParticle.Provider::new);
     }
 
     @SubscribeEvent

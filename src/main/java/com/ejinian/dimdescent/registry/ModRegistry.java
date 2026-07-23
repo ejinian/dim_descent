@@ -31,7 +31,8 @@ import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -64,6 +65,18 @@ public final class ModRegistry {
             DeferredRegister.create(Registries.SOUND_EVENT, DimDescent.MODID);
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
             DeferredRegister.create(Registries.ENTITY_TYPE, DimDescent.MODID);
+    public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES =
+            DeferredRegister.create(Registries.PARTICLE_TYPE, DimDescent.MODID);
+
+    // The Daemonlight's flame. Held as a plain instance as well as a registry entry, because the
+    // torch blocks need to pass it to their constructor while BLOCK registration is running - and
+    // PARTICLE_TYPE may not have been filled yet at that point, so resolving it through the
+    // DeferredHolder there could fail. The object itself is inert; it only has to be registered by
+    // the time a particle is actually spawned, which is far later.
+    public static final SimpleParticleType DAEMON_FLAME = new SimpleParticleType(false);
+
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DAEMON_FLAME_TYPE =
+            PARTICLE_TYPES.register("daemon_flame", () -> DAEMON_FLAME);
 
     public static final DeferredBlock<RiftDoorBlock> RIFT_DOOR = BLOCKS.register("rift_door", () -> new RiftDoorBlock(
             BlockBehaviour.Properties.of()
@@ -190,7 +203,9 @@ public final class ModRegistry {
     // state, emits no redstone signal and can't be used as a redstone component; only the light
     // LEVEL (7) is borrowed from the redstone torch. Otherwise it matches vanilla torch behaviour:
     // no collision, instabreak, wood sound, popped off by pistons, and placeable on floor or wall.
-    // CRIMSON_SPORE is the flame particle - a drifting red mote; TorchBlock adds dark smoke itself.
+    // The flame is a PARTICLE, not geometry. Modelled flame planes tilt with the wall variant, which
+    // looked wrong mounted on a wall; a particle always rises vertically whatever the orientation.
+    // TorchBlock adds dark smoke of its own on top of it.
     private static BlockBehaviour.Properties daemonlightProps() {
         return BlockBehaviour.Properties.of()
                 .noCollission()
@@ -201,12 +216,12 @@ public final class ModRegistry {
     }
 
     public static final DeferredBlock<TorchBlock> DAEMONLIGHT = BLOCKS.register("daemonlight",
-            () -> new TorchBlock(ParticleTypes.CRIMSON_SPORE, daemonlightProps()));
+            () -> new TorchBlock(DAEMON_FLAME, daemonlightProps()));
 
     // lootFrom (not a loot table of its own) so breaking a wall-mounted one drops the same item,
     // exactly as vanilla's wall torches do.
     public static final DeferredBlock<WallTorchBlock> DAEMONLIGHT_WALL = BLOCKS.register("daemonlight_wall",
-            () -> new WallTorchBlock(ParticleTypes.CRIMSON_SPORE, daemonlightProps().lootFrom(DAEMONLIGHT)));
+            () -> new WallTorchBlock(DAEMON_FLAME, daemonlightProps().lootFrom(DAEMONLIGHT)));
 
     // One item for both blocks. StandingAndWallBlockItem picks the wall variant when placed against
     // a side, and maps BOTH blocks to this item, so the wall version reports the right name too.
