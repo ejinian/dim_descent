@@ -31,7 +31,9 @@ import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -145,6 +147,38 @@ public final class ModRegistry {
             () -> new Block(altarProps().lightLevel(state -> 7)));
     public static final DeferredItem<Item> ALTAR_HEART_ITEM = ITEMS.register("altar_heart",
             () -> new BlockItem(ALTAR_HEART.get(), new Item.Properties()));
+
+    // Brick dressing for the altar, so it can be built with vanilla-style masonry rather than only
+    // flat cubes. Same unbreakable altarProps() as the rest of the set - these are structure
+    // material, not something a player mines - so there are no drops and no recipes by design.
+    // SlabBlock/StairBlock bring all the normal vanilla behaviour with them (top/bottom/double
+    // placement, the five stair shapes, waterlogging), which is why they're the vanilla classes
+    // rather than custom ones.
+    public static final DeferredBlock<Block> ALTAR_STONE_BRICKS = BLOCKS.register("altar_stone_bricks",
+            () -> new Block(altarProps()));
+    public static final DeferredItem<Item> ALTAR_STONE_BRICKS_ITEM = ITEMS.register("altar_stone_bricks",
+            () -> new BlockItem(ALTAR_STONE_BRICKS.get(), new Item.Properties()));
+
+    public static final DeferredBlock<Block> CRACKED_ALTAR_STONE_BRICKS =
+            BLOCKS.register("cracked_altar_stone_bricks", () -> new Block(altarProps()));
+    public static final DeferredItem<Item> CRACKED_ALTAR_STONE_BRICKS_ITEM =
+            ITEMS.register("cracked_altar_stone_bricks",
+                    () -> new BlockItem(CRACKED_ALTAR_STONE_BRICKS.get(), new Item.Properties()));
+
+    public static final DeferredBlock<SlabBlock> ALTAR_STONE_BRICK_SLAB =
+            BLOCKS.register("altar_stone_brick_slab", () -> new SlabBlock(altarProps()));
+    public static final DeferredItem<Item> ALTAR_STONE_BRICK_SLAB_ITEM =
+            ITEMS.register("altar_stone_brick_slab",
+                    () -> new BlockItem(ALTAR_STONE_BRICK_SLAB.get(), new Item.Properties()));
+
+    // StairBlock needs the block it's "made of" for its base state. ALTAR_STONE_BRICKS is declared
+    // above so it is already registered by the time this supplier runs.
+    public static final DeferredBlock<StairBlock> ALTAR_STONE_BRICK_STAIRS =
+            BLOCKS.register("altar_stone_brick_stairs",
+                    () -> new StairBlock(ALTAR_STONE_BRICKS.get().defaultBlockState(), altarProps()));
+    public static final DeferredItem<Item> ALTAR_STONE_BRICK_STAIRS_ITEM =
+            ITEMS.register("altar_stone_brick_stairs",
+                    () -> new BlockItem(ALTAR_STONE_BRICK_STAIRS.get(), new Item.Properties()));
 
     // Source plant for Datura Seeds (potion-brewing ingredient). A FlowerBlock, except DaturaBlock
     // widens the ground it grows on to include sand and terracotta, so it can actually inhabit the
@@ -273,6 +307,10 @@ public final class ModRegistry {
             event.accept(ALTAR_STONE_ITEM);
             event.accept(CARVED_ALTAR_STONE_ITEM);
             event.accept(ALTAR_HEART_ITEM);
+            event.accept(ALTAR_STONE_BRICKS_ITEM);
+            event.accept(CRACKED_ALTAR_STONE_BRICKS_ITEM);
+            event.accept(ALTAR_STONE_BRICK_SLAB_ITEM);
+            event.accept(ALTAR_STONE_BRICK_STAIRS_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
             event.accept(DATURA_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "dimdescent:block/altar_stone_bricks",
+    "side": "dimdescent:block/altar_stone_bricks",
+    "top": "dimdescent:block/altar_stone_bricks"
+  }
+}
