@@ -66,36 +66,41 @@ Aligns the shipped dimension with the new design.
 - [ ] **Needs a human**: confirm ejection works both ways in survival — walk in
       without Attunement, and let a dose expire while inside
 
-## Phase 4 — Altars and the ritual (in progress)
+## Phase 4 — The Waking Dream (entry via sleep)
 
-The largest phase. Depends on Phase 2 (you need Attunement to test entry).
+**The bell/candle ritual is cut.** Entry now piggybacks on vanilla sleep, which
+deletes most of what this phase used to be — no bell trigger, no candle tracking,
+no 3s delay, no four-condition validation, no per-condition failure narration.
+Two event handlers instead.
 
-Decisions locked: a **small custom block set** for the altar (not one block, not
-vanilla-only), and a **player-struck bell only** as the trigger (no redstone).
-
-- [x] Altar block set: `altar_stone`, `carved_altar_stone`, and `altar_heart`
-      (the ritual's focal/anchor block, low red glow). All unbreakable in survival
-      via the FORSAKEN_FIBER strength(-1)+noLootTable pattern, editable in creative
-- [ ] **Author the altar structure in-game** (human task): build with the blocks
-      above + vanilla dark blocks + candles + a bell, capture with a structure block
-      to `dimdescent:altar`, hand over the `.nbt`
+- [x] Altar block set: `altar_stone`, `carved_altar_stone`, `altar_heart`, the
+      brick set (bricks/cracked/slab/stairs) and the `daemonlight` torch
+- [x] **Altar + bed room authored in-game** and captured as one `dimdescent:altar`
+      structure
+- [ ] **Sleep under Attunement, at night, in any bed → Null Domain.** Vanilla
+      already gates beds to night, so that condition is free
+- [ ] **Sleep while raw-poisoned (seeds / Devil's Trumpet) → refused**, with the
+      narrated line *"I can't sleep right now, I feel strange."*
+- [ ] **Attunement supersedes the raw trip**: drinking it mid-trip clears every
+      symptom instantly and starts Attunement's own opening darkness
+- [ ] The **Almanacus Inferni Abditi** — a book with custom black/red art, found
+      in a chest in the altar's bed room
 - [ ] Register the structure + a `random_spread` structure_set at village-like
       rarity (villages are spacing 34 / separation 8)
-- [ ] Ritual condition checks: attuned **now**, candles lit, night, bell struck
-      near an `altar_heart`
-- [ ] Bell as the trigger → 3s delay → pull everyone in range who is attuned
-- [ ] Per-condition narrated failure feedback
-- [ ] Candles go out at dawn (not destroyed, not consumed)
-- [ ] Entry perceptible only to attuned players in range
-- [ ] Repurpose **Dark Iron Bars** as altar/Null Domain decor — it's already
-      built, robust and tested, it just isn't a gate any more
+- [ ] Retire the **Rift Door** as an overworld entrance — sleep replaces it, so
+      the long-deferred Phase 3 item can finally be done
+- [ ] Repurpose **Dark Iron Bars** as altar/Null Domain decor
+
+Worth knowing: expiry already ejects to the player's respawn point, and vanilla
+sleeping sets spawn to that bed — so entering by sleep means waking up in the
+very bed you lay down in, with no extra code.
 
 ## Phase 5 — Lore delivery
 
-- [ ] Village lectern room with a book. **The existing plan is stale**: it
-      described "the legend of the industrial entrance," and the industrial
-      framing is gone. Rewrite around the altars and, more importantly, around
-      the deliriant warning
+Largely folded into Phase 4 now: the Almanacus and the eight-bed room ARE the
+lore delivery. The old village-lectern plan is dropped — it described "the legend
+of the industrial entrance," and the industrial framing is long gone.
+
 - [ ] Keep it terse and menacing; foreshadow, never explain mechanics
 
 ## Phase 6 — The actual core concept

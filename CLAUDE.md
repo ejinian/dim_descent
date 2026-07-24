@@ -49,33 +49,49 @@ base, same as every vanilla potion.
 - Splash/Lingering Attunement means a player can be attuned — or dosed with the
   trip — **involuntarily**. This is intended.
 
-Attunement is deliberately *the same poisoning* as Devil's Trumpet, at full
-strength. That is the whole trick of the design: there is no separate "the
-dimension hurts you" rule, because being in the Null Domain simply requires
-being poisoned.
+Attunement **supersedes** the raw poisoning rather than adding to it. Drinking it
+while already tripping on seeds or Devil's Trumpet immediately clears every
+symptom and starts Attunement's own opening 10 seconds of darkness. One dose
+takes over from the other; the two never run at once.
 
-### Entry: the altars
+### Entry: the Waking Dream
+
+Entry piggybacks on vanilla's own sleep mechanic rather than adding anything new.
+
+- **Under Attunement, at night, sleeping in ANY bed** does not skip to morning —
+  it pulls the player into the Null Domain, framed as a nightmare they cannot
+  wake from until the poison passes.
+- **Under the raw poisoning** (seeds or Devil's Trumpet), sleep is simply
+  refused, with a narrated line: *"I can't sleep right now, I feel strange."*
+- Sober players sleep normally.
+
+This is deliberately near-zero build cost — beds already exist everywhere — and
+it is the most truthful mechanic in the mod. Real deliriant intoxication very
+commonly produces exactly this: an inability to separate dream from waking life,
+often with partial or total amnesia of the episode afterwards.
+
+It also closes its own loop for free. Vanilla sleeping sets the player's spawn to
+that bed, and expiry already ejects them to their spawn — so a player doses,
+lies down, and wakes up in the very bed they lay down in, with the intervening
+hours unaccounted for.
+
+### Entry is no longer a ritual
+
+The bell/candles/altar ritual is **cut**. The altar keeps no mechanical role.
+
+### The altars — lore landmarks
 
 Naturally-spawning **altars**, rarity comparable to villages. Ominous
-black/dark, warlock-style; blocks unbreakable in survival. The structure is
-authored in-game and imported as NBT rather than hand-written.
+black/dark, warlock-style; blocks unbreakable in survival. Authored in-game and
+imported as NBT rather than hand-written.
 
-The ritual needs all four, and the bell is the trigger:
+Each altar spawns together with an adjoining **room containing eight empty
+beds** — both are one structure (`dimdescent:altar`), so they always appear as a
+pair. The beds are the teaching device: a player who finds eight beds laid out
+beside a demonic altar works out what beds are for here without being told.
 
-1. The player is **currently under** the Potion of Attunement's effect (having
-   drunk it before is not enough)
-2. **Candles** placed and lit on the altar
-3. **Nighttime**
-4. A **bell struck** near the altar — exactly 3 seconds later, everyone in
-   range who is under the effect is taken to the Null Domain
-
-Missing or wrong conditions each give their own narrated failure, so the ritual
-teaches itself. At dawn, candles simply go out — not destroyed, not consumed.
-
-**There is no visible or persistent portal.** Entry is a personal event,
-perceptible and enterable only by players currently under Attunement within
-range. A sober bystander sees nothing but someone lighting candles, ringing a
-bell, and then not being there any more.
+The room also holds a chest containing the **Almanacus Inferni Abditi**, a book
+with its own black-and-red binding — the mod's only piece of written lore.
 
 ### Inside the Null Domain
 
@@ -83,11 +99,10 @@ bell, and then not being there any more.
 - The Darkness in Attunement's final 10 seconds is the built-in warning that
   time is nearly up
 - The moment Attunement expires the player is instantly returned to their
-  overworld spawn — no death, no Wither, no lingering danger. The trip is simply
+  respawn point — no death, no Wither, no lingering danger. The trip is simply
   over, unless they redose in time
-- Returning to the *specific* altar you came in by is reserved for a separate,
-  not-yet-built voluntary exit (a door). Expiry and voluntary exit are different
-  things
+- A separate, not-yet-built voluntary exit (a door) is still planned. Expiry and
+  voluntary exit are different things
 
 ### Datura Seeds — exactly two functions
 
