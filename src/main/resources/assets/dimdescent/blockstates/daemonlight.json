@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=true": {
       "model": "dimdescent:block/daemonlight"
+    },
+    "lit=false": {
+      "model": "dimdescent:block/daemonlight_unlit"
     }
   }
 }

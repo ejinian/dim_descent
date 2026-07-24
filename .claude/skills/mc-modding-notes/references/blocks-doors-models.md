@@ -246,3 +246,72 @@ Two hard-won points, from putting an octagram on the altar blocks:
 
 Preview at ~12-14x nearest-neighbour scale and actually look before committing; several visually
 distinct attempts all "compiled" fine and only the eye told them apart.
+
+## Custom torch: 3D geometry, a custom flame particle, and a lit/unlit state
+
+Building the Daemonlight turned up several reusable pieces.
+
+**Vanilla's torch is barely 3D** - two crossed full-height planes plus a 2x2 post drawing only its
+top/bottom faces (`template_torch.json`). For a real 3D torch, author actual boxes. Keep flame
+planes' X off the prong/collar X values or they z-fight (coplanar faces flicker).
+
+**Derive the wall model from the standing one** by vanilla's exact transform, measured by diffing
+`template_torch.json` against `template_torch_wall.json`: translate x-8, y+3.5, then rotate -22.5deg
+about z at origin `[0, 3.5, 8]`. Applying that to every element in code means the two models can't
+drift apart. Sanity-check the emitted wall model's Y range stays within 0..16 or it poked through
+ceilings once tilted.
+
+**Flame as a particle, not geometry.** Modelled flame planes rotate with the wall model and read as a
+flame leaning sideways. A particle always rises vertically. Leave a small *ember-bed box* in the bowl
+(geometry, but a glowing coal bed looks right at any angle) so the torch reads as lit even when
+particles are sparse.
+
+**Registering a custom particle** (a red flame here):
+- `DeferredRegister<ParticleType<?>>` on `Registries.PARTICLE_TYPE`; register a `new
+  SimpleParticleType(false)`.
+- A particle DEFINITION json at `assets/<modid>/particles/<name>.json` = `{"textures":["<modid>:<sprite>"]}`,
+  and the sprite at `assets/<modid>/textures/particle/<sprite>.png`. Missing either -> silent
+  no-render.
+- Client side, `RegisterParticleProvidersEvent.registerSpriteSet(TYPE, FlameParticle.Provider::new)`
+  reuses vanilla's flame behaviour with your sprite. `FlameParticle.SmallFlameProvider::new` is the
+  half-size (candle-scale) variant - it calls `scale(0.5F)`, and note `SingleQuadParticle.scale`
+  overrides the base `Particle.scale` (which only resizes the hitbox) to also halve `quadSize`, so it
+  genuinely shrinks the render.
+- ORDERING TRAP: torch blocks take the particle in their constructor during BLOCK registration, when
+  the PARTICLE_TYPE register may not have run. Hold the particle as a plain
+  `public static final SimpleParticleType X = new SimpleParticleType(false)` and register that same
+  instance via a supplier - passing the plain object to blocks avoids resolving a not-yet-filled
+  DeferredHolder.
+- Torch particle origin is hardcoded in `TorchBlock`/`WallTorchBlock.animateTick` (y+0.7 standing;
+  y+0.92, 0.27 out for wall), tuned for the taller vanilla torch. Override `animateTick` to move it
+  onto a shorter model's bowl.
+
+**Lit/unlit via a `lit` blockstate**, lit by flint & steel:
+- Add `BlockStateProperties.LIT` in `createBlockStateDefinition` and default it false in the
+  constructor via `registerDefaultState(defaultBlockState().setValue(LIT, false))`. For a
+  WallTorch subclass, re-add FACING too: `builder.add(FACING, LIT)`.
+- Light level is a `ToIntFunction<BlockState>` at registration: `.lightLevel(s ->
+  s.getValue(LIT) ? 7 : 0)`. Safe as long as every block using those props defines LIT.
+- Flint & steel does NOT route to a block's `useItemOn` on its own - `FlintAndSteelItem` only knows
+  candles/campfires/TNT and otherwise places fire. Handle it in the block's
+  `protected ItemInteractionResult useItemOn(stack, state, level, pos, player, hand, hit)`: if
+  `state.getValue(LIT)` or `!stack.is(Items.FLINT_AND_STEEL)` return
+  `PASS_TO_DEFAULT_BLOCK_INTERACTION`; else play `SoundEvents.FLINTANDSTEEL_USE`,
+  `level.setBlock(pos, state.setValue(LIT, true), 11)`, `stack.hurtAndBreak(1, player,
+  LivingEntity.getSlotForHand(hand))`, and return `ItemInteractionResult.sidedSuccess(level.isClientSide)`.
+  Handling it in the block also stops a stray fire block being placed on the torch.
+- Blockstate needs a `lit=true`/`lit=false` variant each pointing at a lit vs unlit model; the unlit
+  model reuses the same geometry with a cold (non-glowing) texture in both the shaft and bowl slots.
+
+## Readable custom book without faking an ItemStack
+
+`BookViewScreen.BookAccess` is a plain record of `List<Component>`, so a custom item can open the
+vanilla reader on its own pages directly: `Minecraft.getInstance().setScreen(new
+BookViewScreen(new BookViewScreen.BookAccess(pages)))`. No need to build a written-book ItemStack.
+Keep that call in a client-only class reached only from an `isClientSide` branch, so a dedicated
+server never resolves the screen classes.
+
+Book page width wraps at ROUGHLY 20 characters; a wrapped line silently pushes the rest of the page
+out of view. Keep lines <= ~20 chars and verify with a checker, not by eye. Legacy `§` colour codes
+work in the page strings; an INVALID code (e.g. `§B`, `§p` - only `0-9a-fk-or` are valid) applies no
+style but STILL consumes the following character, so `"§Be warned"` renders as `"e warned"`.

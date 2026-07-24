@@ -74,17 +74,18 @@ no 3s delay, no four-condition validation, no per-condition failure narration.
 Two event handlers instead.
 
 - [x] Altar block set: `altar_stone`, `carved_altar_stone`, `altar_heart`, the
-      brick set (bricks/cracked/slab/stairs) and the `daemonlight` torch
+      brick set (bricks/cracked/slab/stairs) and the `daemonlight` torch (3D, a
+      `lit` state, lit by flint & steel, crafted from datura + stick)
 - [x] **Altar + bed room authored in-game** and captured as one `dimdescent:altar`
-      structure
+      structure, imported into the mod with its chest pointed at the loot table
+- [x] The **Almanacus Inferni Abditi** — readable custom grimoire, in the chest via
+      `dimdescent:chests/altar`
 - [ ] **Sleep under Attunement, at night, in any bed → Null Domain.** Vanilla
       already gates beds to night, so that condition is free
 - [ ] **Sleep while raw-poisoned (seeds / Devil's Trumpet) → refused**, with the
       narrated line *"I can't sleep right now, I feel strange."*
 - [ ] **Attunement supersedes the raw trip**: drinking it mid-trip clears every
       symptom instantly and starts Attunement's own opening darkness
-- [ ] The **Almanacus Inferni Abditi** — a book with custom black/red art, found
-      in a chest in the altar's bed room
 - [ ] Register the structure + a `random_spread` structure_set at village-like
       rarity (villages are spacing 34 / separation 8)
 - [ ] Retire the **Rift Door** as an overworld entrance — sleep replaces it, so

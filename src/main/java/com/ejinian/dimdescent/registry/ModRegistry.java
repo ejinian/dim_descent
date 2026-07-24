@@ -12,6 +12,7 @@ import com.ejinian.dimdescent.effect.PsychosisMobEffect;
 import com.ejinian.dimdescent.effect.TachycardiaMobEffect;
 import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.block.DaemonlightBlock;
+import com.ejinian.dimdescent.block.DaemonlightLighting;
 import com.ejinian.dimdescent.block.DaemonlightWallBlock;
 import com.ejinian.dimdescent.block.DaturaBlock;
 import com.ejinian.dimdescent.item.AlmanacusItem;
@@ -208,11 +209,15 @@ public final class ModRegistry {
     // The flame is a PARTICLE, not geometry. Modelled flame planes tilt with the wall variant, which
     // looked wrong mounted on a wall; a particle always rises vertically whatever the orientation.
     // TorchBlock adds dark smoke of its own on top of it.
+    //
+    // It is placed UNLIT and lit by flint and steel (see DaemonlightLighting). Light is therefore
+    // keyed to the LIT state - 7 when burning, 0 when cold - and both Daemonlight blocks add that
+    // property to their state definition, so reading it here is safe.
     private static BlockBehaviour.Properties daemonlightProps() {
         return BlockBehaviour.Properties.of()
                 .noCollission()
                 .instabreak()
-                .lightLevel(state -> 7)
+                .lightLevel(state -> state.getValue(DaemonlightLighting.LIT) ? 7 : 0)
                 .sound(SoundType.WOOD)
                 .pushReaction(PushReaction.DESTROY);
     }

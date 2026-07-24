@@ -151,3 +151,41 @@ this entity go," factor the dimension-selection logic into a small shared helper
 duplicating it - the command can call `player.changeDimension(helper.getTransitionFor(...))`
 directly, while the block implements `Portal.getPortalDestination` by delegating to the same
 helper.
+
+## Authoring & importing structures (.nbt), and patching them in code
+
+**Capture in-game with a Structure Block.** Two blocks in CORNER mode at opposite corners plus one
+switched to SAVE (Save block counts as its own corner). The captured region is EXCLUSIVE of both
+corner blocks - `detectSize()` does `pos = min+1, size = span-1` - so each corner block sits one
+block OUTSIDE the build on all axes. Name it `<modid>:<name>` (bare name defaults to `minecraft:`).
+Saved to `run/saves/<world>/generated/<modid>/structures/<name>.nbt` (note: the world folder uses
+plural `structures/`, but the datapack/mod resource path is SINGULAR `data/<modid>/structure/<name>.nbt`).
+Max 48^3.
+
+**Generated/ shadows the mod copy.** `StructureTemplateManager` sources are checked in order:
+generated first, then mod resources/datapacks. So a world that has its own
+`generated/.../structures/<name>.nbt` will use THAT for `/place template`, ignoring the mod's copy -
+which bites when you patch the mod copy and test in the same world it was saved in. Delete the
+world's generated file (or test in a fresh world) to fall through to the mod resource.
+
+**Chests spawn empty unless their block entity has a loot table.** A structure only contains blocks
+you actually built, and a captured chest's block-entity nbt has `{id, Items:[]}`. Point it at a loot
+table by setting the string key `"LootTable"` (read by `RandomizableContainer.tryLoadLootTable`) in
+that chest block's `nbt` compound, e.g. `"dimdescent:chests/altar"`, and drop the empty `Items`. The
+loot rolls on FIRST OPEN, so the chest looks empty in the file and in-world until opened.
+
+**Patching an .nbt in code** (to inject the LootTable without re-saving in-game): there is no NBT
+library in this Python env, so a hand-rolled codec is required. Structure NBT is gzipped, big-endian.
+A round-trip-safe representation: tags as `(type_int, value)`, compounds as `dict[str,tag]`, lists as
+`(elem_type, [values...])` - keeping the element type exact so re-encode is byte-faithful. VERIFY the
+codec by decoding->encoding->decoding and asserting equality BEFORE trusting a patch, then re-read the
+written file to confirm the change landed. LIST payloads are BARE values (element type declared once),
+so palette/blocks entries are dicts directly, and an INT list's payloads are plain ints, not tuples -
+easy to trip on when walking the tree. (Reusable codec lived in the session scratchpad as
+`nbt_codec.py`.)
+
+## Loot table & recipe datapack folders are SINGULAR in 1.21
+
+`data/<ns>/loot_table/...` and `data/<ns>/recipe/...` (renamed from the old plural `loot_tables`/
+`recipes`). A file in the old plural folder is silently ignored. Same singular-rename applies to
+`structure/`, `advancement/`, `worldgen/...`, etc.

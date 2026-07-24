@@ -188,9 +188,18 @@ way; an invisible marker effect carries that state to the client, since the sequ
 server-side.
 
 Datura now spawns in the wild (savanna/desert/badlands), so the seeds → Devil's Trumpet →
-Attunement chain is obtainable in survival rather than creative-only. Still just design, not built:
-the altar ritual and the Null Domain's altar-only entry. The Rift Door still works as an overworld
-entrance for now (it's the only way in until the altars exist) and the dimension is still registered
-as `dimdescent:rift` — both are known and tracked. See
-[ROADMAP.md](ROADMAP.md) for the ordered build plan, and the `mc-modding-notes` skill
-(`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.
+Attunement chain is obtainable in survival rather than creative-only.
+
+Content built so far for the altar and its lore: a full altar block set (altar_stone, carved
+variant, brick/cracked-brick/slab/stairs, and the altar_heart focal block); the **Daemonlight**, a
+3D demonic torch that is placed unlit and lit with flint and steel (a `lit` blockstate drives both
+light 7/0 and the red flame particle), crafted from one datura over one stick like a vanilla torch;
+the **Almanacus Inferni Abditi**, a readable custom book in the register of a grimoire, found via a
+chest loot table (`dimdescent:chests/altar`); and the authored altar-and-bed-room structure itself
+(`dimdescent:structure/altar.nbt`), with its chest already pointed at that loot table.
+
+Still design, not built: entry via sleep (the Waking Dream), Attunement superseding the raw trip,
+and world-gen placement of the altar. The Rift Door still works as an overworld entrance for now
+(sleep will replace it) and the dimension is still registered as `dimdescent:rift` — both are known
+and tracked. See [ROADMAP.md](ROADMAP.md) for the ordered build plan, and the `mc-modding-notes`
+skill (`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.
