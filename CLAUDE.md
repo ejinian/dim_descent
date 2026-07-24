@@ -146,14 +146,19 @@ telling anyone what to think.
 ## Status
 
 Core dimension-travel loop works end to end: a custom Rift dimension (Nullstone floor,
-Forsaken Fiber unbreakable boundary), and a Rift Door with a themed portal effect. The Null Domain
-is now a Dimensional-Doors-style pocket dungeon (`NullDomainRooms`, reverse-engineered from DD's
-own pocket/grid code): every crossing in — and every Rift Door walked through once inside — opens a
-fresh, randomly-chosen room ~512 blocks away on a persisted grid, stamped the moment the door is
-entered (lazy, like DD). Five code-generated room types (pillar hall, wide gallery, tall
-altar-heart chamber, low barred cells, hall of bars) are picked at random; three can hold an
-altar-loot chest. Each room has exactly one onward door in the far wall, so doors only ever lead
-deeper — the old shared-exit-door/return-pairing machinery is gone. Dark Iron Bars are now placed
+Forsaken Fiber unbreakable boundary). The Rift Door is **fully retired** (block, block entity,
+portal renderer and all — deleted); onward travel is now the **Dream Bed**, a gray, tattered,
+zero-saturation bed. Right-clicked inside the Null Domain it pulls you into the next room exactly as
+the door did; right-clicked anywhere else it detonates like a vanilla bed used in the Nether/End
+(the lore: sleep is how you fell into the trip, so lying back down is how you sink deeper — and the
+waking world can't hold the thing). Sleeping in it is impossible. The Null Domain is a
+Dimensional-Doors-style pocket dungeon (`NullDomainRooms`, reverse-engineered from DD's own
+pocket/grid code): every crossing in — and every Dream Bed used once inside — opens a fresh,
+randomly-chosen room ~512 blocks away on a persisted spiral grid, stamped lazily on use. Five
+code-generated room types (pillar hall, wide gallery, tall altar-heart chamber, low barred cells,
+hall of bars) are picked at random; three can hold an altar-loot chest. Each room places one Dream
+Bed against the far wall, so travel only ever leads deeper. (These code-generated rooms are interim
+scaffolding — a hand-built room pool is being authored to replace them.) Dark Iron Bars are placed
 as room decor (cages, screens, gateposts). Datura spawns in the wild (see below). Potion of
 Attunement is brewable (see the potion pipeline above) and the first time one is ever completed in
 a world it triggers a one-time server-wide thunderstorm plus a lightning flash. Its survival

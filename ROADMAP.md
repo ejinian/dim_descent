@@ -115,24 +115,30 @@ Everything above is the *door*; this is the room behind it.
 
 - [x] **DimDoors-style room traversal** (`NullDomainRooms`). Modelled directly on Dimensional
       Doors' pocket dungeon (reverse-engineered from the cloned repo): every crossing in, and
-      every Rift Door walked through once inside, opens a fresh randomly-chosen room ~512 blocks
-      away on a grid (`SPACING = 512`, their 32-chunk `pocketGridSize`), stamped LAZILY on door
-      entry. Rooms are keyed by a monotonic index persisted in a `GridData` SavedData, so they
-      never overlap and the grid survives restarts. Five code-generated `RoomType`s — PILLAR_HALL,
-      LONG_GALLERY, GRAND_CHAMBER, CRAMPED_CELLS, HALL_OF_BARS — picked uniformly; three can carry
-      an altar-loot chest. Each room is a Forsaken Fiber shell with one onward door in the far wall
+      every Dream Bed used once inside, opens a fresh randomly-chosen room ~512 blocks away on a
+      spiral grid (`SPACING = 512`, their 32-chunk `pocketGridSize`), stamped LAZILY on use. Rooms
+      are keyed by a monotonic index persisted in a `GridData` SavedData, so they never overlap and
+      the grid survives restarts. Five code-generated `RoomType`s — PILLAR_HALL, LONG_GALLERY,
+      GRAND_CHAMBER, CRAMPED_CELLS, HALL_OF_BARS — picked uniformly; three can carry an altar-loot
+      chest. Each room places one Dream Bed against the far wall
 - [x] Replaced the hole-drop descent + per-player depth counter with the above (no actionbar
       readout, no narration, per user's request). The platform / shared-exit-door / `RiftDoorLinkData`
-      pairing machinery is deleted — doors only lead deeper now
+      pairing machinery is deleted — travel only leads deeper now
+- [x] **Retired the Rift Door entirely** (block/BE/portal-renderer all deleted) in favour of the
+      **Dream Bed** (`DreamBedBlock`): a gray tattered zero-saturation bed that teleports you onward
+      when right-clicked in the Domain, and detonates like a wrong-dimension vanilla bed anywhere
+      else. Lore: you first fell into the trip by sleeping, so you sink deeper by lying back down
 - [ ] Depth-weighted selection (DimDoors' `VirtualLocation.depth`) so deeper rooms differ, plus a
       legible "how deep am I" signal (fog, ambient, colour grading)
-- [ ] Authored rooms (NBT/`.schem`-style pool) to raise quality beyond the code-generated five
+- [ ] **Hand-built room pool** (NBT structures with a baked Dream Bed + a `dimdescent:entrance`
+      data-marker for the spawn) to replace the code-generated five; the loader picks one at random
+      per grid cell, places it, reads the marker for the landing
 - [ ] Depth-tiered enemies
 - [ ] Loot tied to depth/risk
-- [ ] Voluntary exit door back to the altar you entered by (the only planned door that leads OUT)
+- [ ] Voluntary exit back to the altar you entered by (the only planned route that leads OUT)
 
 Known POC limitations: room selection is a flat uniform pick with no depth axis yet; rooms are
-code-generated (blockier than authored rooms would be); onward doors are one-way (rooms persist, so
+still code-generated (hand-built pool pending); the Dream Bed exit is one-way (rooms persist, so
 two-way/backtracking links are possible later but aren't wired up); and the loot chest reuses the
 altar table rather than a depth-scaled one.
 

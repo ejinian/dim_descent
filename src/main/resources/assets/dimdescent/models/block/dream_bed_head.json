@@ -1,0 +1,62 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "dimdescent:block/dream_bed_side",
+    "top": "dimdescent:block/dream_bed_top",
+    "side": "dimdescent:block/dream_bed_side",
+    "leg": "dimdescent:block/dream_bed_leg",
+    "pillow": "dimdescent:block/dream_bed_pillow"
+  },
+  "elements": [
+    {
+      "__comment": "mattress",
+      "from": [0, 3, 0],
+      "to": [16, 9, 16],
+      "faces": {
+        "up":    { "uv": [0, 0, 16, 16], "texture": "#top" },
+        "down":  { "uv": [0, 0, 16, 16], "texture": "#side" },
+        "north": { "uv": [0, 0, 16, 6], "texture": "#side" },
+        "south": { "uv": [0, 0, 16, 6], "texture": "#side" },
+        "east":  { "uv": [0, 0, 16, 6], "texture": "#side" },
+        "west":  { "uv": [0, 0, 16, 6], "texture": "#side" }
+      }
+    },
+    {
+      "__comment": "leg, north-west (head end)",
+      "from": [0, 0, 0],
+      "to": [3, 3, 3],
+      "faces": {
+        "down":  { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "north": { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "south": { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "east":  { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "west":  { "uv": [0, 0, 3, 3], "texture": "#leg" }
+      }
+    },
+    {
+      "__comment": "leg, north-east (head end)",
+      "from": [13, 0, 0],
+      "to": [16, 3, 3],
+      "faces": {
+        "down":  { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "north": { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "south": { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "east":  { "uv": [0, 0, 3, 3], "texture": "#leg" },
+        "west":  { "uv": [0, 0, 3, 3], "texture": "#leg" }
+      }
+    },
+    {
+      "__comment": "pillow at the head end",
+      "from": [1, 9, 1],
+      "to": [15, 11, 6],
+      "faces": {
+        "up":    { "uv": [1, 1, 15, 6], "texture": "#pillow" },
+        "down":  { "uv": [1, 1, 15, 6], "texture": "#pillow" },
+        "north": { "uv": [1, 0, 15, 2], "texture": "#pillow" },
+        "south": { "uv": [1, 0, 15, 2], "texture": "#pillow" },
+        "east":  { "uv": [1, 0, 6, 2], "texture": "#pillow" },
+        "west":  { "uv": [1, 0, 6, 2], "texture": "#pillow" }
+      }
+    }
+  ]
+}

@@ -1,10 +1,9 @@
 package com.ejinian.dimdescent.registry;
 
 import com.ejinian.dimdescent.DimDescent;
-import com.ejinian.dimdescent.dimension.door.RiftDoorBlock;
-import com.ejinian.dimdescent.dimension.door.RiftDoorBlockEntity;
 import java.util.List;
 
+import com.ejinian.dimdescent.block.DreamBedBlock;
 import com.ejinian.dimdescent.effect.AttunementMobEffect;
 import com.ejinian.dimdescent.effect.DaturaTripMobEffect;
 import com.ejinian.dimdescent.effect.DryMouthMobEffect;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -81,19 +79,23 @@ public final class ModRegistry {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DAEMON_FLAME_TYPE =
             PARTICLE_TYPES.register("daemon_flame", () -> DAEMON_FLAME);
 
-    public static final DeferredBlock<RiftDoorBlock> RIFT_DOOR = BLOCKS.register("rift_door", () -> new RiftDoorBlock(
+    // The Dream Bed: the Null Domain's "go deeper" device and the replacement for the retired Rift
+    // Door. Unbreakable in survival (strength -1) and dropless, so a player can never mine away their
+    // own way onward; immovable by pistons; high blast resistance so a stray explosion can't take it
+    // (its OWN wrong-dimension detonation removes the blocks directly, bypassing that). See
+    // DreamBedBlock for the right-click behaviour.
+    public static final DeferredBlock<DreamBedBlock> DREAM_BED = BLOCKS.register("dream_bed", () -> new DreamBedBlock(
             BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.QUARTZ)
-                    .strength(5.0F)
+                    .mapColor(MapColor.COLOR_GRAY)
+                    .strength(-1.0F, 3600000.0F)
+                    .noLootTable()
                     .noOcclusion()
-                    .pushReaction(PushReaction.DESTROY)));
+                    .sound(SoundType.WOOD)
+                    .pushReaction(PushReaction.BLOCK)));
 
-    public static final DeferredItem<Item> RIFT_DOOR_ITEM = ITEMS.register("rift_door",
-            () -> new DoubleHighBlockItem(RIFT_DOOR.get(), new Item.Properties()));
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RiftDoorBlockEntity>> RIFT_DOOR_BLOCK_ENTITY =
-            BLOCK_ENTITY_TYPES.register("rift_door", () -> BlockEntityType.Builder.of(
-                    RiftDoorBlockEntity::new, RIFT_DOOR.get()).build(null));
+    // Plain BlockItem: BedBlock.setPlacedBy places the head half automatically.
+    public static final DeferredItem<Item> DREAM_BED_ITEM = ITEMS.register("dream_bed",
+            () -> new BlockItem(DREAM_BED.get(), new Item.Properties()));
 
     // Rift-dimension equivalent of Dimensional Doors' "Fabric of Reality": an insta-break void
     // floor. Look is meant to tie into the depth mechanic later (more unstable the deeper you
@@ -361,7 +363,7 @@ public final class ModRegistry {
 
     public static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(RIFT_DOOR_ITEM);
+            event.accept(DREAM_BED_ITEM);
             event.accept(NULLSTONE_ITEM);
             event.accept(FORSAKEN_FIBER_ITEM);
             event.accept(DARK_IRON_BARS_ITEM);

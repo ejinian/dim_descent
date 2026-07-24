@@ -36,7 +36,7 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   the world's whole history never get the same cell. Each room is a pitch-black box: interior faces
   of walls + ceiling lined with Nullstone (dead black), backed by an unbreakable Forsaken Fiber shell
   one block further out/up (so it's black yet unbreachable in survival), altar-brick floor with
-  Daemonlight lighting, type-specific decor, and ONE onward Rift Door in the far wall. Crucially
+  Daemonlight lighting, type-specific decor, and ONE onward Dream Bed against the far wall. Crucially
   there is NOTHING under the floor - the altar bricks sit directly over the void, so breaking one
   (creative) drops you out of the world; the dimension's flat generator was emptied to `"layers": []`
   to remove the old ground far below. Five code-generated `RoomType`s (PILLAR_HALL, LONG_GALLERY,
@@ -46,27 +46,32 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   like DimDoors' `LazyPocketGenerator`. Deliberately dropped from DimDoors for this POC: their
   authored `.schem` room pool and their depth axis (`VirtualLocation.depth`) - selection is a flat
   uniform pick with no depth weighting yet.
-- **Rift door block** (`dimdescent:rift_door`): extends vanilla `DoorBlock`, implements `Portal`;
-  every door leads DEEPER (overworld door or in-room door alike -> a fresh random room via
-  `NullDomainRooms.newRoom`), there is no door-based way back out. Has a `BlockEntityRenderer`
-  drawing a re-themed
-  (red/orange) End-Portal-style shader effect through transparent window cutouts in its texture -
-  small 4-window "peekaboo" boxes while closed, one big box filling the doorway once open. Hinge
-  is forced to always be LEFT regardless of placement context (this is a special door, not meant
-  to behave like a real one). The teleport hitbox is intentionally scoped to just the visible glow
-  box, not the door's whole 1x1x2 cell - see the `entityInside`-fires-for-the-whole-cell gotcha in
-  `dimensions-teleportation-portals.md`. See also `rendering-shaders-blockentities.md` and
-  `blocks-doors-models.md`.
-- **Shared teleport logic** lives in a `RiftTeleporter` helper class, used by both the `/rift
-  enter|leave` debug command and the door block's `Portal.getPortalDestination` - avoid
-  duplicating dimension-selection logic across entry points.
-- **No door pairing / no return trips**: the old `RiftDoorLinkData` + `DoorLocation` machinery
-  (one shared generated exit door, per-player "which door did I enter from" tracking) was DELETED
-  when the room grid landed - doors only ever lead deeper now, so there is nothing to pair. Leaving
-  the Null Domain happens two ways only: the manual `/rift leave`, and Attunement expiry
-  (`RiftEjectionEvents` ejects to the respawn point the tick the effect ends). A voluntary exit
-  door back to the altar is a separate, not-yet-built item. Don't reintroduce door-based exits
-  without revisiting that design.
+- **Dream Bed** (`dimdescent:dream_bed`, `DreamBedBlock`): the retirement of the Rift Door (whose
+  block/BE/portal-renderer/`RiftDoorLinkData`/`DoorLocation` are all DELETED) and the Null Domain's
+  onward-travel device. Extends vanilla `BedBlock` purely to inherit the two-part shape/placement/
+  collision, but:
+  - `getRenderShape` -> `RenderShape.MODEL` and `newBlockEntity` -> `null`, so it renders a normal
+    JSON block model (custom `dream_bed_foot`/`_head` models, gray tattered zero-saturation textures)
+    instead of vanilla's bed-entity renderer. This is the trick for "a bed with my own texture"
+    without a `BedBlockEntity` + custom `BlockEntityRenderer`.
+  - `useWithoutItem` is fully overridden: in the rift -> `RiftTeleporter.toNextRoom` + `changeDimension`
+    (same-dim teleport works; `ServerPlayer.changeDimension` short-circuits to a reposition when
+    `newLevel == current`); anywhere else -> vanilla's wrong-dimension bed explosion
+    (`removeBlock` both halves + `level.explode(..., badRespawnPointExplosion(center), ..., 5.0F, true, BLOCK)`),
+    reached in EVERY non-Domain dimension (overworld included), not just where `bedWorks()` is false.
+    Sleeping is impossible because we never call `startSleepInBed`.
+  - Gotcha: `BedBlock.codec()` is invariant `MapCodec<BedBlock>`, so a subclass can't narrow it to
+    `MapCodec<DreamBedBlock>`. Type the `simpleCodec(DreamBedBlock::new)` field as `MapCodec<BedBlock>`
+    (inference picks `B=BedBlock` from the target type; the factory still builds DreamBedBlock).
+  - Gotcha: stamping the two halves in code, use `setBlock(pos, state, 2)` (no neighbour updates) for
+    BOTH halves, or vanilla `BedBlock.updateShape` self-deletes a half whose partner isn't placed yet.
+  - Unbreakable (`strength(-1, 3600000)`, `noLootTable`, `pushReaction(BLOCK)`) so a player can never
+    mine away their own way onward; its own detonation uses `removeBlock`, bypassing blast resistance.
+- **Shared teleport logic** lives in a `RiftTeleporter` helper class, used by the `/rift enter|leave`
+  debug command, the sleep crossing (`SleepEntryEvents`), and the Dream Bed - avoid duplicating
+  dimension-selection logic across entry points. Leaving the Null Domain happens two ways only: the
+  manual `/rift leave`, and Attunement expiry (`RiftEjectionEvents` ejects to the respawn point the
+  tick the effect ends). A voluntary exit is a separate, not-yet-built item.
 - **Nullstone** (`dimdescent:nullstone`): Dimensional Doors' "Fabric of Reality" equivalent -
   insta-break (`Properties.instabreak()`), pure uniform `(0,0,0)` black texture (explicitly no
   noise/variation - a black texture stays black under every one of Minecraft's per-face lighting

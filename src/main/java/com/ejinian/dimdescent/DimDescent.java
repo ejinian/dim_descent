@@ -10,9 +10,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 
-// RiftCommands, RiftClientEvents, AttunementBrewingEvents, DaturaTrip, CompanionEffectManager,
-// TripClientEvents, and ScreenSaturationEffect register themselves on the event bus via
-// @EventBusSubscriber.
+// RiftCommands, AttunementBrewingEvents, DaturaTrip, CompanionEffectManager, TripClientEvents,
+// and ScreenSaturationEffect register themselves on the event bus via @EventBusSubscriber.
 @Mod(DimDescent.MODID)
 public class DimDescent {
     public static final String MODID = "dimdescent";

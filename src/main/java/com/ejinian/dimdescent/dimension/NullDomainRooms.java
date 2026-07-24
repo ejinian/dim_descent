@@ -13,13 +13,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DoorHingeSide;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
@@ -129,7 +128,7 @@ public final class NullDomainRooms {
         stampShell(level, ox, oz, type);
         stampFloor(level, ox, oz, type, rng);
         decorate(level, ox, oz, type, rng);
-        placeExitDoor(level, ox, oz, type);
+        placeExitBed(level, ox, oz, type);
 
         // Arrive at the south-centre, one block in from the wall, facing the exit door on the far side.
         return new Vec3(ox + type.w / 2 + 0.5, FLOOR_Y + 1, oz + 1.5);
@@ -335,26 +334,26 @@ public final class NullDomainRooms {
         }
     }
 
-    // The onward door: a Rift Door set into the far (north) interior wall, centred, flanked by lamps.
-    // Walking through it fires getPortalDestination -> newRoom, so it always opens the next room. It
-    // sits one block in from the boundary so the fiber shell is never breached.
-    private static void placeExitDoor(ServerLevel level, int ox, int oz, RoomType t) {
+    // The onward exit: a Dream Bed laid against the far (north) wall, centred, flanked by lamps.
+    // Right-clicking it fires DreamBedBlock -> toNextRoom, so it always opens the next room. Foot is
+    // one row in from the head so both halves sit inside the interior. (These code-generated rooms are
+    // temporary scaffolding; the hand-built room pool will place its own bed via a structure marker.)
+    private static void placeExitBed(ServerLevel level, int ox, int oz, RoomType t) {
         int cx = t.w / 2;
-        int cz = t.d - 1;
-        BlockState lower = ModRegistry.RIFT_DOOR.get().defaultBlockState()
-                .setValue(DoorBlock.FACING, Direction.SOUTH)
-                .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER)
-                .setValue(DoorBlock.HINGE, DoorHingeSide.LEFT)
-                .setValue(DoorBlock.OPEN, false);
-        BlockPos lowerPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + cz);
-        level.setBlock(lowerPos, lower, 3);
-        level.setBlock(lowerPos.above(), lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), 3);
+        int headZ = t.d - 1;
+        // FACING points foot -> head; head sits at the higher Z (south), against the north wall.
+        BlockState bed = ModRegistry.DREAM_BED.get().defaultBlockState()
+                .setValue(BedBlock.FACING, Direction.SOUTH);
+        BlockPos footPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + headZ - 1);
+        // Flag 2 (no neighbour updates) so neither half triggers vanilla bed's missing-partner self-delete.
+        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), 2);
+        level.setBlock(footPos.south(), bed.setValue(BedBlock.PART, BedPart.HEAD), 2);
 
         if (cx - 1 >= 0) {
-            level.setBlock(new BlockPos(ox + cx - 1, FLOOR_Y + 1, oz + cz), lamp(), 2);
+            level.setBlock(new BlockPos(ox + cx - 1, FLOOR_Y + 1, oz + headZ), lamp(), 2);
         }
         if (cx + 1 < t.w) {
-            level.setBlock(new BlockPos(ox + cx + 1, FLOOR_Y + 1, oz + cz), lamp(), 2);
+            level.setBlock(new BlockPos(ox + cx + 1, FLOOR_Y + 1, oz + headZ), lamp(), 2);
         }
     }
 
