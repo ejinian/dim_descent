@@ -25,13 +25,23 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   flat generator with `dimdescent:forsaken_fiber` (bottom, unbreakable boundary) and
   `dimdescent:nullstone` (the walkable "floor," insta-break void look) as its layers. See
   `dimensions-teleportation-portals.md` for the general technique.
-- **Spawn platform**: since the flat generator's floor is an insta-break void block everywhere, a
-  10x10x1 stone-brick patch is stamped in imperatively (plain `level.setBlock` calls, not real
-  worldgen) around the rift's fixed spawn point the first time anyone arrives there - see
-  `RiftTeleporter.ensureSpawnPlatform`. Not a permanent solution; revisit once real room
-  generation/placement is being designed.
-- **Rift door block** (`dimdescent:rift_door`): extends vanilla `DoorBlock`, implements `Portal`
-  for bidirectional overworld<->rift teleport, has a `BlockEntityRenderer` drawing a re-themed
+- **Room grid** (`NullDomainRooms`): the Null Domain is a Dimensional-Doors-style pocket dungeon,
+  NOT a flat platform. Rooms are stamped imperatively (plain `level.setBlock`, not worldgen) on a
+  coarse grid - `SPACING = 512` blocks per cell, mirroring DimDoors' 32-chunk `pocketGridSize` -
+  keyed by a monotonic integer index (`index % 32` -> X cell, `index / 32` -> Z cell). Each room is
+  a Forsaken Fiber shell with an altar-brick floor, Daemonlight lighting, type-specific decor, and
+  ONE onward Rift Door in the far wall. Five code-generated `RoomType`s (PILLAR_HALL, LONG_GALLERY,
+  GRAND_CHAMBER, CRAMPED_CELLS, HALL_OF_BARS) are picked uniformly at random; three can carry a loot
+  chest (`RandomizableContainerBlockEntity.setLootTable` -> `dimdescent:chests/altar`). The next
+  index is persisted in a `GridData extends SavedData` on the rift level, so the grid keeps growing
+  across restarts and no cell is handed out twice. Generation is LAZY (on door entry), like
+  DimDoors' `LazyPocketGenerator`. Deliberately dropped from DimDoors for this POC: their authored
+  `.schem` room pool and their depth axis (`VirtualLocation.depth`) - selection is a flat uniform
+  pick with no depth weighting yet.
+- **Rift door block** (`dimdescent:rift_door`): extends vanilla `DoorBlock`, implements `Portal`;
+  every door leads DEEPER (overworld door or in-room door alike -> a fresh random room via
+  `NullDomainRooms.newRoom`), there is no door-based way back out. Has a `BlockEntityRenderer`
+  drawing a re-themed
   (red/orange) End-Portal-style shader effect through transparent window cutouts in its texture -
   small 4-window "peekaboo" boxes while closed, one big box filling the doorway once open. Hinge
   is forced to always be LEFT regardless of placement context (this is a special door, not meant
@@ -42,15 +52,13 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
 - **Shared teleport logic** lives in a `RiftTeleporter` helper class, used by both the `/rift
   enter|leave` debug command and the door block's `Portal.getPortalDestination` - avoid
   duplicating dimension-selection logic across entry points.
-- **Door pairing** (`RiftDoorLinkData`, a `SavedData` on the overworld): there is exactly ONE
-  generated exit door in the rift, ever - not one per overworld door. Walking through any door
-  from outside the rift always lands at that same shared door (generated once, first time it's
-  needed); what makes the return trip go to the right place is a per-player record of "which door
-  did this specific player most recently enter from," not a per-door-position link. A door placed
-  by hand inside the rift isn't that shared door, so it always falls back to the default
-  overworld-spawn exit and never gets tracked. Don't reintroduce a per-overworld-door generated
-  exit - that was tried and explicitly walked back (see git history around the door-pairing
-  commits) because it doesn't match the intended "one to one, always the same door" behavior.
+- **No door pairing / no return trips**: the old `RiftDoorLinkData` + `DoorLocation` machinery
+  (one shared generated exit door, per-player "which door did I enter from" tracking) was DELETED
+  when the room grid landed - doors only ever lead deeper now, so there is nothing to pair. Leaving
+  the Null Domain happens two ways only: the manual `/rift leave`, and Attunement expiry
+  (`RiftEjectionEvents` ejects to the respawn point the tick the effect ends). A voluntary exit
+  door back to the altar is a separate, not-yet-built item. Don't reintroduce door-based exits
+  without revisiting that design.
 - **Nullstone** (`dimdescent:nullstone`): Dimensional Doors' "Fabric of Reality" equivalent -
   insta-break (`Properties.instabreak()`), pure uniform `(0,0,0)` black texture (explicitly no
   noise/variation - a black texture stays black under every one of Minecraft's per-face lighting
@@ -66,7 +74,9 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   obsidian-tier hardness (`requiresCorrectToolForDrops()` + `needs_diamond_tool`/`mineable/pickaxe`
   tag membership - both required together, see `block-robustness-checklist.md`), original
   criss-cross lattice texture with real alpha gaps (not vanilla's actual texture - copyright, see
-  `blocks-doors-models.md`). Not yet spawned via world-gen; give/creative only.
+  `blocks-doors-models.md`). Placed as Null Domain room decor (cage rings, bar screens, cell
+  gateposts - see `NullDomainRooms`); still has no world-gen spawn or recipe, so it's give/creative
+  only as an item.
 - **Datura** (`dimdescent:datura`) + **Datura Seeds** (`dimdescent:datura_seeds`): a `FlowerBlock`
   (`SuspiciousStewEffects.EMPTY`, no custom class needed) with an original white-trumpet-flower
   texture. Breaking it without Silk Touch drops 1-2 Datura Seeds instead of the plant itself

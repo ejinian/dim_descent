@@ -113,22 +113,28 @@ of the industrial entrance," and the industrial framing is long gone.
 
 Everything above is the *door*; this is the room behind it.
 
-- [x] **First slice: descent through procedural rooms** (`NullDomainRooms`). Entry now
-      drops you into a stamped room (Forsaken Fiber shell, altar-brick floor, corner
-      Daemonlights, seeded pillars) with a hole in the floor; dropping through it builds
-      the next, deeper room and climbs a per-player depth counter (shown on the actionbar).
-      Rooms are placed imperatively, spread on the X axis and keyed by depth, so depth is
-      logical rather than physical — leaving room to make room selection depth-aware
-- [ ] Depth axis proper + a legible "how deep am I" signal (fog, ambient, colour grading)
-      beyond the current actionbar readout
-- [ ] Real room VARIETY — a pool of authored and/or richer procedural rooms, not one
-      template with pillars
+- [x] **DimDoors-style room traversal** (`NullDomainRooms`). Modelled directly on Dimensional
+      Doors' pocket dungeon (reverse-engineered from the cloned repo): every crossing in, and
+      every Rift Door walked through once inside, opens a fresh randomly-chosen room ~512 blocks
+      away on a grid (`SPACING = 512`, their 32-chunk `pocketGridSize`), stamped LAZILY on door
+      entry. Rooms are keyed by a monotonic index persisted in a `GridData` SavedData, so they
+      never overlap and the grid survives restarts. Five code-generated `RoomType`s — PILLAR_HALL,
+      LONG_GALLERY, GRAND_CHAMBER, CRAMPED_CELLS, HALL_OF_BARS — picked uniformly; three can carry
+      an altar-loot chest. Each room is a Forsaken Fiber shell with one onward door in the far wall
+- [x] Replaced the hole-drop descent + per-player depth counter with the above (no actionbar
+      readout, no narration, per user's request). The platform / shared-exit-door / `RiftDoorLinkData`
+      pairing machinery is deleted — doors only lead deeper now
+- [ ] Depth-weighted selection (DimDoors' `VirtualLocation.depth`) so deeper rooms differ, plus a
+      legible "how deep am I" signal (fog, ambient, colour grading)
+- [ ] Authored rooms (NBT/`.schem`-style pool) to raise quality beyond the code-generated five
 - [ ] Depth-tiered enemies
 - [ ] Loot tied to depth/risk
-- [ ] Voluntary exit door back to the altar you entered by
+- [ ] Voluntary exit door back to the altar you entered by (the only planned door that leads OUT)
 
-Known v1 limitations: one room shape, a single central hole, no multi-room branching, and
-the legacy Rift Door still lands on the old flat platform rather than a room.
+Known POC limitations: room selection is a flat uniform pick with no depth axis yet; rooms are
+code-generated (blockier than authored rooms would be); onward doors are one-way (rooms persist, so
+two-way/backtracking links are possible later but aren't wired up); and the loot chest reuses the
+altar table rather than a depth-scaled one.
 
 ---
 

@@ -146,18 +146,23 @@ telling anyone what to think.
 ## Status
 
 Core dimension-travel loop works end to end: a custom Rift dimension (Nullstone floor,
-Forsaken Fiber unbreakable boundary), and a Rift Door with a themed portal effect that
-generates a single shared exit door in the rift the first time any door is used anywhere,
-remembering per player which door to send them back through when they walk out — a door
-placed by hand inside the rift just goes to overworld spawn instead. Datura spawns in the wild
-(see below); Dark Iron Bars exists as a placeable block awaiting reuse as altar/Null Domain decor,
-now that the mining gate it was built for is gone. Potion of Attunement is brewable (see the potion pipeline above) and the first time one is ever
-completed in a world it triggers a one-time server-wide thunderstorm plus a lightning flash. Its
-survival mechanic is live: a per-tick presence check ejects any survival/adventure player who is in
-the Null Domain without the effect active — teleporting them to their respawn point (bed/anchor,
-else world spawn) rather than killing them. This covers both walking in unprotected (a door leads
-nowhere for the unattuned) and the potion expiring while you're inside (the trip is simply over).
-Creative and spectator are exempt.
+Forsaken Fiber unbreakable boundary), and a Rift Door with a themed portal effect. The Null Domain
+is now a Dimensional-Doors-style pocket dungeon (`NullDomainRooms`, reverse-engineered from DD's
+own pocket/grid code): every crossing in — and every Rift Door walked through once inside — opens a
+fresh, randomly-chosen room ~512 blocks away on a persisted grid, stamped the moment the door is
+entered (lazy, like DD). Five code-generated room types (pillar hall, wide gallery, tall
+altar-heart chamber, low barred cells, hall of bars) are picked at random; three can hold an
+altar-loot chest. Each room has exactly one onward door in the far wall, so doors only ever lead
+deeper — the old shared-exit-door/return-pairing machinery is gone. Dark Iron Bars are now placed
+as room decor (cages, screens, gateposts). Datura spawns in the wild (see below). Potion of
+Attunement is brewable (see the potion pipeline above) and the first time one is ever completed in
+a world it triggers a one-time server-wide thunderstorm plus a lightning flash. Its survival
+mechanic is live: a per-tick presence check ejects any player who is in the Null Domain without the
+effect active — every gamemode included, creative and spectator too — teleporting them to their
+respawn point (bed/anchor, else world spawn) rather than killing them. This covers both walking in
+unprotected (a door leads nowhere for the unattuned) and the potion expiring while you're inside
+(the trip is simply over). Leaving is otherwise only `/rift leave` or that expiry — no door leads
+out yet.
 
 Datura Seeds are also edible, which sets off the "datura trip", driven by a server-side tick
 sequencer since vanilla can't chain one effect into a different one. There are seven symptoms:
