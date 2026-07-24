@@ -40,8 +40,8 @@ public class AlmanacusItem extends Item {
                         "§4§lALMANACUS",
                         "§4§lINFERNI ABDITI§r",
                         "",
-                        "§8Being a true",
-                        "§8account of the",
+                        "§Be warned the",
+                        "§perils of the",
                         "§8hidden hell, and",
                         "§8of its entering.",
                         "",
@@ -95,7 +95,7 @@ public class AlmanacusItem extends Item {
                         "",
                         "§0Set the seed in a",
                         "§0draught made awkward",
-                        "§0by wart of nether.",
+                        "§0by nether wart.",
                         "",
                         "§0It gives all seven",
                         "§0together, in no",
@@ -126,11 +126,7 @@ public class AlmanacusItem extends Item {
                         "§0Lie down in any bed.",
                         "",
                         "§0Sleep does not come.",
-                        "§0Something else does.",
-                        "",
-                        "§0Under the first",
-                        "§0draught he may not",
-                        "§0lie down at all."),
+                        "§0Something else does."),
                 lines(
                         "§4VII. OF THE TERM§r",
                         "",
@@ -142,10 +138,7 @@ public class AlmanacusItem extends Item {
                         "§0When it is spent he",
                         "§0wakes in the bed he",
                         "§0left, whole, short",
-                        "§0some hours.",
-                        "",
-                        "§0Drink again below",
-                        "§0to remain below."));
+                        "§0some hours."));
     }
 
     private static Component lines(String... lines) {
