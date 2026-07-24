@@ -28,16 +28,24 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
 - **Room grid** (`NullDomainRooms`): the Null Domain is a Dimensional-Doors-style pocket dungeon,
   NOT a flat platform. Rooms are stamped imperatively (plain `level.setBlock`, not worldgen) on a
   coarse grid - `SPACING = 512` blocks per cell, mirroring DimDoors' 32-chunk `pocketGridSize` -
-  keyed by a monotonic integer index (`index % 32` -> X cell, `index / 32` -> Z cell). Each room is
-  a Forsaken Fiber shell with an altar-brick floor, Daemonlight lighting, type-specific decor, and
-  ONE onward Rift Door in the far wall. Five code-generated `RoomType`s (PILLAR_HALL, LONG_GALLERY,
-  GRAND_CHAMBER, CRAMPED_CELLS, HALL_OF_BARS) are picked uniformly at random; three can carry a loot
-  chest (`RandomizableContainerBlockEntity.setLootTable` -> `dimdescent:chests/altar`). The next
-  index is persisted in a `GridData extends SavedData` on the rift level, so the grid keeps growing
-  across restarts and no cell is handed out twice. Generation is LAZY (on door entry), like
-  DimDoors' `LazyPocketGenerator`. Deliberately dropped from DimDoors for this POC: their authored
-  `.schem` room pool and their depth axis (`VirtualLocation.depth`) - selection is a flat uniform
-  pick with no depth weighting yet.
+  keyed by a monotonic integer index. Index -> cell is a square SPIRAL out from origin
+  (`spiralCell`, an O(1) closed form verified bijective against a brute-force spiral walk), so rooms
+  fan into both axes and stay within ~sqrt(N)/2 cells of origin (tightest collision-free packing)
+  rather than marching off one axis. Collision-safety is NOT from the layout - it's the single
+  global monotonic index (`GridData.takeNextIndex`), so two players at once or the same player across
+  the world's whole history never get the same cell. Each room is a pitch-black box: interior faces
+  of walls + ceiling lined with Nullstone (dead black), backed by an unbreakable Forsaken Fiber shell
+  one block further out/up (so it's black yet unbreachable in survival), altar-brick floor with
+  Daemonlight lighting, type-specific decor, and ONE onward Rift Door in the far wall. Crucially
+  there is NOTHING under the floor - the altar bricks sit directly over the void, so breaking one
+  (creative) drops you out of the world; the dimension's flat generator was emptied to `"layers": []`
+  to remove the old ground far below. Five code-generated `RoomType`s (PILLAR_HALL, LONG_GALLERY,
+  GRAND_CHAMBER, CRAMPED_CELLS, HALL_OF_BARS) picked uniformly; three can carry a loot chest
+  (`RandomizableContainerBlockEntity.setLootTable` -> `dimdescent:chests/altar`). The next index is
+  persisted in a `GridData extends SavedData` on the rift level. Generation is LAZY (on door entry),
+  like DimDoors' `LazyPocketGenerator`. Deliberately dropped from DimDoors for this POC: their
+  authored `.schem` room pool and their depth axis (`VirtualLocation.depth`) - selection is a flat
+  uniform pick with no depth weighting yet.
 - **Rift door block** (`dimdescent:rift_door`): extends vanilla `DoorBlock`, implements `Portal`;
   every door leads DEEPER (overworld door or in-room door alike -> a fresh random room via
   `NullDomainRooms.newRoom`), there is no door-based way back out. Has a `BlockEntityRenderer`

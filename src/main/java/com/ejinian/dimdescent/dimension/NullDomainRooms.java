@@ -50,10 +50,15 @@ public final class NullDomainRooms {
     // constant - build height (0..256 in the rift dimension type) is never a concern.
     public static final int FLOOR_Y = 100;
 
-    // Grid geometry. SPACING mirrors DimDoors' 32-chunk cell (512 blocks); GRID_COLS just wraps the
-    // linear index into a 2D field so rooms fan out in both X and Z instead of a single endless line.
+    // Grid geometry. SPACING mirrors DimDoors' 32-chunk cell (512 blocks). Rooms are placed on a
+    // square SPIRAL out from the origin (see spiralCell): index 0 at the centre, each next index the
+    // next cell of an outward-growing square. This fans rooms into BOTH axes and keeps every room as
+    // close to the origin as possible - N rooms never stray past ~sqrt(N)/2 cells either way, which is
+    // the tightest any collision-free packing can be - so the world stays compact instead of marching
+    // off down one axis. Collision-safety does NOT come from the layout: newRoom hands out a single
+    // global monotonic index, so no two rooms (two players at once, or the same player across the
+    // whole history of the world) can ever be handed the same cell.
     private static final int SPACING = 512;
-    private static final int GRID_COLS = 32;
 
     // The one loot table rooms with a chest point at, reusing the altar's themed pool for now.
     private static final ResourceKey<LootTable> LOOT_TABLE = ResourceKey.create(
@@ -86,12 +91,30 @@ public final class NullDomainRooms {
         return generateRoom(rift, index);
     }
 
-    private static int originX(int index) {
-        return (index % GRID_COLS) * SPACING;
-    }
-
-    private static int originZ(int index) {
-        return (index / GRID_COLS) * SPACING;
+    // Maps a room index to its grid cell on a square spiral out from (0,0). O(1), verified bijective
+    // against a brute-force spiral walk. See the SPACING comment for why a spiral.
+    private static int[] spiralCell(int index) {
+        if (index == 0) {
+            return new int[]{0, 0};
+        }
+        int ring = (int) Math.floor((Math.sqrt(index) + 1) / 2);
+        // Correct any floating-point drift at the exact ring boundaries (perfect squares).
+        while ((2 * ring - 1) * (2 * ring - 1) > index) {
+            ring--;
+        }
+        while ((2 * ring + 1) * (2 * ring + 1) - 1 < index) {
+            ring++;
+        }
+        int offset = index - (2 * ring - 1) * (2 * ring - 1);
+        if (offset <= 2 * ring - 1) {                       // east edge, heading +Z
+            return new int[]{ring, offset - ring + 1};
+        } else if (offset <= 4 * ring - 1) {                // north edge, heading -X
+            return new int[]{ring - (offset - (2 * ring - 1)), ring};
+        } else if (offset <= 6 * ring - 1) {                // west edge, heading -Z
+            return new int[]{-ring, ring - (offset - (4 * ring - 1))};
+        } else {                                             // south edge, heading +X
+            return new int[]{-ring + (offset - (6 * ring - 1)), -ring};
+        }
     }
 
     // Deterministic per index, so re-stamping the same cell rebuilds the identical room. The type is
@@ -99,8 +122,9 @@ public final class NullDomainRooms {
     private static Vec3 generateRoom(ServerLevel level, int index) {
         RandomSource rng = RandomSource.create(index * 0x9E3779B97F4A7C15L ^ 0x5EEDCAFEL);
         RoomType type = RoomType.values()[rng.nextInt(RoomType.values().length)];
-        int ox = originX(index);
-        int oz = originZ(index);
+        int[] cell = spiralCell(index);
+        int ox = cell[0] * SPACING;
+        int oz = cell[1] * SPACING;
 
         stampShell(level, ox, oz, type);
         stampFloor(level, ox, oz, type, rng);
@@ -111,18 +135,50 @@ public final class NullDomainRooms {
         return new Vec3(ox + type.w / 2 + 0.5, FLOOR_Y + 1, oz + 1.5);
     }
 
-    // Unbreakable Forsaken Fiber box: four walls, floor slab (one below the walkable surface) and
-    // ceiling, hollow inside.
+    // A pitch-black void box. The interior faces of the walls and the ceiling are lined with Nullstone
+    // (dead black), backed by an unbreakable Forsaken Fiber shell one block further out and up, so the
+    // room reads as pure black yet still can't be mined out of in survival. There is deliberately
+    // NOTHING beneath the floor: the altar-brick walkway (stampFloor) is the only thing over the void,
+    // so breaking through it drops you clean out of the world (the flat ground the dimension used to
+    // generate far below has been removed to match - see the rift dimension json).
     private static void stampShell(ServerLevel level, int ox, int oz, RoomType t) {
         BlockState fiber = fiber();
+        BlockState nullstone = nullstone();
         BlockState air = Blocks.AIR.defaultBlockState();
-        int top = FLOOR_Y + t.h + 1;
+        int wallTop = FLOOR_Y + t.h;   // highest interior air row
+        int innerCeil = wallTop + 1;   // nullstone lid
+        int outerCeil = wallTop + 2;   // fiber lid
+
+        // Hollow the interior (the floor row itself is left for stampFloor to fill with brick).
+        for (int x = 0; x < t.w; x++) {
+            for (int z = 0; z < t.d; z++) {
+                for (int y = FLOOR_Y + 1; y <= wallTop; y++) {
+                    level.setBlock(new BlockPos(ox + x, y, oz + z), air, 2);
+                }
+            }
+        }
+
+        // Inner shell: nullstone walls (the -1 / w ring) from the floor up, plus a full nullstone lid.
         for (int x = -1; x <= t.w; x++) {
             for (int z = -1; z <= t.d; z++) {
-                for (int y = FLOOR_Y - 1; y <= top; y++) {
-                    boolean boundary = x == -1 || x == t.w || z == -1 || z == t.d
-                            || y == FLOOR_Y - 1 || y == top;
-                    level.setBlock(new BlockPos(ox + x, y, oz + z), boundary ? fiber : air, 2);
+                boolean wall = x == -1 || x == t.w || z == -1 || z == t.d;
+                for (int y = FLOOR_Y; y <= innerCeil; y++) {
+                    if (wall || y == innerCeil) {
+                        level.setBlock(new BlockPos(ox + x, y, oz + z), nullstone, 2);
+                    }
+                }
+            }
+        }
+
+        // Outer shell: unbreakable fiber, one block further out and up, sealing the box behind the
+        // nullstone so the walls and ceiling can't be breached into the void.
+        for (int x = -2; x <= t.w + 1; x++) {
+            for (int z = -2; z <= t.d + 1; z++) {
+                boolean wall = x == -2 || x == t.w + 1 || z == -2 || z == t.d + 1;
+                for (int y = FLOOR_Y; y <= outerCeil; y++) {
+                    if (wall || y == outerCeil) {
+                        level.setBlock(new BlockPos(ox + x, y, oz + z), fiber, 2);
+                    }
                 }
             }
         }
@@ -348,6 +404,10 @@ public final class NullDomainRooms {
 
     private static BlockState fiber() {
         return ModRegistry.FORSAKEN_FIBER.get().defaultBlockState();
+    }
+
+    private static BlockState nullstone() {
+        return ModRegistry.NULLSTONE.get().defaultBlockState();
     }
 
     private static BlockState bricks() {
