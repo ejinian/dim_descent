@@ -27,12 +27,9 @@ public final class RiftTeleporter {
     public static final ResourceKey<Level> RIFT_LEVEL = ResourceKey.create(
             Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "rift"));
 
-    public static final Vec3 RIFT_SPAWN_POS = new Vec3(0.5, 7.0, 0.5);
-
-    // A 10x10x1 safe patch of stone brick under the spawn point, stamped over whatever the flat
-    // generator put there (Nullstone everywhere else) so arriving players don't land straight on
-    // the insta-break void floor. Not real worldgen - just placed imperatively the first time
-    // someone arrives. Revisit once room placement/generation is actually being designed.
+    // The legacy stone-brick platform, kept only for the legacy Rift Door exit (which still lands on
+    // it). The primary entry (sleep / /rift enter) now drops into procedural rooms via
+    // NullDomainRooms instead - see getTransitionFor.
     private static final int PLATFORM_MIN = -5;
     private static final int PLATFORM_MAX = 4;
     private static final int PLATFORM_Y = 6;
@@ -63,9 +60,12 @@ public final class RiftTeleporter {
         Vec3 targetPos;
         if (leavingRift) {
             targetPos = Vec3.atBottomCenterOf(targetLevel.getSharedSpawnPos());
+        } else if (entity instanceof ServerPlayer player) {
+            // Entering: land in the first procedural room and start the descent at depth 0.
+            targetPos = NullDomainRooms.beginDescent(targetLevel, player.getUUID());
         } else {
-            ensureSpawnPlatform(targetLevel);
-            targetPos = RIFT_SPAWN_POS;
+            NullDomainRooms.generateRoom(targetLevel, 0);
+            targetPos = NullDomainRooms.landingPos(0);
         }
 
         return new DimensionTransition(

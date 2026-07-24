@@ -109,15 +109,26 @@ of the industrial entrance," and the industrial framing is long gone.
 
 - [ ] Keep it terse and menacing; foreshadow, never explain mechanics
 
-## Phase 6 — The actual core concept
+## Phase 6 — The actual core concept (started)
 
-Still entirely unbuilt. Everything above is the *door*; this is the room behind it.
+Everything above is the *door*; this is the room behind it.
 
-- [ ] Depth axis and a legible "how deep am I" signal (fog, ambient, colour grading)
-- [ ] Modular/procedural room composition
+- [x] **First slice: descent through procedural rooms** (`NullDomainRooms`). Entry now
+      drops you into a stamped room (Forsaken Fiber shell, altar-brick floor, corner
+      Daemonlights, seeded pillars) with a hole in the floor; dropping through it builds
+      the next, deeper room and climbs a per-player depth counter (shown on the actionbar).
+      Rooms are placed imperatively, spread on the X axis and keyed by depth, so depth is
+      logical rather than physical — leaving room to make room selection depth-aware
+- [ ] Depth axis proper + a legible "how deep am I" signal (fog, ambient, colour grading)
+      beyond the current actionbar readout
+- [ ] Real room VARIETY — a pool of authored and/or richer procedural rooms, not one
+      template with pillars
 - [ ] Depth-tiered enemies
 - [ ] Loot tied to depth/risk
 - [ ] Voluntary exit door back to the altar you entered by
+
+Known v1 limitations: one room shape, a single central hole, no multi-room branching, and
+the legacy Rift Door still lands on the old flat platform rather than a room.
 
 ---
 
