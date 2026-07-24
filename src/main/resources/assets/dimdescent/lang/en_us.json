@@ -14,6 +14,8 @@
   "block.dimdescent.daemonlight": "Daemonlight",
   "block.dimdescent.daemonlight_wall": "Daemonlight",
   "item.dimdescent.datura_seeds": "Datura Seeds",
+  "item.dimdescent.almanacus_inferni_abditi": "Almanacus Inferni Abditi",
+  "item.dimdescent.almanacus_inferni_abditi.tooltip": "The binding is warm.",
   "item.dimdescent.datura_seeds.tooltip": "Doesn't smell like a seed should. Someone once thought to brew it.",
   "effect.dimdescent.attunement": "Attunement",
   "effect.dimdescent.dry_mouth": "Dry Mouth",

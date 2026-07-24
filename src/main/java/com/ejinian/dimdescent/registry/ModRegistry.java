@@ -14,6 +14,7 @@ import com.ejinian.dimdescent.entity.HallucinationGhost;
 import com.ejinian.dimdescent.block.DaemonlightBlock;
 import com.ejinian.dimdescent.block.DaemonlightWallBlock;
 import com.ejinian.dimdescent.block.DaturaBlock;
+import com.ejinian.dimdescent.item.AlmanacusItem;
 import com.ejinian.dimdescent.item.DaturaSeedsItem;
 
 import net.minecraft.core.registries.Registries;
@@ -27,6 +28,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
@@ -260,6 +262,11 @@ public final class ModRegistry {
     public static final DeferredItem<Item> DATURA_SEEDS = ITEMS.register("datura_seeds",
             () -> new DaturaSeedsItem(new Item.Properties().food(DATURA_SEEDS_FOOD)));
 
+    // The mod's only written lore, found in the chest in the altar's room of eight beds.
+    // stacksTo(1) because it's a singular artefact, not a supply.
+    public static final DeferredItem<Item> ALMANACUS = ITEMS.register("almanacus_inferni_abditi",
+            () -> new AlmanacusItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
+
     // Marker effect for "safe to be inside a rift dimension right now" - the rift-lethality check
     // (not built yet) will look for this on the player. 3600 ticks (3 min) matches vanilla's base
     // duration for other awkward-potion-derived effects like Night Vision; easy to retune later.
@@ -365,6 +372,8 @@ public final class ModRegistry {
             event.accept(DATURA_ITEM);
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(DATURA_SEEDS);
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(ALMANACUS);
         }
     }
 
