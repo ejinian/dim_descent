@@ -31,6 +31,7 @@
   "item.minecraft.splash_potion.effect.attunement": "§4Splash Potion of Attunement",
   "item.minecraft.lingering_potion.effect.attunement": "§4Lingering Potion of Attunement",
   "item.minecraft.tipped_arrow.effect.attunement": "§4Arrow of Attunement",
+  "dimdescent.sleep.too_strange": "I can't sleep right now, I feel strange.",
   "subtitles.dimdescent.heartbeat": "Heart pounds",
   "subtitles.dimdescent.whispers": "Something whispers"
 }

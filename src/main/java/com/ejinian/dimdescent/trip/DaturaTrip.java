@@ -291,6 +291,37 @@ public final class DaturaTrip {
         startFromPotion(player, event.getEffectInstance().getDuration());
     }
 
+    // Attunement supersedes the raw poisoning: drinking (or being splashed by) it mid-trip clears
+    // every symptom at once, so the two never run together. Gated on an active trip so it never
+    // touches a stray Weakness/Poison from some unrelated source.
+    //
+    // Attunement's own opening 10s of darkness is NOT started here - CompanionEffectManager already
+    // applies it on this same Added event. cancel() deliberately leaves Darkness and Night Vision
+    // alone for exactly that reason (Darkness gets refreshed to Attunement's window; Night Vision is
+    // retracted by the companion manager once Psychosis is gone).
+    @SubscribeEvent
+    public static void onAttunementApplied(MobEffectEvent.Added event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (event.getEffectInstance().is(ModRegistry.ATTUNEMENT_EFFECT) && ACTIVE.containsKey(player.getUUID())) {
+            cancel(player);
+        }
+    }
+
+    // Stops the sequencer and strips the symptom effects and the trip marker. Leaves Darkness and
+    // Night Vision to CompanionEffectManager (see onAttunementApplied).
+    public static void cancel(ServerPlayer player) {
+        ACTIVE.remove(player.getUUID());
+        player.removeEffect(ModRegistry.DRY_MOUTH_EFFECT);
+        player.removeEffect(ModRegistry.TACHYCARDIA_EFFECT);
+        player.removeEffect(ModRegistry.PSYCHOSIS_EFFECT);
+        player.removeEffect(net.minecraft.world.effect.MobEffects.CONFUSION);
+        player.removeEffect(net.minecraft.world.effect.MobEffects.POISON);
+        player.removeEffect(net.minecraft.world.effect.MobEffects.WEAKNESS);
+        player.removeEffect(ModRegistry.DATURA_TRIP_EFFECT);
+    }
+
     // Dying ends the trip - the effects themselves are cleared by vanilla on respawn anyway, so
     // leaving the sequencer running would re-apply them to a freshly respawned player.
     @SubscribeEvent

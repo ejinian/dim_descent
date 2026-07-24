@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "dimdescent:altar",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 748213966,
+    "spacing": 34,
+    "separation": 8
+  }
+}

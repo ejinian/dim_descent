@@ -5,7 +5,6 @@ import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -37,13 +36,9 @@ public final class RiftEjectionEvents {
             return;
         }
 
-        // Building and exploring the Null Domain in creative has to stay possible, and a spectator
-        // isn't really there.
-        GameType mode = player.gameMode.getGameModeForPlayer();
-        if (mode == GameType.CREATIVE || mode == GameType.SPECTATOR) {
-            return;
-        }
-
+        // Gamemode deliberately does NOT matter (standing instruction): the moment a player is in the
+        // Null Domain without active Attunement they go, creative and spectator included. The trade
+        // is that building the interior in creative means keeping Attunement topped up - accepted.
         if (player.hasEffect(ModRegistry.ATTUNEMENT_EFFECT)) {
             return;
         }

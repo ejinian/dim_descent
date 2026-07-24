@@ -57,13 +57,15 @@ Aligns the shipped dimension with the new design.
       further dare I push", which is the push-your-luck loop the Core Concept asks for
 - [x] Retired the `dimdescent:rift_unattuned` damage type, its three `bypasses_*`
       tag files, and the death message — nothing kills any more, so nothing used them
-- [ ] **Deferred**: removing the Rift Door as an overworld entrance. It stays for
-      now — it's the only way in until the altars exist (Phase 4). Ejection already
-      enforces the attunement requirement on it, so an unattuned player gets nowhere
+- [x] **Eject applies to every gamemode** now (standing instruction) — the creative
+      and spectator exemption is gone. Trade: building the Null Domain interior in
+      creative means keeping Attunement topped up
+- [x] The Rift Door **stays functional but is not craftable** (no recipe was ever
+      added), so it's already survival-inaccessible while still working as an entrance
 - [ ] **Deferred**: renaming the dimension `dimdescent:rift` → `dimdescent:null_domain`.
-      Changing the ID orphans saved data in that dimension; batching it with the
-      door removal avoids doing that churn twice
-- [ ] **Needs a human**: confirm ejection works both ways in survival — walk in
+      Changing the ID orphans saved data in that dimension. (A dimension-name change
+      is under discussion — see the naming shortlist.)
+- [ ] **Needs a human**: confirm ejection works in survival AND creative — walk in
       without Attunement, and let a dose expire while inside
 
 ## Phase 4 — The Waking Dream (entry via sleep)
@@ -80,21 +82,24 @@ Two event handlers instead.
       structure, imported into the mod with its chest pointed at the loot table
 - [x] The **Almanacus Inferni Abditi** — readable custom grimoire, in the chest via
       `dimdescent:chests/altar`
-- [ ] **Sleep under Attunement, at night, in any bed → Null Domain.** Vanilla
-      already gates beds to night, so that condition is free
-- [ ] **Sleep while raw-poisoned (seeds / Devil's Trumpet) → refused**, with the
+- [x] **Sleep under Attunement, at night, in any bed → Null Domain**
+      (`SleepEntryEvents`, via `CanPlayerSleepEvent`). Vanilla gates beds to night
+      and sets respawn to the bed, both for free
+- [x] **Sleep while raw-poisoned (seeds / Devil's Trumpet) → refused**, with the
       narrated line *"I can't sleep right now, I feel strange."*
-- [ ] **Attunement supersedes the raw trip**: drinking it mid-trip clears every
-      symptom instantly and starts Attunement's own opening darkness
-- [ ] Register the structure + a `random_spread` structure_set at village-like
-      rarity (villages are spacing 34 / separation 8)
-- [ ] Retire the **Rift Door** as an overworld entrance — sleep replaces it, so
-      the long-deferred Phase 3 item can finally be done
+- [x] **Attunement supersedes the raw trip**: drinking it mid-trip clears every
+      symptom instantly (`DaturaTrip.cancel`); its own opening darkness comes from
+      CompanionEffectManager on the same event
+- [x] Registered the structure + a `random_spread` structure_set at village rarity
+      (spacing 34 / separation 8), scoped to overworld LAND biomes so altars don't
+      spawn half-submerged
+- [ ] **Needs a human**: `/locate structure dimdescent:altar` in a FRESH world,
+      then confirm one actually generates on the surface without floating/burying
 - [ ] Repurpose **Dark Iron Bars** as altar/Null Domain decor
 
-Worth knowing: expiry already ejects to the player's respawn point, and vanilla
-sleeping sets spawn to that bed — so entering by sleep means waking up in the
-very bed you lay down in, with no extra code.
+Worth knowing: expiry ejects to the player's respawn point, and vanilla sleeping
+sets spawn to that bed — so entering by sleep means waking up in the very bed you
+lay down in, with no extra code.
 
 ## Phase 5 — Lore delivery
 
