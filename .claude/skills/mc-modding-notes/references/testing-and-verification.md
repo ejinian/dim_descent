@@ -44,11 +44,14 @@ gets to loading world/dimension registries - unless the project actually has `@G
 test methods registered. Don't bother with it for this purpose unless we actually build out a
 gametest suite later.
 
-## Don't boot a full dedicated server (`runServer`) just to validate world-loading
+## `runServer` IS the tool for validating worldgen - but never accept the EULA for the user
 
-This requires accepting Mojang's EULA (writing `eula=true` into `run/eula.txt`) the first time it
-runs. That's a real agreement-acceptance action - don't do it on the user's behalf without asking
-first, even though it's "just a local dev file."
+Booting `./gradlew runServer` loads the datapack registries and generates spawn, which is the one
+way to validate worldgen JSON headlessly from here (see the worldgen note below). The ONE caution:
+the first run needs `eula=true` in `run/eula.txt`, and writing that is a real agreement-acceptance
+action - do NOT create/accept it on the user's behalf. Only run the server if `run/eula.txt` already
+says `eula=true` (it will, once the user has ever launched a server/world); if it doesn't, ask first.
+Not for validating simple resources (models/textures/blockstates) - a client boot covers those.
 
 ## Java changes need a full restart; resource/JSON changes don't
 
@@ -94,3 +97,24 @@ game, clearly mid-testing something). The general instinct to check before force
 someone might be actively using does not apply here - the user has explicitly confirmed, more than
 once, that speed of iteration matters more than protecting an in-progress play session. Restart
 immediately, don't pause to ask "are you still testing?" first.
+
+## Worldgen/datapack JSON only validates at WORLD LOAD, not client boot
+
+A clean boot to the title screen says NOTHING about worldgen datapack files
+(`worldgen/structure`, `structure_set`, `template_pool`, `dimension`, biome/other tags). Those
+registries are parsed when a world is created/loaded, and a bad file throws
+`IllegalStateException: Failed to load registries` and crashes world creation - which looks to the
+user like "I clicked Create World and the game closed".
+
+**Validate worldgen without clicking Create World: boot the dedicated server.** `./gradlew runServer`
+loads the datapack registries on startup and generates the spawn area, hitting the exact code path
+that crashes world creation. If it reaches `Done (Ns)!` with no `Failed to load registries` /
+`Unbound values` / `No key <field>` lines, the worldgen is valid. Grep the server log for those and
+for `Preparing spawn area` / `Done (`. Stop it afterwards (kill the process on port 25565). This is
+the ONLY way to verify worldgen from this environment - the client can't be driven through the
+Create-World button.
+
+The failure message is precise and worth reading fully: `No key spawn_overrides in MapLike[...]`
+means that exact required field is missing from that JSON. Codecs report the FIRST missing required
+field, so fixing one may reveal another - verify against the actual codec (see the structure-fields
+note in `dimensions-teleportation-portals.md`) rather than fixing one at a time via repeated crashes.

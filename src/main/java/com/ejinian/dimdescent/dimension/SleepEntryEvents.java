@@ -22,30 +22,37 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 // The Waking Dream: sleep is how you cross into the Null Domain.
 //
-//   - Attuned, at night, in any valid bed  -> pulled into the Null Domain instead of sleeping.
+//   - Attuned, at night, in any valid bed  -> you actually lie down, the screen fades toward black,
+//     and a few seconds in you are pulled into the Null Domain instead of waking to morning.
 //   - Under the raw poisoning (seeds / Devil's Trumpet), not attuned -> can't sleep at all.
 //   - Sober -> sleeps normally.
 //
 // Vanilla does the heavy lifting. CanPlayerSleepEvent hands us the result of vanilla's own bed
-// checks (night, in range, unobstructed, safe) and lets us override it; and vanilla's
-// startSleepInBed ALREADY sets the player's respawn to the bed before it decides whether sleep
-// succeeds. So crossing means their respawn is the bed - and since Attunement expiry ejects to the
-// respawn point, they wake in the very bed they lay down in, hours gone, with no extra code.
+// checks (night, in range, unobstructed, safe) and lets us override it; and vanilla's startSleepInBed
+// already sets the player's respawn to the bed before it decides. So a crosser's respawn IS the bed,
+// and Attunement expiry ejects to the respawn point - they wake in the very bed they lay down in,
+// hours gone, with no extra code.
+//
+// The crossing is timed off the sleep fade rather than fired instantly: we let the player sleep and
+// wait until getSleepTimer nears full black, then teleport. That gives the "lie down, darken, gone"
+// beat. We cross a little BEFORE the fade completes (100) so vanilla's own sleep-through-night skip
+// never fires first.
 @EventBusSubscriber(modid = DimDescent.MODID)
 public final class SleepEntryEvents {
 
-    // Crossing is deferred one tick rather than done inside the sleep-attempt call stack, to avoid
-    // changing dimension in the middle of the bed interaction that triggered it.
-    private static final Set<UUID> PENDING_CROSS = Collections.synchronizedSet(new HashSet<>());
+    // sleepTimer runs 0..100; the sleep-through-night skip triggers at 100. Cross at 88: nearly full
+    // black, a comfortable margin before the skip.
+    private static final int CROSS_AT_SLEEP_TIMER = 88;
+
+    private static final Set<UUID> CROSSING = Collections.synchronizedSet(new HashSet<>());
 
     @SubscribeEvent
     public static void onCanSleep(CanPlayerSleepEvent event) {
         ServerPlayer player = event.getEntity();
-        ServerLevel level = player.serverLevel();
 
-        // No crossing from inside the Null Domain (and the rift dimension isn't natural anyway, so
-        // vanilla would already refuse - this is belt and braces).
-        if (RiftTeleporter.isInRift(level)) {
+        // No crossing from inside the Null Domain (the rift dimension isn't natural anyway, so vanilla
+        // already refuses - belt and braces).
+        if (RiftTeleporter.isInRift(player.serverLevel())) {
             return;
         }
 
@@ -53,8 +60,8 @@ public final class SleepEntryEvents {
         boolean poisoned = player.hasEffect(ModRegistry.DATURA_TRIP_EFFECT);
 
         if (poisoned && !attuned) {
-            // You're too far gone to sleep. OTHER_PROBLEM carries no default message, so the only
-            // thing shown is the narrated line.
+            // Too far gone to sleep. OTHER_PROBLEM carries no default message, so the narrated line
+            // is the only thing shown.
             event.setProblem(BedSleepingProblem.OTHER_PROBLEM);
             player.displayClientMessage(
                     Component.translatable("dimdescent.sleep.too_strange")
@@ -63,12 +70,12 @@ public final class SleepEntryEvents {
             return;
         }
 
-        // Only cross when vanilla would otherwise have allowed the sleep - i.e. it is night, the bed
-        // is in range and unobstructed, and it's safe. That also means respawn has just been set to
-        // this bed. Anything else (daytime, too far, monsters) falls through to vanilla's own reason.
+        // Only cross when vanilla would otherwise have allowed the sleep - it's night, the bed is in
+        // range and unobstructed and safe, and respawn has just been set to it. We deliberately do
+        // NOT set a problem here: the player really lies down and the fade begins; the tick handler
+        // pulls them under once it's dark enough.
         if (attuned && event.getVanillaProblem() == null) {
-            event.setProblem(BedSleepingProblem.OTHER_PROBLEM);
-            PENDING_CROSS.add(player.getUUID());
+            CROSSING.add(player.getUUID());
         }
     }
 
@@ -77,22 +84,32 @@ public final class SleepEntryEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        if (!PENDING_CROSS.remove(player.getUUID())) {
+        UUID id = player.getUUID();
+        if (!CROSSING.contains(id)) {
             return;
         }
-        ServerLevel level = player.serverLevel();
-        if (RiftTeleporter.isInRift(level)) {
+
+        // Woke up (left the bed) or was interrupted before crossing - cancel.
+        if (!player.isSleeping()) {
+            CROSSING.remove(id);
             return;
         }
-        DimensionTransition transition = RiftTeleporter.getTransitionFor(level, player);
-        if (transition != null) {
-            player.changeDimension(transition);
+
+        if (player.getSleepTimer() >= CROSS_AT_SLEEP_TIMER) {
+            CROSSING.remove(id);
+            ServerLevel level = player.serverLevel();
+            // Wake without nudging the level's sleep bookkeeping, then cross.
+            player.stopSleepInBed(true, false);
+            DimensionTransition transition = RiftTeleporter.getTransitionFor(level, player);
+            if (transition != null) {
+                player.changeDimension(transition);
+            }
         }
     }
 
     @SubscribeEvent
     public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        PENDING_CROSS.remove(event.getEntity().getUUID());
+        CROSSING.remove(event.getEntity().getUUID());
     }
 
     private SleepEntryEvents() {

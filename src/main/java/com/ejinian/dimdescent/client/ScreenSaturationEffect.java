@@ -1,6 +1,7 @@
 package com.ejinian.dimdescent.client;
 
 import com.ejinian.dimdescent.DimDescent;
+import com.ejinian.dimdescent.dimension.RiftTeleporter;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.client.Minecraft;
@@ -82,10 +83,12 @@ public final class ScreenSaturationEffect {
         if (player.hasEffect(ModRegistry.DRY_MOUTH_EFFECT) || player.hasEffect(ModRegistry.TACHYCARDIA_EFFECT)) {
             return true;
         }
-        // Attunement desaturates only during the windows where it's also darkening the world, which
-        // CompanionEffectManager signals by applying the (hidden) vanilla Darkness effect. Reading
-        // that off the client avoids having to know the potion's total duration here.
-        return player.hasEffect(ModRegistry.ATTUNEMENT_EFFECT) && player.hasEffect(MobEffects.DARKNESS);
+        // Attunement desaturates only during the Null Domain's darkness windows (arrival + the
+        // departure warning), NOT during the permanent overworld darkness - draining the overworld
+        // of colour for minutes on end would be miserable. Gated on being in the rift dimension.
+        var level = Minecraft.getInstance().level;
+        boolean inDomain = level != null && level.dimension() == RiftTeleporter.RIFT_LEVEL;
+        return inDomain && player.hasEffect(ModRegistry.ATTUNEMENT_EFFECT) && player.hasEffect(MobEffects.DARKNESS);
     }
 
     private static void unload(Minecraft minecraft) {

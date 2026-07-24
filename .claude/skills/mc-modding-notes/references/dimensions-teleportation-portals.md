@@ -189,3 +189,39 @@ easy to trip on when walking the tree. (Reusable codec lived in the session scra
 `data/<ns>/loot_table/...` and `data/<ns>/recipe/...` (renamed from the old plural `loot_tables`/
 `recipes`). A file in the old plural folder is silently ignored. Same singular-rename applies to
 `structure/`, `advancement/`, `worldgen/...`, etc.
+
+## Jigsaw structure required fields (bit us - crashed world creation)
+
+Placing a single authored NBT via world-gen = a `minecraft:jigsaw` structure with a one-element
+`template_pool`. The jigsaw structure codec's REQUIRED fields (verified against
+`Structure.StructureSettings.CODEC` and `JigsawStructure.CODEC`) are:
+
+- `biomes`, `spawn_overrides`, `step`  (from the base StructureSettings)
+- `start_pool`, `size`, `start_height`, `use_expansion_hack`, `max_distance_from_center`  (jigsaw)
+
+`spawn_overrides` is REQUIRED even when empty - use `"spawn_overrides": {}`. Omitting it throws
+`No key spawn_overrides` and crashes world creation. Optional (safe to omit): `terrain_adaptation`,
+`project_start_to_heightmap`, `start_jigsaw_name`, `pool_aliases`, `dimension_padding`,
+`liquid_settings`. A working minimal altar structure:
+
+```json
+{
+  "type": "minecraft:jigsaw",
+  "biomes": "#dimdescent:has_altar",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "size": 1,
+  "start_pool": "dimdescent:altar",
+  "start_height": {"absolute": 0},
+  "project_start_to_heightmap": "WORLD_SURFACE_WG",
+  "max_distance_from_center": 80,
+  "terrain_adaptation": "beard_thin",
+  "use_expansion_hack": false
+}
+```
+
+The one-element pool (`template_pool/altar.json`): `single_pool_element`, `location` = the NBT id,
+`processors` = `"minecraft:empty"`, `projection` = `"rigid"`, plus `"fallback": "minecraft:empty"`.
+The `structure_set` is a `random_spread` with `spacing`/`separation` (villages are 34/8) and a unique
+`salt`. Scope the biome tag to LAND (`#minecraft:is_forest`/`is_taiga`/... plus plains/desert/etc.)
+rather than `#minecraft:is_overworld`, or a surface building spawns half-submerged in oceans.

@@ -1,19 +1,22 @@
 package com.ejinian.dimdescent.effect;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import com.ejinian.dimdescent.DimDescent;
+import com.ejinian.dimdescent.dimension.RiftTeleporter;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -24,36 +27,41 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 //   - Night vision's brightening is GameRenderer.getNightVisionScale, which reads
 //     MobEffects.NIGHT_VISION directly.
 //
-// So the only way to get the genuine article is to apply the genuine vanilla effect. To keep the
-// player's status list reading as ONE effect (Attunement / Psychosis) rather than two, the companion
-// is applied with showIcon=false (hides it from the HUD) and hidden from the inventory list by
-// ModClientExtensions. This class owns applying and, crucially, retracting those companions.
+// So the only way to get the genuine article is to apply the genuine vanilla effect, hidden from the
+// HUD (showIcon=false) and the inventory list (TripClientEvents). This class owns applying and,
+// crucially, retracting those companions.
+//
+// Attunement -> Darkness is DIMENSION-AWARE:
+//   - Outside the Null Domain (overworld or anywhere else): permanent darkness for as long as
+//     Attunement lasts. You are poisoned; the world is dark to you until you cross.
+//   - Inside the Null Domain: darkness only during the arrival window (first 10s after entering) and
+//     the departure window (last 10s of Attunement, the warning before ejection). In between you see.
 @EventBusSubscriber(modid = DimDescent.MODID)
 public final class CompanionEffectManager {
 
-    // Attunement dims the world for its first 10s and its last 10s - arriving and wearing off.
-    private static final int ATTUNEMENT_WINDOW_TICKS = 200;
+    // Both the arrival darkening and the last-10s ejection warning, inside the Null Domain.
+    private static final int DOMAIN_WINDOW_TICKS = 200;
 
     // Kept comfortably above 200 because vanilla flickers night vision during its final 200 ticks
-    // (GameRenderer.getNightVisionScale). Refreshed every tick while Psychosis lasts, so the player
-    // never sees the flicker - Psychosis's night vision should be flat and total.
+    // (GameRenderer.getNightVisionScale). Refreshed while Psychosis lasts, so the player never sees
+    // the flicker - Psychosis's night vision should be flat and total.
     private static final int NIGHT_VISION_REFRESH_TICKS = 400;
+
+    // Darkness is topped up while wanted. Well above DARKNESS's 22-tick blend, so keeping it above
+    // this floor means the vignette never starts fading out mid-window.
+    private static final int DARKNESS_APPLY_TICKS = 60;
+    private static final int DARKNESS_REFRESH_BELOW = 40;
 
     private static final Set<UUID> OUR_DARKNESS = Collections.synchronizedSet(new HashSet<>());
     private static final Set<UUID> OUR_NIGHT_VISION = Collections.synchronizedSet(new HashSet<>());
+    // Game time at which each player last entered the Null Domain - drives the arrival window.
+    private static final Map<UUID, Long> ENTERED_DOMAIN_AT = Collections.synchronizedMap(new HashMap<>());
 
-    // The "first 10 seconds" window. Handled on Added rather than by tracking elapsed time per tick,
-    // because the effect's total duration isn't recoverable later - only what's left of it.
     @SubscribeEvent
-    public static void onEffectAdded(MobEffectEvent.Added event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
-            return;
+    public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && event.getTo() == RiftTeleporter.RIFT_LEVEL) {
+            ENTERED_DOMAIN_AT.put(player.getUUID(), player.serverLevel().getGameTime());
         }
-        if (!event.getEffectInstance().is(ModRegistry.ATTUNEMENT_EFFECT)) {
-            return;
-        }
-        int duration = Math.min(ATTUNEMENT_WINDOW_TICKS, event.getEffectInstance().getDuration());
-        applyDarkness(player, duration);
     }
 
     @SubscribeEvent
@@ -62,16 +70,23 @@ public final class CompanionEffectManager {
             return;
         }
         UUID id = player.getUUID();
+        ServerLevel level = player.serverLevel();
 
-        // --- Attunement -> Darkness (the trailing window) ---
+        // --- Attunement -> Darkness (dimension-aware) ---
         MobEffectInstance attunement = player.getEffect(ModRegistry.ATTUNEMENT_EFFECT);
         if (attunement != null) {
-            if (attunement.getDuration() <= ATTUNEMENT_WINDOW_TICKS && !player.hasEffect(MobEffects.DARKNESS)) {
-                applyDarkness(player, attunement.getDuration());
+            if (wantsDarkness(player, level, attunement)) {
+                MobEffectInstance darkness = player.getEffect(MobEffects.DARKNESS);
+                if (darkness == null || darkness.getDuration() < DARKNESS_REFRESH_BELOW) {
+                    applyDarkness(player);
+                }
+            } else if (OUR_DARKNESS.contains(id)) {
+                // In the seeing part of the Null Domain - lift our darkness.
+                player.removeEffect(MobEffects.DARKNESS);
+                OUR_DARKNESS.remove(id);
             }
         } else if (OUR_DARKNESS.remove(id)) {
-            // Attunement ended while our companion darkness was still running - retract it so it
-            // doesn't outlive the effect it belongs to.
+            // Attunement ended while our darkness was still running - retract it.
             player.removeEffect(MobEffects.DARKNESS);
         }
         if (!player.hasEffect(MobEffects.DARKNESS)) {
@@ -91,21 +106,32 @@ public final class CompanionEffectManager {
         }
     }
 
+    // Attuned and OUTSIDE the Null Domain -> always dark. Inside -> only the arrival window (first
+    // 10s after entering) and the departure window (last 10s of Attunement).
+    private static boolean wantsDarkness(ServerPlayer player, ServerLevel level, MobEffectInstance attunement) {
+        if (!RiftTeleporter.isInRift(level)) {
+            return true;
+        }
+        if (attunement.getDuration() <= DOMAIN_WINDOW_TICKS) {
+            return true;
+        }
+        Long enteredAt = ENTERED_DOMAIN_AT.get(player.getUUID());
+        return enteredAt != null && level.getGameTime() - enteredAt < DOMAIN_WINDOW_TICKS;
+    }
+
+    private static void applyDarkness(ServerPlayer player) {
+        // showIcon=false keeps it off the HUD; TripClientEvents keeps it out of the inventory list.
+        // visible=false only suppresses particles and has no bearing on the vignette itself.
+        player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, DARKNESS_APPLY_TICKS, 0, false, false, false));
+        OUR_DARKNESS.add(player.getUUID());
+    }
+
     @SubscribeEvent
     public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID id = event.getEntity().getUUID();
         OUR_DARKNESS.remove(id);
         OUR_NIGHT_VISION.remove(id);
-    }
-
-    private static void applyDarkness(ServerPlayer player, int durationTicks) {
-        if (durationTicks <= 0) {
-            return;
-        }
-        // showIcon=false keeps it off the HUD; ModClientExtensions keeps it out of the inventory
-        // list. visible=false only suppresses particles and has no bearing on the vignette itself.
-        player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, durationTicks, 0, false, false, false));
-        OUR_DARKNESS.add(player.getUUID());
+        ENTERED_DOMAIN_AT.remove(id);
     }
 
     private CompanionEffectManager() {
