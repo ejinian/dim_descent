@@ -244,6 +244,26 @@ The `structure_set` is a `random_spread` with `spacing`/`separation` (villages a
 `salt`. Scope the biome tag to LAND (`#minecraft:is_forest`/`is_taiga`/... plus plains/desert/etc.)
 rather than `#minecraft:is_overworld`, or a surface building spawns half-submerged in oceans.
 
+**A jigsaw structure sinks one block into the surface - TWO separate causes, fix both.**
+
+(1) *Placement.* `JigsawPlacement` computes `k = start_height + getFirstFreeHeight(...)` and then moves
+the piece so `boundingBox.minY() + getGroundLevelDelta()` lands on `k`. `getGroundLevelDelta()` is
+**1** for a `single_pool_element`, so the final bottom layer is at `start_height + firstFree - 1`.
+With `"start_height": {"absolute": 0}` that is one block INTO the terrain. Use `{"absolute": 1}`.
+
+(2) *Terrain adaptation.* Any `terrain_adaptation` other than `none` runs `Beardifier`, which shapes
+terrain toward `boundingBox.minY() + groundLevelDelta` - i.e. **one block above the structure's bottom
+layer**, burying that layer. Critically this is computed RELATIVE to the structure, so raising
+`start_height` raises the terrain with it and looks like nothing changed. Fixing (1) alone appears to
+do nothing; that is the trap. Either set `"terrain_adaptation": "none"`, or author the piece the way
+vanilla does - with its bottom layer being foundation/ground rather than the walkable course, which
+is what `groundLevelDelta = 1` actually assumes.
+
+Iterate with `/place structure dimdescent:altar` - it runs the real placement logic, so there is no
+need to make a new world per attempt.
+
+**(historical, superseded by the above)**
+
 **`project_start_to_heightmap` lands a structure one block INTO the surface.** With
 `"start_height": {"absolute": 0}` the jigsaw start is placed at
 `ChunkGenerator.getFirstFreeHeight(...)`, and in practice the structure's `y=0` layer ends up
