@@ -1,5 +1,5 @@
 {
-  "parent": "block/block",
+  "__comment": "Full two-block bed, used only for the inventory/held icon so it reads as a bed rather than a cube. Display transforms are vanilla's item/template_bed values.",
   "textures": {
     "particle": "dimdescent:block/pale_dream_bed_side",
     "top": "dimdescent:block/pale_dream_bed_top",
@@ -7,9 +7,96 @@
     "leg": "dimdescent:block/pale_dream_bed_leg",
     "pillow": "dimdescent:block/pale_dream_bed_pillow"
   },
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        30,
+        160,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        -2
+      ],
+      "scale": [
+        0.23,
+        0.23,
+        0.23
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        30,
+        160,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        160,
+        0
+      ],
+      "translation": [
+        2,
+        3,
+        0
+      ],
+      "scale": [
+        0.5325,
+        0.5325,
+        0.5325
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        2
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        270,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        4,
+        -2
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  },
   "elements": [
     {
-      "__comment": "mattress (whole bed compressed to one block for the icon)",
+      "__comment": "head-half mattress",
       "from": [
         0,
         3,
@@ -48,6 +135,57 @@
           ],
           "texture": "#side"
         },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ],
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "__comment": "foot-half mattress",
+      "from": [
+        0,
+        3,
+        16
+      ],
+      "to": [
+        16,
+        9,
+        32
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#top"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
         "south": {
           "uv": [
             0,
@@ -107,6 +245,15 @@
           ],
           "texture": "#leg"
         },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": "#leg"
+        },
         "east": {
           "uv": [
             0,
@@ -157,6 +304,15 @@
           ],
           "texture": "#leg"
         },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": "#leg"
+        },
         "east": {
           "uv": [
             0,
@@ -181,15 +337,24 @@
       "from": [
         0,
         0,
-        13
+        29
       ],
       "to": [
         3,
         3,
-        16
+        32
       ],
       "faces": {
         "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": "#leg"
+        },
+        "north": {
           "uv": [
             0,
             0,
@@ -231,15 +396,24 @@
       "from": [
         13,
         0,
-        13
+        29
       ],
       "to": [
         16,
         3,
-        16
+        32
       ],
       "faces": {
         "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": "#leg"
+        },
+        "north": {
           "uv": [
             0,
             0,
@@ -278,7 +452,7 @@
       }
     },
     {
-      "__comment": "pillow at the head (north) end",
+      "__comment": "pillow at the head end",
       "from": [
         1,
         9,
