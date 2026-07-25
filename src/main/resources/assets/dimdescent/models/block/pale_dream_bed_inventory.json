@@ -1,5 +1,5 @@
 {
-  "__comment": "Full two-block bed, used only for the inventory/held icon so it reads as a bed rather than a cube. Display transforms are vanilla's item/template_bed values.",
+  "__comment": "Full two-block bed for the inventory/held icon only. Geometry is centred on the model pivot so it sits in the middle of the slot; gui yaw is vanilla's 160 turned 180 so the pillow end matches a vanilla bed.",
   "textures": {
     "particle": "dimdescent:block/pale_dream_bed_side",
     "top": "dimdescent:block/pale_dream_bed_top",
@@ -11,7 +11,7 @@
     "thirdperson_righthand": {
       "rotation": [
         30,
-        160,
+        340,
         0
       ],
       "translation": [
@@ -28,7 +28,7 @@
     "firstperson_righthand": {
       "rotation": [
         30,
-        160,
+        340,
         0
       ],
       "translation": [
@@ -45,18 +45,18 @@
     "gui": {
       "rotation": [
         30,
-        160,
+        340,
         0
       ],
       "translation": [
-        2,
-        3,
+        0,
+        1,
         0
       ],
       "scale": [
-        0.5325,
-        0.5325,
-        0.5325
+        0.5,
+        0.5,
+        0.5
       ]
     },
     "ground": {
@@ -68,7 +68,7 @@
       "translation": [
         0,
         1,
-        2
+        0
       ],
       "scale": [
         0.25,
@@ -84,7 +84,7 @@
       ],
       "translation": [
         0,
-        4,
+        0,
         -2
       ],
       "scale": [
@@ -100,12 +100,12 @@
       "from": [
         0,
         3,
-        0
+        -8
       ],
       "to": [
         16,
         9,
-        16
+        8
       ],
       "faces": {
         "up": {
@@ -160,12 +160,12 @@
       "from": [
         0,
         3,
-        16
+        8
       ],
       "to": [
         16,
         9,
-        32
+        24
       ],
       "faces": {
         "up": {
@@ -219,12 +219,12 @@
       "from": [
         0,
         0,
-        0
+        -8
       ],
       "to": [
         3,
         3,
-        3
+        -5
       ],
       "faces": {
         "down": {
@@ -278,12 +278,12 @@
       "from": [
         13,
         0,
-        0
+        -8
       ],
       "to": [
         16,
         3,
-        3
+        -5
       ],
       "faces": {
         "down": {
@@ -337,12 +337,12 @@
       "from": [
         0,
         0,
-        29
+        21
       ],
       "to": [
         3,
         3,
-        32
+        24
       ],
       "faces": {
         "down": {
@@ -396,12 +396,12 @@
       "from": [
         13,
         0,
-        29
+        21
       ],
       "to": [
         16,
         3,
-        32
+        24
       ],
       "faces": {
         "down": {
@@ -456,12 +456,12 @@
       "from": [
         1,
         9,
-        1
+        -7
       ],
       "to": [
         15,
         11,
-        6
+        -2
       ],
       "faces": {
         "up": {
