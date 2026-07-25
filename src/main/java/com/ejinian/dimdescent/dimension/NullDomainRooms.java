@@ -1,122 +1,171 @@
 package com.ejinian.dimdescent.dimension;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.ejinian.dimdescent.DimDescent;
-import com.ejinian.dimdescent.block.DaemonlightLighting;
 import com.ejinian.dimdescent.block.NexusBedBlock;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
-// Phase 6: the Null Domain works like Dimensional Doors' pocket dungeon. There is no visible descent
-// and no depth counter any more - instead every door you walk through opens a fresh, randomly-chosen
-// room somewhere far off in the same dimension, and you're teleported into it.
+// The Null Domain's rooms: hand-authored .nbt structures, stamped onto a coarse grid on demand.
 //
-// How DimDoors does it (and what we copied):
-//   - Rooms live on a coarse GRID. DimDoors uses a 32-chunk (512-block) cell; so do we (SPACING).
-//     Each new room is handed the next free integer index, which maps to the next free grid cell,
-//     so rooms never overlap and land ~512 blocks apart - the "long teleport" you see between rooms.
-//   - Rooms are generated LAZILY, the moment a door is entered, rather than all up front. newRoom()
-//     is called straight from the door's getPortalDestination.
-//   - Rooms persist once stamped (they're just left in the world), which leaves the door open to
-//     two-way / backtracking links later without changing any of this.
+// This replaced an earlier set of five code-generated room shapes (pillar halls, barred cells and so
+// on). Those were scaffolding to prove the traversal loop; the real rooms are built in-game and
+// captured with structure blocks, which is both better-looking and how Dimensional Doors does it.
 //
-// What we deliberately dropped from DimDoors for this pass: their depth axis (VirtualLocation.depth,
-// which biases room selection deeper in) and their authored .schem room pool. Selection here is a
-// flat uniform pick over five code-generated room types - a proof of concept to hang authored rooms,
-// depth-weighting, enemies and richer loot on later.
+// Grid: SPACING mirrors DimDoors' 32-chunk cell (512 blocks), and rooms are laid on a square SPIRAL
+// out from the origin (spiralCell - an O(1) closed form, verified bijective against a brute-force
+// spiral walk) so they fan into both axes and stay within ~sqrt(N)/2 cells of origin, the tightest
+// collision-free packing. Rooms never collide because indices come from one global monotonic counter,
+// not because of the layout.
 //
-// The room index is stored in a SavedData on the rift level so the counter survives a restart and a
-// re-entering player is never handed a cell that's already occupied.
+// Generation is LAZY - a room is stamped the first time a bed opens it (like DimDoors'
+// LazyPocketGenerator) and then persists forever, since travel is keyed on beds (see BedLinkData).
 public final class NullDomainRooms {
 
-    // Floor plane shared by every room. Rooms are spread across the grid, never stacked, so this is a
-    // constant - build height (0..256 in the rift dimension type) is never a concern.
     public static final int FLOOR_Y = 100;
-
-    // Grid geometry. SPACING mirrors DimDoors' 32-chunk cell (512 blocks). Rooms are placed on a
-    // square SPIRAL out from the origin (see spiralCell): index 0 at the centre, each next index the
-    // next cell of an outward-growing square. This fans rooms into BOTH axes and keeps every room as
-    // close to the origin as possible - N rooms never stray past ~sqrt(N)/2 cells either way, which is
-    // the tightest any collision-free packing can be - so the world stays compact instead of marching
-    // off down one axis. Collision-safety does NOT come from the layout: newRoom hands out a single
-    // global monotonic index, so no two rooms (two players at once, or the same player across the
-    // whole history of the world) can ever be handed the same cell.
     private static final int SPACING = 512;
 
-    // The one loot table rooms with a chest point at, reusing the altar's themed pool for now.
-    private static final ResourceKey<LootTable> LOOT_TABLE = ResourceKey.create(
-            Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "chests/altar"));
+    // Rooms are discovered from data/dimdescent/structure/rooms/*.nbt, so dropping a new .nbt in that
+    // folder adds it to the pool with no code change. FALLBACK_POOL only matters if discovery finds
+    // nothing (e.g. a resource-loading oddity), so the dimension degrades to "still works" rather
+    // than "no rooms at all".
+    private static final String ROOM_PREFIX = "rooms/";
+    private static final List<ResourceLocation> FALLBACK_POOL = List.of(
+            room("hallway"), room("hangul"), room("left"), room("t"), room("u"));
 
-    // The five proof-of-concept room shapes, distinguished by footprint (w x d), ceiling height (h),
-    // and the decoration switch below. Interior spans relative coords x in 0..w-1, z in 0..d-1.
-    private enum RoomType {
-        PILLAR_HALL(13, 13, 6),   // square hall, a grid of full-height pillars
-        LONG_GALLERY(25, 7, 6),   // wide, shallow gallery with benches and glowing plinths
-        GRAND_CHAMBER(17, 17, 11),// tall chamber built around a raised, caged altar-heart dais (+chest)
-        CRAMPED_CELLS(15, 15, 4),  // low, partitioned warren of barred cells
-        HALL_OF_BARS(15, 15, 7);   // a weave of dark-iron-bar screens around a caged relic
+    // Where a player arrives: the spot, and the way they face.
+    public record Arrival(Vec3 pos, float yRot) {
+    }
 
-        final int w;
-        final int d;
-        final int h;
+    // A freshly stamped room: its grid index, and the head half of its pale Nexus - which is both the
+    // arrival point and the room's identity for travelling back out.
+    public record NewRoom(int index, @Nullable BlockPos entranceBedHead) {
+    }
 
-        RoomType(int w, int d, int h) {
-            this.w = w;
-            this.d = d;
-            this.h = h;
+    private static ResourceLocation room(String name) {
+        return ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, ROOM_PREFIX + name);
+    }
+
+    private NullDomainRooms() {
+    }
+
+    // Allocate the next grid cell, pick a room at random and stamp it there. Returns the index and
+    // the pale Nexus position, which the caller records against the bed that opened it.
+    public static NewRoom allocateAndStamp(ServerLevel rift) {
+        return stampAt(rift, GridData.get(rift).takeNextIndex());
+    }
+
+    // Stamp the room for a specific index. Also used to heal a link made before rooms were authored
+    // structures: the bed still points at its grid cell, so re-stamping puts a real room there rather
+    // than leaving the player in whatever the old code-generated version left behind.
+    public static NewRoom stampAt(ServerLevel rift, int index) {
+        int[] cell = spiralCell(index);
+        BlockPos origin = new BlockPos(cell[0] * SPACING, FLOOR_Y, cell[1] * SPACING);
+
+        StructureTemplateManager manager = rift.getStructureManager();
+        List<ResourceLocation> pool = pool(manager);
+        RandomSource rng = RandomSource.create(seedFor(index));
+        ResourceLocation choice = pool.get(rng.nextInt(pool.size()));
+
+        StructureTemplate template = manager.get(choice).orElse(null);
+        if (template == null) {
+            DimDescent.LOGGER.error("Null Domain room template {} is missing; room {} will be empty", choice, index);
+            return new NewRoom(index, null);
         }
+
+        StructurePlaceSettings settings = new StructurePlaceSettings();
+        // The same flags used for writing beds by hand, and for the same reason: without
+        // UPDATE_KNOWN_SHAPE the first half of a bed placed by the template makes the other half's
+        // updateShape see a missing partner, and the pair deletes itself on the way in.
+        template.placeInWorld(rift, origin, origin, settings, rng, NexusBedBlock.BED_WRITE_FLAGS);
+
+        BlockPos paleHead = findEntranceBed(template, origin, settings);
+        if (paleHead == null) {
+            DimDescent.LOGGER.error(
+                    "Null Domain room {} has no pale Nexus - players will arrive at its corner and cannot travel back",
+                    choice);
+        }
+        return new NewRoom(index, paleHead);
     }
 
-    // Allocate the next room and stamp it. Called on every crossing (sleep, /rift enter) and every
-    // use of the dark Nexus, so each is a brand-new room. Returns the room's INDEX - the caller
-    // records the bed->room link (BedLinkData) so that bed always reopens this same room.
-    public static int allocateAndStamp(ServerLevel rift) {
-        int index = GridData.get(rift).takeNextIndex();
-        generateRoom(rift, index);
-        return index;
+    // The pale Nexus baked into the room, read straight off the template rather than by scanning the
+    // world. filterBlocks hands back world positions once offset, so this is exact and cheap.
+    @Nullable
+    private static BlockPos findEntranceBed(StructureTemplate template, BlockPos origin, StructurePlaceSettings settings) {
+        for (StructureTemplate.StructureBlockInfo info :
+                template.filterBlocks(origin, settings, ModRegistry.PALE_DREAM_BED.get())) {
+            if (info.state().getValue(BedBlock.PART) == BedPart.HEAD) {
+                return info.pos();
+            }
+        }
+        return null;
     }
 
-    // Where a player stands on arriving in a given room: beside the pale Nexus, facing into the room.
-    // Derived purely from the index, so returning to a room the player has already visited lands them
-    // in exactly the spot they first arrived at - no need to store positions per room.
-    public static Vec3 landingFor(int index) {
-        RoomType type = roomTypeFor(index);
-        int[] cell = spiralCell(index);
-        return new Vec3(
-                cell[0] * SPACING + type.w / 2 + 1.5,
-                FLOOR_Y + 1,
-                cell[1] * SPACING + 1.5);
+    // Standing beside the pale Nexus, facing into the room.
+    //
+    // A bed's FACING runs foot -> head, and authors put the pale bed against the wall they want
+    // players to arrive at, so "into the room" is simply the opposite of that. The arrival square is
+    // one step past the foot; if the author left that blocked, fall back to any free square around
+    // either half rather than dropping the player inside a wall.
+    public static Arrival arrivalAt(ServerLevel level, BlockPos paleBedHead) {
+        BlockState state = level.getBlockState(paleBedHead);
+        if (!(state.getBlock() instanceof BedBlock)) {
+            return new Arrival(Vec3.atBottomCenterOf(paleBedHead), 0.0F);
+        }
+        Direction facing = state.getValue(BedBlock.FACING);
+        Direction intoRoom = facing.getOpposite();
+        float yRot = intoRoom.toYRot();
+
+        BlockPos foot = paleBedHead.relative(intoRoom);
+        BlockPos preferred = foot.relative(intoRoom);
+        if (isStandable(level, preferred)) {
+            return new Arrival(Vec3.atBottomCenterOf(preferred), yRot);
+        }
+        for (BlockPos half : new BlockPos[]{foot, paleBedHead}) {
+            for (Direction dir : Direction.Plane.HORIZONTAL) {
+                BlockPos candidate = half.relative(dir);
+                if (isStandable(level, candidate)) {
+                    return new Arrival(Vec3.atBottomCenterOf(candidate), yRot);
+                }
+            }
+        }
+        return new Arrival(Vec3.atBottomCenterOf(foot), yRot);
     }
 
-    // Where this room's pale Nexus stands (its HEAD half). Used as the link key for travelling back
-    // out of the room, so it must agree exactly with placeEntranceBed.
-    public static BlockPos entranceBedHead(int index) {
-        RoomType type = roomTypeFor(index);
-        int[] cell = spiralCell(index);
-        return new BlockPos(cell[0] * SPACING + type.w / 2, FLOOR_Y + 1, cell[1] * SPACING);
+    private static boolean isStandable(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
     }
 
-    // The room's shape is the FIRST draw off the index's seed, so it can be recomputed at any time
-    // without stamping anything - which is what lets landingFor work for an already-built room.
-    private static RoomType roomTypeFor(int index) {
-        return RoomType.values()[RandomSource.create(seedFor(index)).nextInt(RoomType.values().length)];
+    private static List<ResourceLocation> pool(StructureTemplateManager manager) {
+        List<ResourceLocation> found = new ArrayList<>();
+        manager.listTemplates()
+                .filter(id -> id.getNamespace().equals(DimDescent.MODID) && id.getPath().startsWith(ROOM_PREFIX))
+                .forEach(found::add);
+        if (found.isEmpty()) {
+            return FALLBACK_POOL;
+        }
+        // listTemplates has no defined order; sort so a given room index always picks the same room.
+        found.sort(null);
+        return found;
     }
 
     private static long seedFor(int index) {
@@ -124,13 +173,12 @@ public final class NullDomainRooms {
     }
 
     // Maps a room index to its grid cell on a square spiral out from (0,0). O(1), verified bijective
-    // against a brute-force spiral walk. See the SPACING comment for why a spiral.
+    // against a brute-force spiral walk.
     private static int[] spiralCell(int index) {
         if (index == 0) {
             return new int[]{0, 0};
         }
         int ring = (int) Math.floor((Math.sqrt(index) + 1) / 2);
-        // Correct any floating-point drift at the exact ring boundaries (perfect squares).
         while ((2 * ring - 1) * (2 * ring - 1) > index) {
             ring--;
         }
@@ -138,346 +186,15 @@ public final class NullDomainRooms {
             ring++;
         }
         int offset = index - (2 * ring - 1) * (2 * ring - 1);
-        if (offset <= 2 * ring - 1) {                       // east edge, heading +Z
+        if (offset <= 2 * ring - 1) {
             return new int[]{ring, offset - ring + 1};
-        } else if (offset <= 4 * ring - 1) {                // north edge, heading -X
+        } else if (offset <= 4 * ring - 1) {
             return new int[]{ring - (offset - (2 * ring - 1)), ring};
-        } else if (offset <= 6 * ring - 1) {                // west edge, heading -Z
+        } else if (offset <= 6 * ring - 1) {
             return new int[]{-ring, ring - (offset - (4 * ring - 1))};
-        } else {                                             // south edge, heading +X
+        } else {
             return new int[]{-ring + (offset - (6 * ring - 1)), -ring};
         }
-    }
-
-    // Deterministic per index, so re-stamping the same cell rebuilds the identical room. The type is
-    // drawn first from the same seed (see roomTypeFor), so a given index always has the same shape.
-    private static void generateRoom(ServerLevel level, int index) {
-        RandomSource rng = RandomSource.create(seedFor(index));
-        RoomType type = RoomType.values()[rng.nextInt(RoomType.values().length)];
-        int[] cell = spiralCell(index);
-        int ox = cell[0] * SPACING;
-        int oz = cell[1] * SPACING;
-
-        stampShell(level, ox, oz, type);
-        stampFloor(level, ox, oz, type, rng);
-        decorate(level, ox, oz, type, rng);
-        placeEntranceBed(level, ox, oz, type);
-        placeExitBed(level, ox, oz, type);
-    }
-
-    // A pitch-black void box. The interior faces of the walls and the ceiling are lined with Nullstone
-    // (dead black), backed by an unbreakable Forsaken Fiber shell one block further out and up, so the
-    // room reads as pure black yet still can't be mined out of in survival. There is deliberately
-    // NOTHING beneath the floor: the altar-brick walkway (stampFloor) is the only thing over the void,
-    // so breaking through it drops you clean out of the world (the flat ground the dimension used to
-    // generate far below has been removed to match - see the rift dimension json).
-    private static void stampShell(ServerLevel level, int ox, int oz, RoomType t) {
-        BlockState fiber = fiber();
-        BlockState nullstone = nullstone();
-        BlockState air = Blocks.AIR.defaultBlockState();
-        int wallTop = FLOOR_Y + t.h;   // highest interior air row
-        int innerCeil = wallTop + 1;   // nullstone lid
-        int outerCeil = wallTop + 2;   // fiber lid
-
-        // Hollow the interior (the floor row itself is left for stampFloor to fill with brick).
-        for (int x = 0; x < t.w; x++) {
-            for (int z = 0; z < t.d; z++) {
-                for (int y = FLOOR_Y + 1; y <= wallTop; y++) {
-                    level.setBlock(new BlockPos(ox + x, y, oz + z), air, 2);
-                }
-            }
-        }
-
-        // Inner shell: nullstone walls (the -1 / w ring) from the floor up, plus a full nullstone lid.
-        for (int x = -1; x <= t.w; x++) {
-            for (int z = -1; z <= t.d; z++) {
-                boolean wall = x == -1 || x == t.w || z == -1 || z == t.d;
-                for (int y = FLOOR_Y; y <= innerCeil; y++) {
-                    if (wall || y == innerCeil) {
-                        level.setBlock(new BlockPos(ox + x, y, oz + z), nullstone, 2);
-                    }
-                }
-            }
-        }
-
-        // Outer shell: unbreakable fiber, one block further out and up, sealing the box behind the
-        // nullstone so the walls and ceiling can't be breached into the void.
-        for (int x = -2; x <= t.w + 1; x++) {
-            for (int z = -2; z <= t.d + 1; z++) {
-                boolean wall = x == -2 || x == t.w + 1 || z == -2 || z == t.d + 1;
-                for (int y = FLOOR_Y; y <= outerCeil; y++) {
-                    if (wall || y == outerCeil) {
-                        level.setBlock(new BlockPos(ox + x, y, oz + z), fiber, 2);
-                    }
-                }
-            }
-        }
-    }
-
-    // Altar-brick surface with a scatter of cracked bricks for wear.
-    private static void stampFloor(ServerLevel level, int ox, int oz, RoomType t, RandomSource rng) {
-        BlockState bricks = bricks();
-        BlockState cracked = cracked();
-        for (int x = 0; x < t.w; x++) {
-            for (int z = 0; z < t.d; z++) {
-                BlockState floor = rng.nextInt(6) == 0 ? cracked : bricks;
-                level.setBlock(new BlockPos(ox + x, FLOOR_Y, oz + z), floor, 2);
-            }
-        }
-    }
-
-    private static void decorate(ServerLevel level, int ox, int oz, RoomType t, RandomSource rng) {
-        switch (t) {
-            case PILLAR_HALL -> decoratePillarHall(level, ox, oz, t);
-            case LONG_GALLERY -> decorateLongGallery(level, ox, oz, t);
-            case GRAND_CHAMBER -> decorateGrandChamber(level, ox, oz, t);
-            case CRAMPED_CELLS -> decorateCrampedCells(level, ox, oz, t, rng);
-            case HALL_OF_BARS -> decorateHallOfBars(level, ox, oz, t, rng);
-        }
-    }
-
-    // A grid of full-height brick pillars either side of the central corridor, some coursed with
-    // cracked brick. The centre column (cx) is left clear so the walk to the door is never blocked.
-    private static void decoratePillarHall(ServerLevel level, int ox, int oz, RoomType t) {
-        lampCorners(level, ox, oz, t);
-        int[] xs = {3, t.w - 4};
-        int[] zs = {3, 6, 9};
-        for (int px : xs) {
-            for (int pz : zs) {
-                for (int y = 1; y <= t.h; y++) {
-                    BlockState s = (y == 2 || y == 5) ? cracked() : bricks();
-                    level.setBlock(new BlockPos(ox + px, FLOOR_Y + y, oz + pz), s, 2);
-                }
-            }
-        }
-    }
-
-    // Wide, shallow room: a run of slab "benches" down the middle band (broken for the corridor),
-    // wall lamps at intervals, and a glowing altar-heart plinth in each far corner.
-    private static void decorateLongGallery(ServerLevel level, int ox, int oz, RoomType t) {
-        int cx = t.w / 2;
-        BlockState slab = ModRegistry.ALTAR_STONE_BRICK_SLAB.get().defaultBlockState();
-        for (int x = 2; x < t.w - 2; x++) {
-            if (Math.abs(x - cx) <= 1) {
-                continue; // keep the corridor open
-            }
-            level.setBlock(new BlockPos(ox + x, FLOOR_Y + 1, oz + 3), slab, 2);
-        }
-        for (int x = 2; x < t.w - 2; x += 5) {
-            level.setBlock(new BlockPos(ox + x, FLOOR_Y + 1, oz + t.d - 2), lamp(), 2);
-            if (x != cx) {
-                level.setBlock(new BlockPos(ox + x, FLOOR_Y + 1, oz + 1), lamp(), 2);
-            }
-        }
-        for (int px : new int[]{2, t.w - 3}) {
-            level.setBlock(new BlockPos(ox + px, FLOOR_Y + 1, oz + 3), altarStone(), 2);
-            level.setBlock(new BlockPos(ox + px, FLOOR_Y + 2, oz + 3), heart(), 2);
-        }
-    }
-
-    // Tall chamber around a raised 5x5 dais: brick platform, a carved plinth topped with a glowing
-    // altar heart, dark-iron-bar posts caging the corners, a stair step up the front, and a
-    // guaranteed loot chest to the side.
-    private static void decorateGrandChamber(ServerLevel level, int ox, int oz, RoomType t) {
-        lampCorners(level, ox, oz, t);
-        int cx = t.w / 2;
-        int cz = t.d / 2;
-
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dz = -2; dz <= 2; dz++) {
-                level.setBlock(new BlockPos(ox + cx + dx, FLOOR_Y + 1, oz + cz + dz), bricks(), 2);
-            }
-        }
-        level.setBlock(new BlockPos(ox + cx, FLOOR_Y + 2, oz + cz), carved(), 2);
-        level.setBlock(new BlockPos(ox + cx, FLOOR_Y + 3, oz + cz), heart(), 2);
-
-        // Caged corners: 2-tall bar posts at the four platform corners.
-        for (int dx : new int[]{-2, 2}) {
-            for (int dz : new int[]{-2, 2}) {
-                bars(level, new BlockPos(ox + cx + dx, FLOOR_Y + 2, oz + cz + dz), true, true);
-                bars(level, new BlockPos(ox + cx + dx, FLOOR_Y + 3, oz + cz + dz), true, true);
-            }
-        }
-        // A step up the south (approach) face.
-        BlockState stair = ModRegistry.ALTAR_STONE_BRICK_STAIRS.get().defaultBlockState()
-                .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH);
-        for (int dx = -2; dx <= 2; dx++) {
-            level.setBlock(new BlockPos(ox + cx + dx, FLOOR_Y + 1, oz + cz - 3), stair, 2);
-        }
-        placeChest(level, new BlockPos(ox + 3, FLOOR_Y + 1, oz + cz), Direction.EAST);
-    }
-
-    // Low warren: two east-west partition walls with a central gap, barred at the gate posts, plus a
-    // chance of a chest tucked in a corner cell. The centre column stays open end to end.
-    private static void decorateCrampedCells(ServerLevel level, int ox, int oz, RoomType t, RandomSource rng) {
-        lampCorners(level, ox, oz, t);
-        int cx = t.w / 2;
-        for (int wallZ : new int[]{5, 9}) {
-            for (int x = 1; x < t.w - 1; x++) {
-                if (Math.abs(x - cx) <= 1) {
-                    continue; // doorway through the partition
-                }
-                for (int y = 1; y <= t.h; y++) {
-                    level.setBlock(new BlockPos(ox + x, FLOOR_Y + y, oz + wallZ), bricks(), 2);
-                }
-            }
-            // Bar gateposts flanking the gap.
-            for (int gx : new int[]{cx - 2, cx + 2}) {
-                bars(level, new BlockPos(ox + gx, FLOOR_Y + 1, oz + wallZ), false, true);
-                bars(level, new BlockPos(ox + gx, FLOOR_Y + 2, oz + wallZ), false, true);
-            }
-        }
-        level.setBlock(new BlockPos(ox + 1, FLOOR_Y + 1, oz + 7), lamp(), 2);
-        level.setBlock(new BlockPos(ox + t.w - 2, FLOOR_Y + 1, oz + 7), lamp(), 2);
-        if (rng.nextBoolean()) {
-            placeChest(level, new BlockPos(ox + 2, FLOOR_Y + 1, oz + 12), Direction.SOUTH);
-        }
-    }
-
-    // A pinwheel of 2-tall dark-iron-bar screens to weave through, around a 3x3 cage holding a glowing
-    // relic. Sometimes a corner chest. The lanes at x=cx-2 / cx+2 stay clear so the cage is passable.
-    private static void decorateHallOfBars(ServerLevel level, int ox, int oz, RoomType t, RandomSource rng) {
-        lampCorners(level, ox, oz, t);
-        int cx = t.w / 2;
-        int cz = t.d / 2;
-
-        // Central cage: bar the ring around the centre, relic on a plinth inside.
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dz = -1; dz <= 1; dz++) {
-                if (dx == 0 && dz == 0) {
-                    continue;
-                }
-                bars(level, new BlockPos(ox + cx + dx, FLOOR_Y + 1, oz + cz + dz), true, true);
-                bars(level, new BlockPos(ox + cx + dx, FLOOR_Y + 2, oz + cz + dz), true, true);
-            }
-        }
-        level.setBlock(new BlockPos(ox + cx, FLOOR_Y + 1, oz + cz), carved(), 2);
-        level.setBlock(new BlockPos(ox + cx, FLOOR_Y + 2, oz + cz), heart(), 2);
-
-        // Offset screens, none crossing the cage's side lanes.
-        barScreenNS(level, ox, oz, 3, 1, 5);
-        barScreenNS(level, ox, oz, t.w - 4, t.d - 6, t.d - 2);
-        barScreenEW(level, ox, oz, t.w - 6, t.w - 2, 3);
-        barScreenEW(level, ox, oz, 1, 5, t.d - 4);
-
-        if (rng.nextBoolean()) {
-            placeChest(level, new BlockPos(ox + 2, FLOOR_Y + 1, oz + 2), Direction.EAST);
-        }
-    }
-
-    // The entrance: a PALE Nexus against the near wall, which the arriving player lands beside (see
-    // landingFor). It is both the thing you wake next to and the way back out, so it doubles as the
-    // room's spawn marker - no separate marker block or per-room data file needed.
-    private static void placeEntranceBed(ServerLevel level, int ox, int oz, RoomType t) {
-        int cx = t.w / 2;
-        // FACING points foot -> head; head sits at the lower Z, against the near wall.
-        BlockState bed = ModRegistry.PALE_DREAM_BED.get().defaultBlockState()
-                .setValue(BedBlock.FACING, Direction.NORTH);
-        BlockPos footPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + 1);
-        // BED_WRITE_FLAGS, or the first half written makes the pair self-destruct - see NexusBedBlock.
-        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), NexusBedBlock.BED_WRITE_FLAGS);
-        level.setBlock(footPos.north(), bed.setValue(BedBlock.PART, BedPart.HEAD), NexusBedBlock.BED_WRITE_FLAGS);
-    }
-
-    // The onward exit: a Dream Bed laid against the far (north) wall, centred, flanked by lamps.
-    // Right-clicking it fires DreamBedBlock -> toRoomFor, keyed on its own position, so it opens the
-    // same next room for everyone, every time. Foot is
-    // one row in from the head so both halves sit inside the interior. (These code-generated rooms are
-    // temporary scaffolding; the hand-built room pool will place its own bed via a structure marker.)
-    private static void placeExitBed(ServerLevel level, int ox, int oz, RoomType t) {
-        int cx = t.w / 2;
-        int headZ = t.d - 1;
-        // FACING points foot -> head; head sits at the higher Z (south), against the north wall.
-        BlockState bed = ModRegistry.DREAM_BED.get().defaultBlockState()
-                .setValue(BedBlock.FACING, Direction.SOUTH);
-        BlockPos footPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + headZ - 1);
-        // BED_WRITE_FLAGS, or the first half written makes the pair self-destruct - see NexusBedBlock.
-        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), NexusBedBlock.BED_WRITE_FLAGS);
-        level.setBlock(footPos.south(), bed.setValue(BedBlock.PART, BedPart.HEAD), NexusBedBlock.BED_WRITE_FLAGS);
-
-        if (cx - 1 >= 0) {
-            level.setBlock(new BlockPos(ox + cx - 1, FLOOR_Y + 1, oz + headZ), lamp(), 2);
-        }
-        if (cx + 1 < t.w) {
-            level.setBlock(new BlockPos(ox + cx + 1, FLOOR_Y + 1, oz + headZ), lamp(), 2);
-        }
-    }
-
-    // ---- small building helpers ----
-
-    private static void lampCorners(ServerLevel level, int ox, int oz, RoomType t) {
-        int[][] corners = {{1, 1}, {t.w - 2, 1}, {1, t.d - 2}, {t.w - 2, t.d - 2}};
-        for (int[] c : corners) {
-            level.setBlock(new BlockPos(ox + c[0], FLOOR_Y + 1, oz + c[1]), lamp(), 2);
-        }
-    }
-
-    // A 2-tall north-south screen of bars at column x, from z0 to z1 inclusive.
-    private static void barScreenNS(ServerLevel level, int ox, int oz, int x, int z0, int z1) {
-        for (int z = z0; z <= z1; z++) {
-            bars(level, new BlockPos(ox + x, FLOOR_Y + 1, oz + z), true, false);
-            bars(level, new BlockPos(ox + x, FLOOR_Y + 2, oz + z), true, false);
-        }
-    }
-
-    // A 2-tall east-west screen of bars at row z, from x0 to x1 inclusive.
-    private static void barScreenEW(ServerLevel level, int ox, int oz, int x0, int x1, int z) {
-        for (int x = x0; x <= x1; x++) {
-            bars(level, new BlockPos(ox + x, FLOOR_Y + 1, oz + z), false, true);
-            bars(level, new BlockPos(ox + x, FLOOR_Y + 2, oz + z), false, true);
-        }
-    }
-
-    // Dark iron bars with the connection flags set explicitly (ns = north/south, ew = east/west), so
-    // a straight run reads as a connected screen without relying on neighbour block updates.
-    private static void bars(ServerLevel level, BlockPos pos, boolean ns, boolean ew) {
-        BlockState s = ModRegistry.DARK_IRON_BARS.get().defaultBlockState()
-                .setValue(BlockStateProperties.NORTH, ns)
-                .setValue(BlockStateProperties.SOUTH, ns)
-                .setValue(BlockStateProperties.EAST, ew)
-                .setValue(BlockStateProperties.WEST, ew);
-        level.setBlock(pos, s, 2);
-    }
-
-    private static void placeChest(ServerLevel level, BlockPos pos, Direction facing) {
-        level.setBlock(pos, Blocks.CHEST.defaultBlockState()
-                .setValue(BlockStateProperties.HORIZONTAL_FACING, facing), 2);
-        if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity chest) {
-            chest.setLootTable(LOOT_TABLE, level.getRandom().nextLong());
-        }
-    }
-
-    private static BlockState fiber() {
-        return ModRegistry.FORSAKEN_FIBER.get().defaultBlockState();
-    }
-
-    private static BlockState nullstone() {
-        return ModRegistry.NULLSTONE.get().defaultBlockState();
-    }
-
-    private static BlockState bricks() {
-        return ModRegistry.ALTAR_STONE_BRICKS.get().defaultBlockState();
-    }
-
-    private static BlockState cracked() {
-        return ModRegistry.CRACKED_ALTAR_STONE_BRICKS.get().defaultBlockState();
-    }
-
-    private static BlockState carved() {
-        return ModRegistry.CARVED_ALTAR_STONE.get().defaultBlockState();
-    }
-
-    private static BlockState altarStone() {
-        return ModRegistry.ALTAR_STONE.get().defaultBlockState();
-    }
-
-    private static BlockState heart() {
-        return ModRegistry.ALTAR_HEART.get().defaultBlockState();
-    }
-
-    private static BlockState lamp() {
-        return ModRegistry.DAEMONLIGHT.get().defaultBlockState()
-                .setValue(DaemonlightLighting.LIT, Boolean.TRUE);
     }
 
     // Persists the next free room index on the rift level, so the grid keeps growing across restarts
@@ -513,8 +230,5 @@ public final class NullDomainRooms {
             data.nextIndex = tag.getInt(TAG_NEXT);
             return data;
         }
-    }
-
-    private NullDomainRooms() {
     }
 }

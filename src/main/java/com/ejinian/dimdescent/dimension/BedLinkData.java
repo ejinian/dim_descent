@@ -5,9 +5,11 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -38,12 +40,17 @@ public class BedLinkData extends SavedData {
     private static final String TAG_BED = "bed";
     private static final String TAG_ROOM = "room";
     private static final String TAG_TARGET = "target";
+    private static final String TAG_ENTRANCES = "entrances";
+    private static final String TAG_POS = "pos";
 
     private static final SavedData.Factory<BedLinkData> FACTORY =
             new SavedData.Factory<>(BedLinkData::new, BedLinkData::load);
 
     private final Map<BedKey, Integer> forward = new HashMap<>();
     private final Map<BedKey, BedKey> back = new HashMap<>();
+    // Room index -> the head half of that room's pale Nexus, i.e. where arrivals land. Read from the
+    // hand-built structure when the room is stamped, since authors place the bed wherever they like.
+    private final Map<Integer, BlockPos> entrances = new HashMap<>();
 
     // Stored on the rift level, so the whole graph lives with the dimension it describes.
     public static BedLinkData get(ServerLevel anyLevel) {
@@ -59,10 +66,19 @@ public class BedLinkData extends SavedData {
     }
 
     // Record a freshly-created room: the bed that opens it, and the room's own pale bed pointing back.
-    public void link(BedKey sourceBed, int roomIndex, BedKey roomEntranceBed) {
+    public void link(BedKey sourceBed, int roomIndex, @Nullable BlockPos paleBedHead) {
         forward.put(sourceBed, roomIndex);
-        back.put(roomEntranceBed, sourceBed);
+        if (paleBedHead != null) {
+            back.put(new BedKey(RiftTeleporter.RIFT_LEVEL, paleBedHead), sourceBed);
+            entrances.put(roomIndex, paleBedHead);
+        }
         setDirty();
+    }
+
+    // Where arrivals land in a given room: its pale Nexus.
+    @Nullable
+    public BlockPos entranceFor(int roomIndex) {
+        return entrances.get(roomIndex);
     }
 
     // Where a pale Nexus sends you: the bed that opened the room it stands in.
@@ -90,6 +106,15 @@ public class BedLinkData extends SavedData {
             backList.add(row);
         });
         tag.put(TAG_BACK, backList);
+
+        ListTag entranceList = new ListTag();
+        entrances.forEach((roomIndex, pos) -> {
+            CompoundTag row = new CompoundTag();
+            row.putInt(TAG_ROOM, roomIndex);
+            row.put(TAG_POS, NbtUtils.writeBlockPos(pos));
+            entranceList.add(row);
+        });
+        tag.put(TAG_ENTRANCES, entranceList);
         return tag;
     }
 
@@ -105,6 +130,11 @@ public class BedLinkData extends SavedData {
             CompoundTag row = backList.getCompound(i);
             data.back.put(BedKey.fromNbt(row.getCompound(TAG_BED)),
                     BedKey.fromNbt(row.getCompound(TAG_TARGET)));
+        }
+        ListTag entranceList = tag.getList(TAG_ENTRANCES, Tag.TAG_COMPOUND);
+        for (int i = 0; i < entranceList.size(); i++) {
+            CompoundTag row = entranceList.getCompound(i);
+            NbtUtils.readBlockPos(row, TAG_POS).ifPresent(pos -> data.entrances.put(row.getInt(TAG_ROOM), pos));
         }
         return data;
     }

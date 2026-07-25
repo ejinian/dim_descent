@@ -55,8 +55,8 @@ public final class RiftTeleporter {
         }
         // Unlinked: nothing opened it, so its pale Nexus has no recorded way back and falls through to
         // the respawn-point exit. Debug convenience, not a real entrance.
-        int index = NullDomainRooms.allocateAndStamp(rift);
-        return transition(rift, NullDomainRooms.landingFor(index), entity);
+        NullDomainRooms.NewRoom room = NullDomainRooms.allocateAndStamp(rift);
+        return arrivalTransition(rift, room.entranceBedHead(), entity);
     }
 
     // The real traversal: "the room this bed opens". The FIRST time a given bed is used the room is
@@ -70,11 +70,28 @@ public final class RiftTeleporter {
         BedLinkData links = BedLinkData.get(rift);
         Integer index = links.roomFor(sourceBed);
         if (index == null) {
-            int created = NullDomainRooms.allocateAndStamp(rift);
-            links.link(sourceBed, created, new BedKey(RIFT_LEVEL, NullDomainRooms.entranceBedHead(created)));
-            index = created;
+            NullDomainRooms.NewRoom created = NullDomainRooms.allocateAndStamp(rift);
+            links.link(sourceBed, created.index(), created.entranceBedHead());
+            index = created.index();
+        } else if (links.entranceFor(index) == null) {
+            // Linked before rooms were authored structures (or the stamp failed): put a real room in
+            // that cell now, keeping the bed pointing where it always pointed.
+            NullDomainRooms.NewRoom restamped = NullDomainRooms.stampAt(rift, index);
+            links.link(sourceBed, index, restamped.entranceBedHead());
         }
-        return transition(rift, NullDomainRooms.landingFor(index), entity);
+        return arrivalTransition(rift, links.entranceFor(index), entity);
+    }
+
+    // Land beside the room's pale Nexus, facing into the room. A room whose entrance bed is unknown
+    // (an author forgot one) still gets a usable landing so nobody is stranded in the void.
+    private static DimensionTransition arrivalTransition(ServerLevel rift, BlockPos paleBedHead, Entity entity) {
+        if (paleBedHead == null) {
+            return transition(rift, new Vec3(0.5, NullDomainRooms.FLOOR_Y + 1, 0.5), entity);
+        }
+        NullDomainRooms.Arrival arrival = NullDomainRooms.arrivalAt(rift, paleBedHead);
+        return new DimensionTransition(
+                rift, arrival.pos(), entity.getDeltaMovement(), arrival.yRot(), entity.getXRot(),
+                DimensionTransition.DO_NOTHING);
     }
 
     // The pale Nexus: go back to whatever opened this room. A bed inside the Domain means step back a
