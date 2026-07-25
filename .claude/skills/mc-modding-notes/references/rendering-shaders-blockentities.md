@@ -28,34 +28,44 @@ a transparency-aware render layer, those pixels render with their raw RGB value 
 opaque. This is why a texture with alpha=0 "cutout window" pixels showed up as solid **black**
 squares instead of transparent - the underlying RGB happened to be `(0,0,0)`.
 
-Fix: register the block with `RenderType.cutout()` (binary alpha test - fully transparent or fully
-opaque, no blending) or `RenderType.translucent()` (real alpha blending, more expensive) instead of
-leaving it on the default solid layer. This has to happen client-side, after registries exist:
+**Fix: declare it in the BLOCK MODEL JSON, not in Java.**
 
-```java
-@SubscribeEvent
-public static void onClientSetup(FMLClientSetupEvent event) {
-    event.enqueueWork(() -> ItemBlockRenderTypes.setRenderLayer(MyBlocks.MY_BLOCK.get(), RenderType.cutout()));
-}
+```json
+{ "render_type": "minecraft:cutout", "parent": "minecraft:block/cross", "textures": { ... } }
 ```
 
-`enqueueWork` matters - `FMLClientSetupEvent` handlers run off the render thread by default, and
-this touches a render-thread-owned lookup table. `ItemBlockRenderTypes.setRenderLayer` is the
-standard way non-vanilla blocks register their render layer, even though it's marked deprecated in
-current NeoForge (still functional; no clean replacement found yet - re-check this if NeoForge
-ships a new pattern later).
+`cutout` = binary alpha test (fully transparent or fully opaque, no blending); `translucent` = real
+alpha blending, more expensive. Item models do NOT need this - the item renderer already handles
+alpha - so only `models/block/**` is affected.
 
-**This bites any new block with transparent texture pixels, not just doors** - hit it three times
-now: the door windows, a `block/cross`-parented flower (Datura), and a reused-vanilla-geometry
-`IronBarsBlock` (Dark Iron Bars). Every time, the symptom is the same - transparent regions render
-as solid black instead of see-through. Vanilla's own blocks that use these exact same
-models/parents (poppy's `block/cross`, real `iron_bars`) look correct out of the box only because
-vanilla hardcodes its *own* blocks into this render-layer list internally - that coverage does
-**not** extend to a mod's blocks just because the model/parent/geometry is identical. **Any custom
-block with alpha-cutout pixels needs its own explicit `setRenderLayer(..., RenderType.cutout())`
-call, full stop, regardless of whether it reuses a vanilla model.** Cheap to batch multiple blocks
-in one `enqueueWork` call - just keep adding to the same lambda as new alpha-using blocks are added,
-don't create a new `FMLClientSetupEvent` handler per block.
+**Why the model and not `ItemBlockRenderTypes.setRenderLayer`:** that Java route works, but it puts a
+block's *appearance* in a client class far away from the asset, where it can be deleted by accident.
+That is not hypothetical - it happened here. The cutout registrations for datura, the dark iron bars
+and both Daemonlights lived in the Rift Door's `RiftClientEvents`, and retiring the door deleted the
+whole class, silently reverting every transparent block in the mod to opaque black. Nothing failed to
+compile, nothing logged a warning; the only symptom was a screenshot days later. A `render_type` in
+the model cannot be collaterally deleted, and it can be verified statically - see
+`AssetInvariantsTest`, which fails the build if a block model draws a texture containing transparent
+pixels without declaring a see-through render type.
+
+If you ever do need the Java route (`ItemBlockRenderTypes.setRenderLayer` inside
+`FMLClientSetupEvent`), `enqueueWork` matters - those handlers run off the render thread and this
+touches a render-thread-owned lookup table. It's also marked deprecated in current NeoForge.
+
+**Lesson beyond render layers:** when deleting a feature, check what *else* lived in its files.
+`RiftClientEvents` also held the Daemonlight flame's `registerSpriteSet` particle provider, which
+went with it. Registrations that belong to the MOD should not sit in a FEATURE's class - they now
+live in `client/ClientSetupEvents`.
+
+**This bites any new block with transparent texture pixels, not just doors** - hit it four times
+now: the door windows, a `block/cross`-parented flower (Datura), a reused-vanilla-geometry
+`IronBarsBlock` (Dark Iron Bars), and then all of them again via the deletion described above. Every
+time, the symptom is the same - transparent regions render as solid black instead of see-through.
+Vanilla's own blocks that use these exact same models/parents (poppy's `block/cross`, real
+`iron_bars`) look correct out of the box only because vanilla hardcodes its *own* blocks into this
+render-layer list internally - that coverage does **not** extend to a mod's blocks just because the
+model/parent/geometry is identical. **Any custom block with alpha pixels needs its own
+`"render_type"` in its model, full stop, regardless of whether it reuses a vanilla model.**
 
 **For multipart-connected geometry (fences, walls, iron bars), design the texture as a
 tileable lattice, not "a small bar icon on a big background."** The individual "post" piece (a lone,

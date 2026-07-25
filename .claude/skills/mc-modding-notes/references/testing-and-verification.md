@@ -118,3 +118,28 @@ The failure message is precise and worth reading fully: `No key spawn_overrides 
 means that exact required field is missing from that JSON. Codecs report the FIRST missing required
 field, so fixing one may reveal another - verify against the actual codec (see the structure-fields
 note in `dimensions-teleportation-portals.md`) rather than fixing one at a time via repeated crashes.
+
+## Automated asset tests (`./gradlew test`)
+
+`src/test/java/.../AssetInvariantsTest.java` - plain JUnit 5 over the resource tree. No Minecraft
+dependency, no game launch, runs in ~1s, so it is cheap to run after any asset change:
+
+- a **block** model drawing a texture that contains transparent pixels must declare a see-through
+  `render_type` (item models are exempt - the item renderer handles alpha)
+- every texture a model references must exist
+- every model a blockstate or a `parent` references must exist
+
+Written after a real regression (see the render-layer section in
+`rendering-shaders-blockentities.md`) where deleting an unrelated class silently made every
+transparent block opaque. It was verified to actually catch that bug: removing `render_type` from
+`datura.json` fails the build, restoring it passes. **When adding a check here, always prove it
+fails on the broken state first** - a green test that would not have caught the bug is worse than no
+test, because it buys false confidence.
+
+Gotchas found writing it: the texture-reference regex must exclude `"parent"` and `"model"` keys
+(they use the same `dimdescent:block/foo` shape but point at models, not textures), and JUnit needs
+`mavenCentral()` in `repositories` plus `useJUnitPlatform()` on the `test` task, since the
+ModDevGradle template ships neither.
+
+Limits: this checks the resource tree only. It cannot catch Java-side registration being deleted -
+which is exactly why appearance belongs in the model JSON where a static test can see it.
