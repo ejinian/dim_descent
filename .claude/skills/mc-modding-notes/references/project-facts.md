@@ -73,12 +73,11 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
     models stay separate. The item still isn't a vanilla-style BEWLR, just a static model.
   - Overworld detonation is currently gated OFF by `EXPLODE_OUTSIDE_DOMAIN = false` (temporary, so
     accidental clicks don't wreck overworld builds while rooms are being authored). Flip to restore.
-- **Spawn marker** (`dimdescent:spawn_marker`, `SpawnMarkerBlock`): authoring-only marker for the
-  hand-built room pool. A `HorizontalDirectionalBlock` (bright green cube, top arrow shows FACING,
-  `noCollission`, `instabreak`, `noLootTable`, light 7, creative Tools tab). Author places ONE per
-  room where the player should arrive, facing the way they should look; the (not-yet-written) room
-  loader will read its pos + facing as the spawn and delete it. Exists because structure-block DATA
-  mode isn't GUI-reachable (see `dimensions-teleportation-portals.md`).
+- **No bespoke authoring blocks ship.** A `dimdescent:spawn_marker` block was briefly added to mark
+  room spawn points, then DELETED on the principle that a level-editor block sitting in the creative
+  menu is coupling that doesn't belong in a released mod. Room spawn/facing is instead derived from
+  blocks already in the room (see the DimDoors entrance note in
+  `dimensions-teleportation-portals.md`). Don't reintroduce an authoring-only block.
 - **Shared teleport logic** lives in a `RiftTeleporter` helper class, used by the `/rift enter|leave`
   debug command, the sleep crossing (`SleepEntryEvents`), and the Dream Bed - avoid duplicating
   dimension-selection logic across entry points. Leaving the Null Domain happens two ways only: the

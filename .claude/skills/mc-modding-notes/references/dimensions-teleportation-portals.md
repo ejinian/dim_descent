@@ -168,13 +168,23 @@ generated first, then mod resources/datapacks. So a world that has its own
 which bites when you patch the mod copy and test in the same world it was saved in. Delete the
 world's generated file (or test in a fresh world) to fall through to the mod resource.
 
-**Structure-block DATA mode is NOT reachable in the GUI.** `StructureBlockEditScreen` builds its
-mode-cycle button from `DEFAULT_MODES = ALL_MODES.filter(mode != DATA)` - so clicking the mode button
-only ever cycles Save/Load/Corner; a Data-mode marker can only be made via command/NBT. Don't tell a
-user to "cycle to Data mode." For marking positions inside a room (e.g. where a player should spawn),
-we use a dedicated placeable marker block instead: `dimdescent:spawn_marker` (`SpawnMarkerBlock`, a
-`HorizontalDirectionalBlock` with a top-arrow showing FACING). Author places one; the room loader
-reads its pos + facing and deletes it. Simpler than Data markers and gives arrival facing for free.
+**Structure-block DATA mode is hidden in the GUI (and deprecated).** `StructureBlockEditScreen`
+builds its mode-cycle button from `DEFAULT_MODES = ALL_MODES.filter(mode != DATA)`, so normal
+clicking only cycles Save/Load/Corner. It is still reachable: **hold Alt while switching from Corner
+mode**. Don't tell a user to just "cycle to Data mode" - name the Alt trick. DATA is a deprecated
+mode that only does anything during natural generation of a few vanilla structures (igloo, end city,
+woodland mansion, ocean ruin, shipwreck), where its metadata string triggers a hardcoded function.
+
+**How DimDoors marks a room's entrance** (reverse-engineered, for our own room pool): they do NOT use
+a side-file or a data marker. The entrance is a real door baked into the schematic as a rift with
+**id 0**, which the paired generator JSON tags `pocket_entrance` (exits are the same object with
+ids 1+). Arrival FACING is inherited from that door's own blockstate - `EntranceRiftBlockEntity`
+reads `state.getValue(HorizontalDirectionalBlock.FACING)` and `RiftBlockEntity.teleport` runs the
+entity's position/angle through a `CoordinateTransformerBlock` built from it, so you arrive facing
+into the room with the door behind you. Spawn is modelled as a `RotatedLocation` (pos + yaw + pitch)
+computed at runtime, never stored. The lesson: **bake the spawn into the room as a facing-carrying
+block**, rather than shipping a bespoke authoring block (a custom marker block in the creative menu
+is exactly the kind of coupling to avoid in a released mod - we built one, then deleted it).
 
 **Chests spawn empty unless their block entity has a loot table.** A structure only contains blocks
 you actually built, and a captured chest's block-entity nbt has `{id, Items:[]}`. Point it at a loot
