@@ -4,6 +4,7 @@ import com.ejinian.dimdescent.DimDescent;
 import java.util.List;
 
 import com.ejinian.dimdescent.block.DreamBedBlock;
+import com.ejinian.dimdescent.block.SpawnMarkerBlock;
 import com.ejinian.dimdescent.effect.AttunementMobEffect;
 import com.ejinian.dimdescent.effect.DaturaTripMobEffect;
 import com.ejinian.dimdescent.effect.DryMouthMobEffect;
@@ -96,6 +97,18 @@ public final class ModRegistry {
     // Plain BlockItem: BedBlock.setPlacedBy places the head half automatically.
     public static final DeferredItem<Item> DREAM_BED_ITEM = ITEMS.register("dream_bed",
             () -> new BlockItem(DREAM_BED.get(), new Item.Properties()));
+
+    // Authoring-only marker for hand-built Null Domain rooms (see SpawnMarkerBlock). No collision so
+    // it never obstructs building; dropless. The room loader reads and removes it, so it never ships.
+    public static final DeferredBlock<SpawnMarkerBlock> SPAWN_MARKER = BLOCKS.register("spawn_marker",
+            () -> new SpawnMarkerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_GREEN)
+                    .noCollission()
+                    .instabreak()
+                    .noLootTable()
+                    .lightLevel(state -> 7)));
+    public static final DeferredItem<Item> SPAWN_MARKER_ITEM = ITEMS.register("spawn_marker",
+            () -> new BlockItem(SPAWN_MARKER.get(), new Item.Properties()));
 
     // Rift-dimension equivalent of Dimensional Doors' "Fabric of Reality": an insta-break void
     // floor. Look is meant to tie into the depth mechanic later (more unstable the deeper you
@@ -381,6 +394,7 @@ public final class ModRegistry {
             event.accept(DATURA_SEEDS);
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ALMANACUS);
+            event.accept(SPAWN_MARKER_ITEM);
         }
     }
 

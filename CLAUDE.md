@@ -147,11 +147,13 @@ telling anyone what to think.
 
 Core dimension-travel loop works end to end: a custom Rift dimension (Nullstone floor,
 Forsaken Fiber unbreakable boundary). The Rift Door is **fully retired** (block, block entity,
-portal renderer and all — deleted); onward travel is now the **Dream Bed**, a gray, tattered,
-zero-saturation bed. Right-clicked inside the Null Domain it pulls you into the next room exactly as
-the door did; right-clicked anywhere else it detonates like a vanilla bed used in the Nether/End
-(the lore: sleep is how you fell into the trip, so lying back down is how you sink deeper — and the
-waking world can't hold the thing). Sleeping in it is impossible. The Null Domain is a
+portal renderer and all — deleted); onward travel is now the **Nexus of Eternal Slumber**
+(block `dream_bed`), a gray, tattered, zero-saturation bed. Right-clicked inside the Null Domain it
+pulls you into the next room exactly as the door did; right-clicked anywhere else it detonates like a
+vanilla bed used in the Nether/End (the lore: sleep is how you fell into the trip, so lying back down
+is how you sink deeper — and the waking world can't hold the thing). Sleeping in it is impossible.
+(The overworld detonation is temporarily gated off — `EXPLODE_OUTSIDE_DOMAIN` — while rooms are being
+hand-authored in the overworld, so a stray click can't wreck a build.) The Null Domain is a
 Dimensional-Doors-style pocket dungeon (`NullDomainRooms`, reverse-engineered from DD's own
 pocket/grid code): every crossing in — and every Dream Bed used once inside — opens a fresh,
 randomly-chosen room ~512 blocks away on a persisted spiral grid, stamped lazily on use. Five

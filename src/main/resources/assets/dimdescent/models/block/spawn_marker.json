@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "dimdescent:block/spawn_marker",
+    "down": "dimdescent:block/spawn_marker",
+    "up": "dimdescent:block/spawn_marker_top",
+    "north": "dimdescent:block/spawn_marker",
+    "east": "dimdescent:block/spawn_marker",
+    "south": "dimdescent:block/spawn_marker",
+    "west": "dimdescent:block/spawn_marker"
+  }
+}

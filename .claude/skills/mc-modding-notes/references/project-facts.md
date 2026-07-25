@@ -67,6 +67,18 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
     BOTH halves, or vanilla `BedBlock.updateShape` self-deletes a half whose partner isn't placed yet.
   - Unbreakable (`strength(-1, 3600000)`, `noLootTable`, `pushReaction(BLOCK)`) so a player can never
     mine away their own way onward; its own detonation uses `removeBlock`, bypassing blast resistance.
+  - Display name is **"Nexus of Eternal Slumber"** (lang only; block id stays `dream_bed`, don't
+    rename the id - placed blocks would orphan). Full-bed inventory icon comes from a dedicated
+    `dream_bed_inventory` model (a whole bed compressed into one 16^3 cell); the in-world foot/head
+    models stay separate. The item still isn't a vanilla-style BEWLR, just a static model.
+  - Overworld detonation is currently gated OFF by `EXPLODE_OUTSIDE_DOMAIN = false` (temporary, so
+    accidental clicks don't wreck overworld builds while rooms are being authored). Flip to restore.
+- **Spawn marker** (`dimdescent:spawn_marker`, `SpawnMarkerBlock`): authoring-only marker for the
+  hand-built room pool. A `HorizontalDirectionalBlock` (bright green cube, top arrow shows FACING,
+  `noCollission`, `instabreak`, `noLootTable`, light 7, creative Tools tab). Author places ONE per
+  room where the player should arrive, facing the way they should look; the (not-yet-written) room
+  loader will read its pos + facing as the spawn and delete it. Exists because structure-block DATA
+  mode isn't GUI-reachable (see `dimensions-teleportation-portals.md`).
 - **Shared teleport logic** lives in a `RiftTeleporter` helper class, used by the `/rift enter|leave`
   debug command, the sleep crossing (`SleepEntryEvents`), and the Dream Bed - avoid duplicating
   dimension-selection logic across entry points. Leaving the Null Domain happens two ways only: the

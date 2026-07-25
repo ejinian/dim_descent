@@ -168,6 +168,14 @@ generated first, then mod resources/datapacks. So a world that has its own
 which bites when you patch the mod copy and test in the same world it was saved in. Delete the
 world's generated file (or test in a fresh world) to fall through to the mod resource.
 
+**Structure-block DATA mode is NOT reachable in the GUI.** `StructureBlockEditScreen` builds its
+mode-cycle button from `DEFAULT_MODES = ALL_MODES.filter(mode != DATA)` - so clicking the mode button
+only ever cycles Save/Load/Corner; a Data-mode marker can only be made via command/NBT. Don't tell a
+user to "cycle to Data mode." For marking positions inside a room (e.g. where a player should spawn),
+we use a dedicated placeable marker block instead: `dimdescent:spawn_marker` (`SpawnMarkerBlock`, a
+`HorizontalDirectionalBlock` with a top-arrow showing FACING). Author places one; the room loader
+reads its pos + facing and deletes it. Simpler than Data markers and gives arrival facing for free.
+
 **Chests spawn empty unless their block entity has a loot table.** A structure only contains blocks
 you actually built, and a captured chest's block-entity nbt has `{id, Items:[]}`. Point it at a loot
 table by setting the string key `"LootTable"` (read by `RandomizableContainer.tryLoadLootTable`) in

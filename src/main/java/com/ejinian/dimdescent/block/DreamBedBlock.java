@@ -39,6 +39,10 @@ import net.minecraft.world.phys.Vec3;
 // switched to a normal block model (no BedBlockEntity), and every sleep path is overridden away.
 public class DreamBedBlock extends BedBlock {
 
+    // TEMPORARY: off while rooms are being hand-authored in the overworld, so an accidental
+    // right-click can't blow up a build. Flip back to true to restore the wrong-dimension detonation.
+    private static final boolean EXPLODE_OUTSIDE_DOMAIN = false;
+
     // Typed as MapCodec<BedBlock> because BedBlock.codec() is invariant on BedBlock; the factory still
     // builds DreamBedBlock instances, so decoding produces our block.
     public static final MapCodec<BedBlock> CODEC = simpleCodec(DreamBedBlock::new);
@@ -82,7 +86,10 @@ public class DreamBedBlock extends BedBlock {
             }
             return InteractionResult.SUCCESS;
         }
-        return detonate(state, level, pos);
+        if (EXPLODE_OUTSIDE_DOMAIN) {
+            return detonate(state, level, pos);
+        }
+        return InteractionResult.CONSUME;
     }
 
     // Vanilla's wrong-dimension bed explosion, reused verbatim except that we reach it in every
