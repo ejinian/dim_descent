@@ -83,11 +83,35 @@ public final class NullDomainRooms {
         }
     }
 
-    // Allocate the next room and stamp it. Called on every crossing (door entry, sleep, /rift enter),
-    // so each is a brand-new room; returns where the arriving entity should stand.
-    public static Vec3 newRoom(ServerLevel rift) {
+    // Allocate the next room and stamp it. Called on every crossing (sleep, /rift enter) and every
+    // use of the dark Nexus, so each is a brand-new room. Returns the room's INDEX - the caller
+    // records it on the player's chain (RoomChainData) so the pale Nexus can walk back through it.
+    public static int allocateAndStamp(ServerLevel rift) {
         int index = GridData.get(rift).takeNextIndex();
-        return generateRoom(rift, index);
+        generateRoom(rift, index);
+        return index;
+    }
+
+    // Where a player stands on arriving in a given room: beside the pale Nexus, facing into the room.
+    // Derived purely from the index, so returning to a room the player has already visited lands them
+    // in exactly the spot they first arrived at - no need to store positions per room.
+    public static Vec3 landingFor(int index) {
+        RoomType type = roomTypeFor(index);
+        int[] cell = spiralCell(index);
+        return new Vec3(
+                cell[0] * SPACING + type.w / 2 + 1.5,
+                FLOOR_Y + 1,
+                cell[1] * SPACING + 1.5);
+    }
+
+    // The room's shape is the FIRST draw off the index's seed, so it can be recomputed at any time
+    // without stamping anything - which is what lets landingFor work for an already-built room.
+    private static RoomType roomTypeFor(int index) {
+        return RoomType.values()[RandomSource.create(seedFor(index)).nextInt(RoomType.values().length)];
+    }
+
+    private static long seedFor(int index) {
+        return index * 0x9E3779B97F4A7C15L ^ 0x5EEDCAFEL;
     }
 
     // Maps a room index to its grid cell on a square spiral out from (0,0). O(1), verified bijective
@@ -117,9 +141,9 @@ public final class NullDomainRooms {
     }
 
     // Deterministic per index, so re-stamping the same cell rebuilds the identical room. The type is
-    // drawn first from the same seed, so a given index always has the same shape too.
-    private static Vec3 generateRoom(ServerLevel level, int index) {
-        RandomSource rng = RandomSource.create(index * 0x9E3779B97F4A7C15L ^ 0x5EEDCAFEL);
+    // drawn first from the same seed (see roomTypeFor), so a given index always has the same shape.
+    private static void generateRoom(ServerLevel level, int index) {
+        RandomSource rng = RandomSource.create(seedFor(index));
         RoomType type = RoomType.values()[rng.nextInt(RoomType.values().length)];
         int[] cell = spiralCell(index);
         int ox = cell[0] * SPACING;
@@ -128,10 +152,8 @@ public final class NullDomainRooms {
         stampShell(level, ox, oz, type);
         stampFloor(level, ox, oz, type, rng);
         decorate(level, ox, oz, type, rng);
+        placeEntranceBed(level, ox, oz, type);
         placeExitBed(level, ox, oz, type);
-
-        // Arrive at the south-centre, one block in from the wall, facing the exit door on the far side.
-        return new Vec3(ox + type.w / 2 + 0.5, FLOOR_Y + 1, oz + 1.5);
     }
 
     // A pitch-black void box. The interior faces of the walls and the ceiling are lined with Nullstone
@@ -332,6 +354,20 @@ public final class NullDomainRooms {
         if (rng.nextBoolean()) {
             placeChest(level, new BlockPos(ox + 2, FLOOR_Y + 1, oz + 2), Direction.EAST);
         }
+    }
+
+    // The entrance: a PALE Nexus against the near wall, which the arriving player lands beside (see
+    // landingFor). It is both the thing you wake next to and the way back out, so it doubles as the
+    // room's spawn marker - no separate marker block or per-room data file needed.
+    private static void placeEntranceBed(ServerLevel level, int ox, int oz, RoomType t) {
+        int cx = t.w / 2;
+        // FACING points foot -> head; head sits at the lower Z, against the near wall.
+        BlockState bed = ModRegistry.PALE_DREAM_BED.get().defaultBlockState()
+                .setValue(BedBlock.FACING, Direction.NORTH);
+        BlockPos footPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + 1);
+        // Flag 2 (no neighbour updates) so neither half triggers vanilla bed's missing-partner self-delete.
+        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), 2);
+        level.setBlock(footPos.north(), bed.setValue(BedBlock.PART, BedPart.HEAD), 2);
     }
 
     // The onward exit: a Dream Bed laid against the far (north) wall, centred, flanked by lamps.

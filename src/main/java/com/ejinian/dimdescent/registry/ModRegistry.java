@@ -3,7 +3,9 @@ package com.ejinian.dimdescent.registry;
 import com.ejinian.dimdescent.DimDescent;
 import java.util.List;
 
+import com.ejinian.dimdescent.block.CorruptedBedBlock;
 import com.ejinian.dimdescent.block.DreamBedBlock;
+import com.ejinian.dimdescent.block.PaleDreamBedBlock;
 import com.ejinian.dimdescent.effect.AttunementMobEffect;
 import com.ejinian.dimdescent.effect.DaturaTripMobEffect;
 import com.ejinian.dimdescent.effect.DryMouthMobEffect;
@@ -96,6 +98,35 @@ public final class ModRegistry {
     // Plain BlockItem: BedBlock.setPlacedBy places the head half automatically.
     public static final DeferredItem<Item> DREAM_BED_ITEM = ITEMS.register("dream_bed",
             () -> new BlockItem(DREAM_BED.get(), new Item.Properties()));
+
+    // The pale twin: same name in-game, the way BACK. Also a room's entrance/spawn point, so it's the
+    // one bed an author always places. Same unbreakable properties as the dark one.
+    public static final DeferredBlock<PaleDreamBedBlock> PALE_DREAM_BED =
+            BLOCKS.register("pale_dream_bed", () -> new PaleDreamBedBlock(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.QUARTZ)
+                            .strength(-1.0F, 3600000.0F)
+                            .noLootTable()
+                            .noOcclusion()
+                            .sound(SoundType.WOOD)
+                            .pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredItem<Item> PALE_DREAM_BED_ITEM = ITEMS.register("pale_dream_bed",
+            () -> new BlockItem(PALE_DREAM_BED.get(), new Item.Properties()));
+
+    // What an overworld bed becomes after its owner refuses the trip. Unlike the two Nexus beds this
+    // one is ordinary bed-hardness and breakable - the scar can be cleared away - but drops nothing,
+    // so it can never be collected or re-placed. No creative-tab entry: it is a world state, not a
+    // building block.
+    public static final DeferredBlock<CorruptedBedBlock> CORRUPTED_BED =
+            BLOCKS.register("corrupted_bed", () -> new CorruptedBedBlock(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.QUARTZ)
+                            .strength(0.2F)
+                            .noLootTable()
+                            .noOcclusion()
+                            .sound(SoundType.WOOD)
+                            .pushReaction(PushReaction.DESTROY)));
 
     // Rift-dimension equivalent of Dimensional Doors' "Fabric of Reality": an insta-break void
     // floor. Look is meant to tie into the depth mechanic later (more unstable the deeper you
@@ -364,6 +395,7 @@ public final class ModRegistry {
     public static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(DREAM_BED_ITEM);
+            event.accept(PALE_DREAM_BED_ITEM);
             event.accept(NULLSTONE_ITEM);
             event.accept(FORSAKEN_FIBER_ITEM);
             event.accept(DARK_IRON_BARS_ITEM);

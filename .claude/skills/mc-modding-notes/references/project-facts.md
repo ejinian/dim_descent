@@ -73,6 +73,22 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
     models stay separate. The item still isn't a vanilla-style BEWLR, just a static model.
   - Overworld detonation is currently gated OFF by `EXPLODE_OUTSIDE_DOMAIN = false` (temporary, so
     accidental clicks don't wreck overworld builds while rooms are being authored). Flip to restore.
+- **The three beds** all extend a shared `NexusBedBlock extends BedBlock` base (which supplies
+  `RenderShape.MODEL` + null block entity + a `resolveHead` helper, and never calls `startSleepInBed`):
+  - `dream_bed` (dark) — deeper. `pale_dream_bed` (pale, SAME display name) — back one room, and it
+    is also the room's ENTRANCE: players land beside it (`NullDomainRooms.landingFor`), so it doubles
+    as the spawn marker and supplies arrival facing. `corrupted_bed` — what an overworld bed becomes
+    after a player refuses the trip: breakable (0.2) but `noLootTable`, un-sleepable (narrated line),
+    no creative entry, and IS in `#minecraft:beds` so it stays a valid respawn point.
+  - `RoomChainData` (SavedData on the rift level) holds each player's ordered chain of room indices
+    plus the overworld bed they entered from. Dark bed pushes, pale bed pops. Room landing positions
+    are recomputed from the index (`roomTypeFor` re-draws the FIRST value off the same seed), so no
+    per-room position is ever stored and revisiting lands you exactly where you first arrived.
+  - `NexusReturn.refuseTrip` is the ground-zero exit: corrupt the entry bed, place the player 3-6
+    blocks away on a heightmap-checked standable spot, teleport, then remove Attunement and apply the
+    comedown. Order matters - teleport FIRST, then strip Attunement, or `RiftEjectionEvents` races it.
+    `ServerPlayer.changeDimension` keeps the same instance across dimensions (verified in source), so
+    applying effects to the same reference afterwards is safe.
 - **No bespoke authoring blocks ship.** A `dimdescent:spawn_marker` block was briefly added to mark
   room spawn points, then DELETED on the principle that a level-editor block sitting in the creative
   menu is coupling that doesn't belong in a released mod. Room spawn/facing is instead derived from

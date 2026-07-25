@@ -1,5 +1,8 @@
 {
   "block.dimdescent.dream_bed": "Nexus of Eternal Slumber",
+  "block.dimdescent.pale_dream_bed": "Nexus of Eternal Slumber",
+  "block.dimdescent.corrupted_bed": "Nexus of Eternal Slumber",
+  "dimdescent.bed.not_comfortable": "This bed does not look comfortable...",
   "block.dimdescent.nullstone": "Nullstone",
   "block.dimdescent.forsaken_fiber": "Forsaken Fiber",
   "block.dimdescent.dark_iron_bars": "Dark Iron Bars",

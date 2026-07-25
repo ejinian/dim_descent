@@ -6,6 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.DimensionTransition;
@@ -48,14 +49,38 @@ public final class RiftTeleporter {
 
     // Allocate and stamp a fresh Null Domain room and return the transition into it. Used both to
     // ENTER from outside (sleep / /rift enter, which arrive here via getTransitionFor above) and to go
-    // DEEPER from inside (the Dream Bed). Either way it's just "the next room".
+    // DEEPER from inside (the dark Nexus). Either way it's just "the next room" - the difference is
+    // only whether the player's room chain restarts or grows.
     public static DimensionTransition toNextRoom(ServerLevel level, Entity entity) {
         ServerLevel rift = level.getServer().getLevel(RIFT_LEVEL);
         if (rift == null) {
             return null;
         }
-        Vec3 landing = NullDomainRooms.newRoom(rift);
-        return transition(rift, landing, entity);
+        boolean goingDeeper = isInRift(level);
+        int index = NullDomainRooms.allocateAndStamp(rift);
+        if (entity instanceof ServerPlayer player) {
+            RoomChainData chains = RoomChainData.get(rift);
+            if (goingDeeper) {
+                chains.pushRoom(player.getUUID(), index);
+            } else {
+                chains.beginChain(player.getUUID(), index);
+            }
+        }
+        return transition(rift, NullDomainRooms.landingFor(index), entity);
+    }
+
+    // The pale Nexus: step back to the room you came from. In the FIRST room there is nothing behind
+    // you, so this refuses the trip outright and puts you back in the waking world (NexusReturn).
+    public static void toPreviousRoom(ServerLevel riftLevel, ServerPlayer player) {
+        int previousIndex = RoomChainData.get(riftLevel).popRoom(player.getUUID());
+        if (previousIndex < 0) {
+            NexusReturn.refuseTrip(riftLevel, player);
+            return;
+        }
+        Vec3 landing = NullDomainRooms.landingFor(previousIndex);
+        player.changeDimension(new DimensionTransition(
+                riftLevel, landing, Vec3.ZERO, player.getYRot(), player.getXRot(),
+                DimensionTransition.DO_NOTHING));
     }
 
     private static DimensionTransition transition(ServerLevel target, Vec3 pos, Entity entity) {

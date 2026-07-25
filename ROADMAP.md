@@ -128,6 +128,16 @@ Everything above is the *door*; this is the room behind it.
       **Dream Bed** (`DreamBedBlock`): a gray tattered zero-saturation bed that teleports you onward
       when right-clicked in the Domain, and detonates like a wrong-dimension vanilla bed anywhere
       else. Lore: you first fell into the trip by sleeping, so you sink deeper by lying back down
+- [x] **The pale Nexus + refusing the trip.** A second bed, same in-game name, near-white and barely
+      tattered: it walks the player back one room, and doubles as each room's entrance/spawn point
+      (you arrive beside it), which removed the need for any spawn-marker block or per-room data
+      file. Per-player route lives in `RoomChainData`. Used in the FIRST room it refuses the trip
+      (`NexusReturn`): you wake a few blocks from your bed, that bed is permanently corrupted and
+      un-sleepable, you get the comedown (nausea 10s, dry mouth + weakness 60s), and Attunement is
+      cleared. Going deeper is rewarded; going back is merely survivable
+- [ ] Gear/armour that softens or cancels the comedown when backing out early (the reason
+      `NexusReturn.applyComedown` is one method)
+- [ ] Further bed tiers as depth signals — bloodier/darker variants for deeper or more dangerous rooms
 - [ ] Depth-weighted selection (DimDoors' `VirtualLocation.depth`) so deeper rooms differ, plus a
       legible "how deep am I" signal (fog, ambient, colour grading)
 - [ ] **Hand-built room pool** (NBT structures with a baked Dream Bed + a `dimdescent:entrance`

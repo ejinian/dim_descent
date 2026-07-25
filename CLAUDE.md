@@ -153,7 +153,22 @@ pulls you into the next room exactly as the door did; right-clicked anywhere els
 vanilla bed used in the Nether/End (the lore: sleep is how you fell into the trip, so lying back down
 is how you sink deeper — and the waking world can't hold the thing). Sleeping in it is impossible.
 (The overworld detonation is temporarily gated off — `EXPLODE_OUTSIDE_DOMAIN` — while rooms are being
-hand-authored in the overworld, so a stray click can't wreck a build.) The Null Domain is a
+hand-authored in the overworld, so a stray click can't wreck a build.)
+
+There are **two** Nexus beds, and they share a name on purpose — telling them apart is the whole
+decision. The **dark, tattered** one takes you deeper. Its **pale, near-white** twin takes you back
+one room, and is also the room's **entrance**: you always arrive beside it, so it doubles as the
+spawn marker and gives arrival facing for free (no marker block, no per-room data file — the same
+trick Dimensional Doors uses with its entrance door). Each player's route is a persisted chain
+(`RoomChainData`), so the pale bed can walk it backwards.
+
+Using the pale bed in the **first** room — where there's nothing behind you — refuses the trip
+(`NexusReturn`). Backing out is survivable but never free: you come to a few blocks from your bed
+rather than in it; that bed is permanently **corrupted** (wears the pale tattering, can never be
+slept in again — "This bed does not look comfortable..." — breakable but dropless, and still a valid
+respawn point); you get the comedown (nausea 10s, dry mouth and weakness 60s); and Attunement is
+cleared outright. You can leave the dream; you cannot leave the drug. Planned gear will soften the
+comedown, which is why it lives behind one method. The Null Domain is a
 Dimensional-Doors-style pocket dungeon (`NullDomainRooms`, reverse-engineered from DD's own
 pocket/grid code): every crossing in — and every Dream Bed used once inside — opens a fresh,
 randomly-chosen room ~512 blocks away on a persisted spiral grid, stamped lazily on use. Five

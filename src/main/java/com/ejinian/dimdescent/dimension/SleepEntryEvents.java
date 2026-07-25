@@ -98,6 +98,13 @@ public final class SleepEntryEvents {
         if (player.getSleepTimer() >= CROSS_AT_SLEEP_TIMER) {
             CROSSING.remove(id);
             ServerLevel level = player.serverLevel();
+
+            // Remember the bed they are lying in BEFORE waking them - once stopSleepInBed runs, the
+            // sleeping position is cleared. Refusing the trip (the pale Nexus in the first room) puts
+            // them back beside this bed and corrupts it, so it has to be captured here.
+            player.getSleepingPos().ifPresent(bedPos -> RoomChainData.get(level).setEntryBed(
+                    id, new RoomChainData.EntryBed(level.dimension(), bedPos.immutable())));
+
             // Wake without nudging the level's sleep bookkeeping, then cross.
             player.stopSleepInBed(true, false);
             DimensionTransition transition = RiftTeleporter.getTransitionFor(level, player);
