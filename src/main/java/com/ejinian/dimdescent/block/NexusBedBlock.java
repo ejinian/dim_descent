@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -25,6 +26,19 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 // the mechanic: the dark one takes you deeper, the pale one takes you back, and the corrupted one -
 // your own overworld bed after you've refused the trip once - does nothing but tell you so.
 public abstract class NexusBedBlock extends BedBlock {
+
+    // Flags for writing a bed half from code. Both extras are load-bearing, not caution:
+    //
+    // UPDATE_KNOWN_SHAPE suppresses the neighbour-shape cascade. Without it, writing the first half
+    // makes the second half's BedBlock.updateShape see a partner that is no longer "the same block",
+    // which returns AIR - so it deletes itself AND drops a bed item, and that deletion cascades back
+    // into the half just written, deleting that too. The result is a lone half-bed plus a stray bed
+    // item on the ground. (Level.setBlock only skips the cascade when (flags & 16) != 0.)
+    //
+    // UPDATE_SUPPRESS_DROPS then guarantees nothing can pop out of a bed we are converting, whatever
+    // the block being replaced was.
+    public static final int BED_WRITE_FLAGS =
+            Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
 
     protected NexusBedBlock(BlockBehaviour.Properties properties) {
         // The colour only ever feeds vanilla's bed-entity renderer, which none of these use.

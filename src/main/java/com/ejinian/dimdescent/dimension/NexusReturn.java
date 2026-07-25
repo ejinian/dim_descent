@@ -2,6 +2,7 @@ package com.ejinian.dimdescent.dimension;
 
 import javax.annotation.Nullable;
 
+import com.ejinian.dimdescent.block.NexusBedBlock;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.core.BlockPos;
@@ -102,8 +103,8 @@ public final class NexusReturn {
         }
         BlockState corrupted = ModRegistry.CORRUPTED_BED.get().defaultBlockState()
                 .setValue(BedBlock.FACING, facing);
-        level.setBlock(footPos, corrupted.setValue(BedBlock.PART, BedPart.FOOT), 2);
-        level.setBlock(headPos, corrupted.setValue(BedBlock.PART, BedPart.HEAD), 2);
+        level.setBlock(footPos, corrupted.setValue(BedBlock.PART, BedPart.FOOT), NexusBedBlock.BED_WRITE_FLAGS);
+        level.setBlock(headPos, corrupted.setValue(BedBlock.PART, BedPart.HEAD), NexusBedBlock.BED_WRITE_FLAGS);
     }
 
     // A standable spot a few blocks from the bed. Walks outward in rings and takes the first place

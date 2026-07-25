@@ -2,6 +2,7 @@ package com.ejinian.dimdescent.dimension;
 
 import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.block.DaemonlightLighting;
+import com.ejinian.dimdescent.block.NexusBedBlock;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.core.BlockPos;
@@ -373,9 +374,9 @@ public final class NullDomainRooms {
         BlockState bed = ModRegistry.PALE_DREAM_BED.get().defaultBlockState()
                 .setValue(BedBlock.FACING, Direction.NORTH);
         BlockPos footPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + 1);
-        // Flag 2 (no neighbour updates) so neither half triggers vanilla bed's missing-partner self-delete.
-        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), 2);
-        level.setBlock(footPos.north(), bed.setValue(BedBlock.PART, BedPart.HEAD), 2);
+        // BED_WRITE_FLAGS, or the first half written makes the pair self-destruct - see NexusBedBlock.
+        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), NexusBedBlock.BED_WRITE_FLAGS);
+        level.setBlock(footPos.north(), bed.setValue(BedBlock.PART, BedPart.HEAD), NexusBedBlock.BED_WRITE_FLAGS);
     }
 
     // The onward exit: a Dream Bed laid against the far (north) wall, centred, flanked by lamps.
@@ -390,9 +391,9 @@ public final class NullDomainRooms {
         BlockState bed = ModRegistry.DREAM_BED.get().defaultBlockState()
                 .setValue(BedBlock.FACING, Direction.SOUTH);
         BlockPos footPos = new BlockPos(ox + cx, FLOOR_Y + 1, oz + headZ - 1);
-        // Flag 2 (no neighbour updates) so neither half triggers vanilla bed's missing-partner self-delete.
-        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), 2);
-        level.setBlock(footPos.south(), bed.setValue(BedBlock.PART, BedPart.HEAD), 2);
+        // BED_WRITE_FLAGS, or the first half written makes the pair self-destruct - see NexusBedBlock.
+        level.setBlock(footPos, bed.setValue(BedBlock.PART, BedPart.FOOT), NexusBedBlock.BED_WRITE_FLAGS);
+        level.setBlock(footPos.south(), bed.setValue(BedBlock.PART, BedPart.HEAD), NexusBedBlock.BED_WRITE_FLAGS);
 
         if (cx - 1 >= 0) {
             level.setBlock(new BlockPos(ox + cx - 1, FLOOR_Y + 1, oz + headZ), lamp(), 2);
