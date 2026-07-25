@@ -243,3 +243,18 @@ The one-element pool (`template_pool/altar.json`): `single_pool_element`, `locat
 The `structure_set` is a `random_spread` with `spacing`/`separation` (villages are 34/8) and a unique
 `salt`. Scope the biome tag to LAND (`#minecraft:is_forest`/`is_taiga`/... plus plains/desert/etc.)
 rather than `#minecraft:is_overworld`, or a surface building spawns half-submerged in oceans.
+
+**`project_start_to_heightmap` lands a structure one block INTO the surface.** With
+`"start_height": {"absolute": 0}` the jigsaw start is placed at
+`ChunkGenerator.getFirstFreeHeight(...)`, and in practice the structure's `y=0` layer ends up
+occupying the topmost terrain block (the grass) rather than resting on it - so the whole build reads
+as sunk by exactly one block, everywhere, on flat ground and slopes alike. Compensate with
+`"start_height": {"absolute": 1}`: the sampled height and the start height are ADDED
+(`k = pos.getY() + getFirstFreeHeight(...)` in `JigsawPlacement`), so this shifts the structure up
+one and nothing else changes. Confirmed on `dimdescent:altar`.
+
+Two related notes: the heightmap is sampled at a SINGLE point, so on sloped terrain the far side of
+a large structure still buries or floats - the durable fix for that is authoring a foundation course
+or two below the build (and lowering `start_height` to match), not filtering biomes, since even
+plains have grades. And existing structures never move: a placement change only affects chunks
+generated afterwards, so verify in a fresh world or far-away chunks.
