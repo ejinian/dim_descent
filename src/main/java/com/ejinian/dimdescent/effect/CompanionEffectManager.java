@@ -43,8 +43,8 @@ public final class CompanionEffectManager {
     private static final int DOMAIN_WINDOW_TICKS = 200;
 
     // Kept comfortably above 200 because vanilla flickers night vision during its final 200 ticks
-    // (GameRenderer.getNightVisionScale). Refreshed while Psychosis lasts, so the player never sees
-    // the flicker - Psychosis's night vision should be flat and total.
+    // (GameRenderer.getNightVisionScale). Refreshed while Delirium lasts, so the player never sees
+    // the flicker - Delirium's night vision should be flat and total.
     private static final int NIGHT_VISION_REFRESH_TICKS = 400;
 
     // Darkness is topped up while wanted. Well above DARKNESS's 22-tick blend, so keeping it above
@@ -93,8 +93,8 @@ public final class CompanionEffectManager {
             OUR_DARKNESS.remove(id);
         }
 
-        // --- Psychosis -> Night Vision ---
-        if (player.hasEffect(ModRegistry.PSYCHOSIS_EFFECT)) {
+        // --- Delirium -> Night Vision ---
+        if (player.hasEffect(ModRegistry.DELIRIUM_EFFECT)) {
             MobEffectInstance nightVision = player.getEffect(MobEffects.NIGHT_VISION);
             if (nightVision == null || nightVision.getDuration() < NIGHT_VISION_REFRESH_TICKS / 2) {
                 player.addEffect(new MobEffectInstance(

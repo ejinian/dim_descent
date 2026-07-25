@@ -92,7 +92,7 @@ public final class DaturaTrip {
         shuffle(plan, plan.size(), random);
 
         // Minimums are read off the shuffled plan rather than being uniform, because some symptoms
-        // need longer than others to be worth having at all - Psychosis has to outlast its own first
+        // need longer than others to be worth having at all - Delirium has to outlast its own first
         // hallucinated noise, or it can end before anything is heard.
         int[] minimums = new int[plan.size()];
         for (int i = 0; i < plan.size(); i++) {
@@ -298,7 +298,7 @@ public final class DaturaTrip {
     // Attunement's own opening 10s of darkness is NOT started here - CompanionEffectManager already
     // applies it on this same Added event. cancel() deliberately leaves Darkness and Night Vision
     // alone for exactly that reason (Darkness gets refreshed to Attunement's window; Night Vision is
-    // retracted by the companion manager once Psychosis is gone).
+    // retracted by the companion manager once Delirium is gone).
     @SubscribeEvent
     public static void onAttunementApplied(MobEffectEvent.Added event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
@@ -315,7 +315,7 @@ public final class DaturaTrip {
         ACTIVE.remove(player.getUUID());
         player.removeEffect(ModRegistry.DRY_MOUTH_EFFECT);
         player.removeEffect(ModRegistry.TACHYCARDIA_EFFECT);
-        player.removeEffect(ModRegistry.PSYCHOSIS_EFFECT);
+        player.removeEffect(ModRegistry.DELIRIUM_EFFECT);
         player.removeEffect(net.minecraft.world.effect.MobEffects.CONFUSION);
         player.removeEffect(net.minecraft.world.effect.MobEffects.POISON);
         player.removeEffect(net.minecraft.world.effect.MobEffects.WEAKNESS);

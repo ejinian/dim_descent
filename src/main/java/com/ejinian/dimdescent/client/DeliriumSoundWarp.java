@@ -15,7 +15,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 
-// While Psychosis holds, everything the world sounds like stops being trustworthy.
+// While Delirium holds, everything the world sounds like stops being trustworthy.
 //
 // On the original ask - literally inverting sounds: phase-inverting a mono signal (multiplying the
 // waveform by -1) is *inaudible*, so the literal reading produces no perceptible change at all. True
@@ -36,7 +36,7 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 // safe to read here; anything volume- or pitch-derived has to be deferred into the replacement
 // instance, which is why WarpedSoundInstance takes a volume MULTIPLIER rather than a value.
 @EventBusSubscriber(modid = DimDescent.MODID, value = Dist.CLIENT)
-public final class PsychosisSoundWarp {
+public final class DeliriumSoundWarp {
 
     private static final RandomSource RANDOM = RandomSource.create();
 
@@ -56,7 +56,7 @@ public final class PsychosisSoundWarp {
         }
 
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || !player.hasEffect(ModRegistry.PSYCHOSIS_EFFECT)) {
+        if (player == null || !player.hasEffect(ModRegistry.DELIRIUM_EFFECT)) {
             return;
         }
 
@@ -100,6 +100,6 @@ public final class PsychosisSoundWarp {
         event.setSound(new WarpedSoundInstance(sound, pitch, volumeScale));
     }
 
-    private PsychosisSoundWarp() {
+    private DeliriumSoundWarp() {
     }
 }

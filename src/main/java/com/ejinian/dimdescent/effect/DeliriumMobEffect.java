@@ -12,18 +12,18 @@ import net.minecraft.world.effect.MobEffectCategory;
 // None of the behaviour lives here:
 //   - night vision is a hidden companion vanilla effect applied by CompanionEffectManager, because
 //     the brightening is hardcoded client-side against the literal MobEffects.NIGHT_VISION instance
-//   - the noises and the hallucinated figure are scheduled by PsychosisEvents, which needs
+//   - the noises and the hallucinated figure are scheduled by DeliriumEvents, which needs
 //     per-player timing state a MobEffect singleton has nowhere sensible to keep
-//   - the soundscape distortion is client-side, in PsychosisSoundWarp
+//   - the soundscape distortion is client-side, in DeliriumSoundWarp
 //
 // All of them key off this effect's presence rather than off the trip stage, so handing it out with
 // /effect behaves exactly like the real thing.
-public class PsychosisMobEffect extends MobEffect {
+public class DeliriumMobEffect extends MobEffect {
 
     // Washed-out violet.
     private static final int COLOR = 0x8A7FA8;
 
-    public PsychosisMobEffect() {
+    public DeliriumMobEffect() {
         super(MobEffectCategory.HARMFUL, COLOR);
     }
 }

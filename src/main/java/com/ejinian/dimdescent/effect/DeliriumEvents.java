@@ -23,27 +23,27 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-// Everything Psychosis does on a timer: hearing things, and seeing someone.
+// Everything Delirium does on a timer: hearing things, and seeing someone.
 //
 // The hallucinated figure used to be its own trip stage. It's folded in here because a hallucination
 // genuinely is part of this symptom rather than a separate one - and because it lets the figure
 // arrive partway through, once the noises have already put the player on edge, rather than
 // announcing itself the moment the effect lands.
 @EventBusSubscriber(modid = DimDescent.MODID)
-public final class PsychosisEvents {
+public final class DeliriumEvents {
 
     // 20s between sounds -> 3/min; 10s -> 6/min.
     private static final int MIN_GAP_TICKS = 200;
     private static final int MAX_GAP_TICKS = 400;
 
-    // The FIRST sound comes sooner than the rest. Without this, a short Psychosis could roll a
+    // The FIRST sound comes sooner than the rest. Without this, a short Delirium could roll a
     // full-length opening gap and end on the very tick its first sound was due - so a 20s dose would
     // be silent about as often as not. Only the opening interval is affected, so the 3-6 per minute
     // rate over any meaningful duration is untouched.
     private static final int FIRST_GAP_MIN_TICKS = 100;
     private static final int FIRST_GAP_MAX_TICKS = 300;
 
-    // Odds that a given Psychosis produces a figure at all.
+    // Odds that a given Delirium produces a figure at all.
     private static final float GHOST_CHANCE = 0.85F;
 
     // Where in the effect's span the figure can appear, as a fraction. Never at the very start (the
@@ -57,7 +57,7 @@ public final class PsychosisEvents {
 
     private static final class State {
         int ticksUntilNext;
-        // Negative once the figure has been spawned, or if this Psychosis rolled no figure at all.
+        // Negative once the figure has been spawned, or if this Delirium rolled no figure at all.
         int ticksUntilGhost = -1;
         // Only the note-block cascade needs to emit more than one sound, so pending entries are
         // kept as a tiny queue rather than giving every entry in the pool its own scheduler.
@@ -85,7 +85,7 @@ public final class PsychosisEvents {
         }
         UUID id = player.getUUID();
 
-        MobEffectInstance instance = player.getEffect(ModRegistry.PSYCHOSIS_EFFECT);
+        MobEffectInstance instance = player.getEffect(ModRegistry.DELIRIUM_EFFECT);
         if (instance == null) {
             STATES.remove(id);
             return;
@@ -218,6 +218,6 @@ public final class PsychosisEvents {
         STATES.remove(event.getEntity().getUUID());
     }
 
-    private PsychosisEvents() {
+    private DeliriumEvents() {
     }
 }

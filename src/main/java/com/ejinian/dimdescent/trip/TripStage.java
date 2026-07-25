@@ -93,8 +93,8 @@ public enum TripStage {
 
     // Night vision, intermittent noises, a warped soundscape, and - usually - a figure watching you
     // partway through. None of it is applied here: the night vision is a hidden companion effect
-    // owned by CompanionEffectManager, and the rest is driven by PsychosisEvents and
-    // PsychosisSoundWarp off the effect's presence rather than off this stage, so it all works
+    // owned by CompanionEffectManager, and the rest is driven by DeliriumEvents and
+    // DeliriumSoundWarp off the effect's presence rather than off this stage, so it all works
     // identically when the effect is handed out by command.
     //
     // The hallucinated figure used to be a separate stage. It was folded in here because it's part
@@ -102,16 +102,16 @@ public enum TripStage {
     // window - eight symptoms in three minutes left each of them barely twenty seconds.
     //
     // The 20s potion floor exists so the symptom always outlasts its own first noise; below that,
-    // a Psychosis could plausibly end before anything was heard.
-    PSYCHOSIS(1200, 400) {
+    // a Delirium could plausibly end before anything was heard.
+    DELIRIUM(1200, 400) {
         @Override
         void applyTo(ServerPlayer player, int durationTicks) {
-            apply(player, ModRegistry.PSYCHOSIS_EFFECT, durationTicks);
+            apply(player, ModRegistry.DELIRIUM_EFFECT, durationTicks);
         }
 
         @Override
         boolean isActiveOn(ServerPlayer player) {
-            return player.hasEffect(ModRegistry.PSYCHOSIS_EFFECT);
+            return player.hasEffect(ModRegistry.DELIRIUM_EFFECT);
         }
     };
 
