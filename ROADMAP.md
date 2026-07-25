@@ -95,7 +95,9 @@ Two event handlers instead.
       spawn half-submerged
 - [ ] **Needs a human**: `/locate structure dimdescent:altar` in a FRESH world,
       then confirm one actually generates on the surface without floating/burying
-- [ ] Repurpose **Dark Iron Bars** as altar/Null Domain decor
+- [ ] Repurpose **Dark Iron Bars** as altar/Null Domain decor. (Was briefly done in the
+      code-generated rooms — cages, screens, gateposts — but those rooms were deleted when the
+      hand-built pool landed, so the bars are unused again. They need to go into authored rooms.)
 
 Worth knowing: expiry ejects to the player's respawn point, and vanilla sleeping
 sets spawn to that bed — so entering by sleep means waking up in the very bed you
@@ -145,9 +147,14 @@ Everything above is the *door*; this is the room behind it.
 - [ ] Further bed tiers as depth signals — bloodier/darker variants for deeper or more dangerous rooms
 - [ ] Depth-weighted selection (DimDoors' `VirtualLocation.depth`) so deeper rooms differ, plus a
       legible "how deep am I" signal (fog, ambient, colour grading)
-- [ ] **Hand-built room pool** (NBT structures with a baked Dream Bed + a `dimdescent:entrance`
-      data-marker for the spawn) to replace the code-generated five; the loader picks one at random
-      per grid cell, places it, reads the marker for the landing
+- [x] **Hand-built room pool**: rooms are authored in-game and captured as `.nbt`, and the loader
+      picks one at random per grid cell, places it, and reads the pale Nexus off the template for the
+      landing and facing. No spawn-marker block or per-room data file was needed in the end — the
+      pale bed IS the entrance. The pool auto-discovers from `data/dimdescent/structure/rooms/`, so
+      new rooms need no code change. Five authored so far (hallway, hangul, left, t, u)
+- [ ] **More rooms** — the pool is the content, and five is a proof of concept. Ongoing, human work
+- [ ] Nothing in the rooms yet: the authored five contain no chests and no Dark Iron Bars, so the
+      Domain is currently corridors and beds with no reward and no danger
 - [ ] Depth-tiered enemies
 - [ ] Loot tied to depth/risk
 - [ ] Voluntary exit back to the altar you entered by (the only planned route that leads OUT)
