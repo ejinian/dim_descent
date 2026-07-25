@@ -135,6 +135,11 @@ Everything above is the *door*; this is the room behind it.
       (`NexusReturn`): you wake a few blocks from your bed, that bed is permanently corrupted and
       un-sleepable, you get the comedown (nausea 10s, dry mouth + weakness 60s), and Attunement is
       cleared. Going deeper is rewarded; going back is merely survivable
+- [x] **Bed-keyed travel, so the Domain is multiplayer** (`BedLinkData`). Links belong to beds, not
+      players: one bed opens one room forever, for everyone on the server, so people dose together and
+      explore the same rooms. Replaced the per-player room chain, which had quietly made the Domain
+      single-player (two players in the same bed got different rooms and could never meet). Also
+      gives route resumption for free — a bed still leads where it always led, next trip and next week
 - [ ] Gear/armour that softens or cancels the comedown when backing out early (the reason
       `NexusReturn.applyComedown` is one method)
 - [ ] Further bed tiers as depth signals — bloodier/darker variants for deeper or more dangerous rooms

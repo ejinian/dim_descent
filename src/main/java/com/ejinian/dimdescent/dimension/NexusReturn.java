@@ -48,31 +48,28 @@ public final class NexusReturn {
     private NexusReturn() {
     }
 
-    // Pull the player out of the Domain entirely. Safe to call from a block interaction.
-    public static void refuseTrip(ServerLevel riftLevel, ServerPlayer player) {
-        RoomChainData chains = RoomChainData.get(riftLevel);
-        RoomChainData.EntryBed bed = chains.getEntryBed(player.getUUID());
-
+    // Pull the player out of the Domain entirely. Safe to call from a block interaction. originBed is
+    // the waking-world bed that opened this room - null only for an unlinked debug room, or if the
+    // link somehow predates the bed being destroyed.
+    public static void refuseTrip(ServerLevel riftLevel, ServerPlayer player, @Nullable BedKey originBed) {
         ServerLevel targetLevel = null;
         Vec3 wakingSpot = null;
-        if (bed != null) {
-            targetLevel = riftLevel.getServer().getLevel(bed.dimension());
+        if (originBed != null) {
+            targetLevel = riftLevel.getServer().getLevel(originBed.dimension());
             if (targetLevel != null) {
-                corruptBed(targetLevel, bed.pos());
-                wakingSpot = findWakingSpot(targetLevel, bed.pos());
+                corruptBed(targetLevel, originBed.pos());
+                wakingSpot = findWakingSpot(targetLevel, originBed.pos());
             }
         }
 
-        // No remembered bed (entered by /rift enter, or the bed was destroyed while they were under):
-        // fall back to wherever they would respawn, which is what expiry-ejection already does.
+        // No usable origin bed: fall back to wherever they would respawn, which is what
+        // expiry-ejection already does. They still pay the comedown - backing out always costs.
         if (targetLevel == null || wakingSpot == null) {
-            chains.clearChain(player.getUUID());
             player.changeDimension(player.findRespawnPositionAndUseSpawnBlock(true, DimensionTransition.DO_NOTHING));
             applyComedown(player);
             return;
         }
 
-        chains.clearChain(player.getUUID());
         player.changeDimension(new DimensionTransition(
                 targetLevel, wakingSpot, Vec3.ZERO, player.getYRot(), player.getXRot(),
                 DimensionTransition.DO_NOTHING));

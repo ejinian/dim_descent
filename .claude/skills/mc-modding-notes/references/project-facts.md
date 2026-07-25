@@ -80,11 +80,17 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
     as the spawn marker and supplies arrival facing. `corrupted_bed` — what an overworld bed becomes
     after a player refuses the trip: breakable (0.2) but `noLootTable`, un-sleepable (narrated line),
     no creative entry, and IS in `#minecraft:beds` so it stays a valid respawn point.
-  - `RoomChainData` (SavedData on the rift level) holds each player's ordered chain of room indices
-    plus the overworld bed they entered from. Dark bed pushes, pale bed pops. Room landing positions
-    are recomputed from the index (`roomTypeFor` re-draws the FIRST value off the same seed), so no
-    per-room position is ever stored and revisiting lands you exactly where you first arrived.
-  - `NexusReturn.refuseTrip` is the ground-zero exit: corrupt the entry bed, place the player 3-6
+  - `BedLinkData` (SavedData on the rift level) keys travel on BEDS, not players - this is what makes
+    the Domain multiplayer. `forward`: BedKey -> room index (this bed opens this room, forever, for
+    everyone). `back`: that room's pale-bed BedKey -> the bed that opened it. Both written once when a
+    room is minted. `BedKey` = (dimension, pos) normalised to the HEAD half; identity is the PLACE, so
+    breaking and replacing a bed on the same spot keeps its destination. A previous design stored a
+    per-player room chain instead, which made the Domain single-player in all but name (two people in
+    the same bed got different rooms and could never meet) - it was deleted. Don't reintroduce
+    per-player routing. Room landings are recomputed from the index (`roomTypeFor` re-draws the FIRST
+    value off the same seed), so no per-room position is stored; `entranceBedHead(index)` must stay in
+    exact agreement with `placeEntranceBed`.
+  - `NexusReturn.refuseTrip` is the outermost-room exit: corrupt the origin bed, place the player 3-6
     blocks away on a heightmap-checked standable spot, teleport, then remove Attunement and apply the
     comedown. Order matters - teleport FIRST, then strip Attunement, or `RiftEjectionEvents` races it.
     `ServerPlayer.changeDimension` keeps the same instance across dimensions (verified in source), so

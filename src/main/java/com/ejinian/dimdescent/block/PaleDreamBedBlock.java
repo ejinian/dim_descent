@@ -57,7 +57,7 @@ public class PaleDreamBedBlock extends NexusBedBlock {
             return InteractionResult.CONSUME;
         }
 
-        RiftTeleporter.toPreviousRoom(serverLevel, serverPlayer);
+        RiftTeleporter.toPreviousRoom(serverLevel, serverPlayer, pos);
         return InteractionResult.SUCCESS;
     }
 }

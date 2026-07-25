@@ -2,6 +2,7 @@ package com.ejinian.dimdescent.block;
 
 import com.mojang.serialization.MapCodec;
 
+import com.ejinian.dimdescent.dimension.BedKey;
 import com.ejinian.dimdescent.dimension.RiftTeleporter;
 
 import net.minecraft.core.BlockPos;
@@ -54,7 +55,10 @@ public class DreamBedBlock extends NexusBedBlock {
 
         if (RiftTeleporter.isInRift(serverLevel)) {
             if (player instanceof ServerPlayer serverPlayer) {
-                DimensionTransition transition = RiftTeleporter.toNextRoom(serverLevel, serverPlayer);
+                // This bed's own position is the link key, so it opens the same next room every time
+                // for every player - two people using it end up together, not in private copies.
+                BedKey self = BedKey.of(serverLevel, RiftTeleporter.RIFT_LEVEL, pos);
+                DimensionTransition transition = RiftTeleporter.toRoomFor(serverLevel, serverPlayer, self);
                 if (transition != null) {
                     serverPlayer.changeDimension(transition);
                 }

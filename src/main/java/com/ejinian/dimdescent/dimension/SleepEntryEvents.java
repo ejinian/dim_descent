@@ -99,15 +99,18 @@ public final class SleepEntryEvents {
             CROSSING.remove(id);
             ServerLevel level = player.serverLevel();
 
-            // Remember the bed they are lying in BEFORE waking them - once stopSleepInBed runs, the
-            // sleeping position is cleared. Refusing the trip (the pale Nexus in the first room) puts
-            // them back beside this bed and corrupts it, so it has to be captured here.
-            player.getSleepingPos().ifPresent(bedPos -> RoomChainData.get(level).setEntryBed(
-                    id, new RoomChainData.EntryBed(level.dimension(), bedPos.immutable())));
+            // Read the bed BEFORE waking them - stopSleepInBed clears the sleeping position. This bed
+            // is the link key: it opens the same room every time, for whoever sleeps in it, and it is
+            // where the pale Nexus sends them back to.
+            BedKey bed = player.getSleepingPos()
+                    .map(bedPos -> BedKey.of(level, level.dimension(), bedPos))
+                    .orElse(null);
 
             // Wake without nudging the level's sleep bookkeeping, then cross.
             player.stopSleepInBed(true, false);
-            DimensionTransition transition = RiftTeleporter.getTransitionFor(level, player);
+            DimensionTransition transition = bed != null
+                    ? RiftTeleporter.toRoomFor(level, player, bed)
+                    : RiftTeleporter.getTransitionFor(level, player);
             if (transition != null) {
                 player.changeDimension(transition);
             }

@@ -159,10 +159,17 @@ There are **two** Nexus beds, and they share a name on purpose — telling them 
 decision. The **dark, tattered** one takes you deeper. Its **pale, near-white** twin takes you back
 one room, and is also the room's **entrance**: you always arrive beside it, so it doubles as the
 spawn marker and gives arrival facing for free (no marker block, no per-room data file — the same
-trick Dimensional Doors uses with its entrance door). Each player's route is a persisted chain
-(`RoomChainData`), so the pale bed can walk it backwards.
+trick Dimensional Doors uses with its entrance door).
 
-Using the pale bed in the **first** room — where there's nothing behind you — refuses the trip
+**Travel is keyed on beds, not players** (`BedLinkData`), which is what makes the Domain a shared
+place. A bed opens the same room forever, for everyone: sleep in the bed in your house and you and
+every other player on the server arrive in the same room, today and next month. One bed, one room —
+never mixed, never a fresh copy. The Domain is therefore a single fixed graph the whole server
+explores together, exactly as Dimensional Doors does it (its links live on the rift, not the
+traveller). Two maps are written the moment a room is born: the bed → the room it opens, and that
+room's pale bed → the bed that opened it. The pale Nexus just asks "what made me?" and goes there.
+
+Using the pale bed in an **outermost** room — one opened by a bed in the waking world — refuses the trip
 (`NexusReturn`). Backing out is survivable but never free: you come to a few blocks from your bed
 rather than in it; that bed is permanently **corrupted** (wears the pale tattering, can never be
 slept in again — "This bed does not look comfortable..." — breakable but dropless, and still a valid

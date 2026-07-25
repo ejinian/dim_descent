@@ -85,7 +85,7 @@ public final class NullDomainRooms {
 
     // Allocate the next room and stamp it. Called on every crossing (sleep, /rift enter) and every
     // use of the dark Nexus, so each is a brand-new room. Returns the room's INDEX - the caller
-    // records it on the player's chain (RoomChainData) so the pale Nexus can walk back through it.
+    // records the bed->room link (BedLinkData) so that bed always reopens this same room.
     public static int allocateAndStamp(ServerLevel rift) {
         int index = GridData.get(rift).takeNextIndex();
         generateRoom(rift, index);
@@ -102,6 +102,14 @@ public final class NullDomainRooms {
                 cell[0] * SPACING + type.w / 2 + 1.5,
                 FLOOR_Y + 1,
                 cell[1] * SPACING + 1.5);
+    }
+
+    // Where this room's pale Nexus stands (its HEAD half). Used as the link key for travelling back
+    // out of the room, so it must agree exactly with placeEntranceBed.
+    public static BlockPos entranceBedHead(int index) {
+        RoomType type = roomTypeFor(index);
+        int[] cell = spiralCell(index);
+        return new BlockPos(cell[0] * SPACING + type.w / 2, FLOOR_Y + 1, cell[1] * SPACING);
     }
 
     // The room's shape is the FIRST draw off the index's seed, so it can be recomputed at any time
@@ -371,7 +379,8 @@ public final class NullDomainRooms {
     }
 
     // The onward exit: a Dream Bed laid against the far (north) wall, centred, flanked by lamps.
-    // Right-clicking it fires DreamBedBlock -> toNextRoom, so it always opens the next room. Foot is
+    // Right-clicking it fires DreamBedBlock -> toRoomFor, keyed on its own position, so it opens the
+    // same next room for everyone, every time. Foot is
     // one row in from the head so both halves sit inside the interior. (These code-generated rooms are
     // temporary scaffolding; the hand-built room pool will place its own bed via a structure marker.)
     private static void placeExitBed(ServerLevel level, int ox, int oz, RoomType t) {
