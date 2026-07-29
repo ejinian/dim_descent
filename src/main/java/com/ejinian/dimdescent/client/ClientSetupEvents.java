@@ -4,9 +4,11 @@ import com.ejinian.dimdescent.DimDescent;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.client.particle.FlameParticle;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 // Client-side registrations that are not tied to any one feature.
@@ -20,7 +22,7 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 // "render_type": "minecraft:cutout" in the block models themselves, so the declaration lives beside
 // the texture it describes, cannot be deleted with unrelated Java, and is checked by
 // AssetInvariantsTest.
-@EventBusSubscriber(modid = DimDescent.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = DimDescent.MODID, value = Dist.CLIENT)
 public final class ClientSetupEvents {
 
     // Reuses vanilla's own flame behaviour (rise, shrink, flicker out) with our red sprite, so the
@@ -30,6 +32,12 @@ public final class ClientSetupEvents {
     @SubscribeEvent
     public static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModRegistry.DAEMON_FLAME, FlameParticle.SmallFlameProvider::new);
+    }
+
+    // Keyed by the `effects` id in the dimension_type json, not by the dimension itself.
+    @SubscribeEvent
+    public static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
+        event.register(ResourceLocation.fromNamespaceAndPath(DimDescent.MODID, "rift"), new NullDomainEffects());
     }
 
     private ClientSetupEvents() {

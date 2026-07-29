@@ -8,17 +8,13 @@
   "has_skylight": false,
   "has_ceiling": true,
   "coordinate_scale": 1.0,
-  "ambient_light": 0.05,
+  "ambient_light": 1.0,
   "fixed_time": 18000,
-  "monster_spawn_light_level": {
-    "type": "minecraft:uniform",
-    "min_inclusive": 0,
-    "max_inclusive": 7
-  },
+  "monster_spawn_light_level": 0,
   "monster_spawn_block_light_limit": 0,
   "logical_height": 256,
   "min_y": 0,
   "height": 256,
   "infiniburn": "#minecraft:infiniburn_end",
-  "effects": "minecraft:the_end"
+  "effects": "dimdescent:rift"
 }

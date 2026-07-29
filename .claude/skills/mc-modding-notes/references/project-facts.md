@@ -105,6 +105,23 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   dimension-selection logic across entry points. Leaving the Null Domain happens two ways only: the
   manual `/rift leave`, and Attunement expiry (`RiftEjectionEvents` ejects to the respawn point the
   tick the effect ends). A voluntary exit is a separate, not-yet-built item.
+- **Null Domain atmosphere + emptiness** (dimension_type `rift.json` + `NullDomainEffects` +
+  `NullDomainSpawns`): three settings that together make the Domain a lightless, empty void.
+  - `"ambient_light": 1.0` plus `forceBrightLightmap` and `constantAmbientLight` on the effects
+    means every block renders at full brightness regardless of light sources - light is meaningless
+    here, exactly as in Dimensional Doors' pockets. Torches are decoration, not a tool.
+  - `"effects": "dimdescent:rift"` (NOT `minecraft:the_end`, which drew the End's purple starfield
+    through gaps in rooms). Registered client-side via `RegisterDimensionSpecialEffectsEvent`, keyed
+    by the `effects` id from the dimension_type - not by the dimension id. `SkyType.NONE` draws no
+    sky at all, so what shows is the fog colour, which `getBrightnessDependentFogColor` pins to
+    `Vec3.ZERO`: pure black in every direction. `DeliriumSkyEffect` still overrides it while Delirium
+    is active, which is intended - red is the symptom, black is the baseline.
+  - `NullDomainSpawns` cancels `FinalizeSpawnEvent` outright in the rift, with the sole exception of
+    `HallucinationGhost` (a symptom, not an inhabitant, spawned as `MobSpawnType.EVENT`). This blocks
+    natural spawns, chunk generation, structures, spawners, spawn eggs and `/summon` alike. The data
+    already discourages spawning (biome is `minecraft:the_void` which declares NO spawners, and
+    `monster_spawn_light_level` is pinned to 0) but emptiness is a design guarantee, so it does not
+    rely on light levels or biome data staying correct.
 - **Nullstone** (`dimdescent:nullstone`): Dimensional Doors' "Fabric of Reality" equivalent -
   insta-break (`Properties.instabreak()`), pure uniform `(0,0,0)` black texture (explicitly no
   noise/variation - a black texture stays black under every one of Minecraft's per-face lighting
