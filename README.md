@@ -121,6 +121,10 @@ Debug helpers: `/rift enter`, `/rift leave`.
 
 ## Authoring rooms
 
+Setting up from scratch to build rooms? See **[CONTRIBUTING-ROOMS.md](CONTRIBUTING-ROOMS.md)** —
+prerequisites, clone-to-running-client, WorldEdit, and how to hand a finished room over.
+
+
 Rooms are the content, and the pool is where most ongoing work goes. A room is an ordinary Minecraft
 build captured with vanilla **Structure Blocks** — no special tooling.
 

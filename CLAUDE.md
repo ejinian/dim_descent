@@ -12,8 +12,9 @@ environment). The goal is a legible "how deep am I" push-your-luck loop, not
 just a flat pool of scary rooms.
 
 ## What we're improving on vs. Dimensional Doors
-- **Room variety**: hundreds of non-repeating rooms via modular/procedural
-  composition, not a finite static pool
+- **Room variety**: a large pool of hand-authored rooms, branching rather than
+  linear — each room can hold several onward beds, so the dungeon is a tree the
+  whole server explores, not a finite corridor
 - **Depth as a first-class mechanic**: visible signal for how deep the player
   is (fog, ambient sound, color grading), tied directly to difficulty and loot
 - **Enemy variety scaled to depth**: depth-tiered enemies, not reskins
@@ -37,7 +38,7 @@ base, same as every vanilla potion.
 
 - **Potion of the Devil's Trumpet** (Awkward Potion + Datura Seeds). Pitch
   black. Inflicts the same non-lethal poisoning as eating raw Datura Seeds, but
-  stronger: *all eight* symptoms occur within the potion's duration, in random
+  stronger: *all seven* symptoms occur within the potion's duration, in random
   order and at random lengths (minimum 10s each), starting 10 seconds after
   drinking. 3 minutes base, 8 minutes with Redstone.
 - **Potion of Attunement** (Devil's Trumpet + Fermented Spider Eye). Fermented
@@ -101,8 +102,10 @@ with its own black-and-red binding — the mod's only piece of written lore.
 - The moment Attunement expires the player is instantly returned to their
   respawn point — no death, no Wither, no lingering danger. The trip is simply
   over, unless they redose in time
-- A separate, not-yet-built voluntary exit (a door) is still planned. Expiry and
-  voluntary exit are different things
+- The voluntary exit is the **pale Nexus**: it walks you back one room, and in an
+  outermost room it puts you out of the trip entirely, at a cost (see the Status
+  section). Expiry and voluntary exit remain different things — expiry is free and
+  involuntary, refusing the trip is chosen and costs you
 
 ### Datura Seeds — exactly two functions
 
@@ -125,10 +128,10 @@ The moral is blunt: **do not take deliriants.**
 Everything occult in this mod is the delusion, not the setting. Real deliriant
 poisoning is characterised by people wholly believing in places and entities
 that are not there, and by an inability to tell that anything is wrong — so the
-altar, the ritual, the demonic staging and the Null Domain itself are all
-rendered exactly as the poisoned player experiences them, with no authorial
-confirmation that any of it is real. Sober bystanders see a person lighting
-candles and then behaving as though they had gone somewhere.
+altar, the demonic staging and the Null Domain itself are all rendered exactly as
+the poisoned player experiences them, with no authorial confirmation that any of
+it is real. Sober bystanders see a person lie down in a bed and then behave as
+though they had gone somewhere.
 
 The mod never resolves whether the player travelled anywhere or simply became
 unreachable, because to the player it makes no difference. What it does confirm
@@ -177,7 +180,7 @@ respawn point); you get the comedown (nausea 10s, dry mouth and weakness 60s); a
 cleared outright. You can leave the dream; you cannot leave the drug. Planned gear will soften the
 comedown, which is why it lives behind one method. The Null Domain is a
 Dimensional-Doors-style pocket dungeon (`NullDomainRooms`, reverse-engineered from DD's own
-pocket/grid code): every crossing in — and every Dream Bed used once inside — opens a fresh,
+pocket/grid code): every crossing in — and every Nexus bed used once inside — opens a fresh,
 randomly-chosen room ~512 blocks away on a persisted spiral grid, stamped lazily on use. Five
 code-generated room types (pillar hall, wide gallery, tall altar-heart chamber, low barred cells,
 hall of bars) are picked at random; three can hold an altar-loot chest. Each room places one Dream
@@ -195,19 +198,19 @@ out yet.
 
 Datura Seeds are also edible, which sets off the "datura trip", driven by a server-side tick
 sequencer since vanilla can't chain one effect into a different one. There are seven symptoms:
-Dry Mouth, Nausea, Tachycardia, Darkness, Poison, Weakness and Psychosis. Eating raw seeds gives
+Dry Mouth, Nausea, Tachycardia, Darkness, Poison, Weakness and Delirium. Eating raw seeds gives
 10 seconds of nothing, then Dry Mouth always leads, then four more drawn at random from the other
 six — five events, each at its natural duration, separated by 20 seconds of calm. Drinking Devil's
 Trumpet instead runs *all seven*, in random order at random lengths, packed back to back inside the
 potion's own window.
 
-Dry Mouth / Tachycardia / Psychosis are custom effects named for the symptom; Psychosis and the
+Dry Mouth / Tachycardia / Delirium are custom effects named for the symptom; Delirium and the
 Attunement effect each apply a real vanilla effect underneath (night vision, darkness) purely to
 borrow its visual, hidden from the HUD and inventory so the player sees one effect with one name.
 Screen desaturation is a post-process chain reusing vanilla's `color_convolve` program. Tachycardia
 surges a heartbeat on arrival and again at irregular intervals.
 
-Psychosis carries the hallucinations: 3–6 noises per minute from a pool (cave ambience, a zombie
+Delirium carries the hallucinations: 3–6 noises per minute from a pool (cave ambience, a zombie
 breaking a door, soul sand valley additions, wither skeleton, creeper fuse, a descending note-block
 run, and three original synthesised whisper takes); an 85% chance of a silent, translucent,
 black-eyed figure appearing partway through, visible only to the afflicted player, staring without
@@ -232,8 +235,26 @@ the **Almanacus Inferni Abditi**, a readable custom book in the register of a gr
 chest loot table (`dimdescent:chests/altar`); and the authored altar-and-bed-room structure itself
 (`dimdescent:structure/altar.nbt`), with its chest already pointed at that loot table.
 
-Still design, not built: entry via sleep (the Waking Dream), Attunement superseding the raw trip,
-and world-gen placement of the altar. The Rift Door still works as an overworld entrance for now
-(sleep will replace it) and the dimension is still registered as `dimdescent:rift` — both are known
-and tracked. See [ROADMAP.md](ROADMAP.md) for the ordered build plan, and the `mc-modding-notes`
-skill (`.claude/skills/mc-modding-notes/`) for implementation details, gotchas, and conventions.
+The Domain's atmosphere is enforced at the dimension level, and all three rules are absolute:
+**light does nothing** (`ambient_light: 1.0` plus `forceBrightLightmap`/`constantAmbientLight`, so
+every block renders at full brightness and torches are decoration rather than a tool), **the sky is
+pure black** (a custom `dimdescent:rift` `DimensionSpecialEffects` with `SkyType.NONE` and a fog
+colour of `Vec3.ZERO` — it used to point at `minecraft:the_end`, whose purple starfield showed
+through gaps and read as "somewhere"), and **nothing spawns** (`NullDomainSpawns` cancels
+`FinalizeSpawnEvent` outright, the sole exception being the Hallucination, which is a symptom rather
+than an inhabitant).
+
+**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Five
+exist so far. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
+file joins the rotation with no code change. Authoring happens in-game with WorldEdit (installed in
+the gitignored `run/mods/`) — see the `room-authoring` skill and [WORLDEDIT.md](WORLDEDIT.md).
+
+Still not built, and the mod's central premise: **the depth axis itself**. Room selection is a flat
+random pick, so nothing gets harder, richer or stranger the further in you go — and with it,
+depth-tiered enemies and loot scaled to risk. Treat the current build as a traversal skeleton with
+the atmosphere already on it. The dimension is also still registered as `dimdescent:rift` rather
+than `null_domain`; renaming would orphan saved data, so it is deferred and tracked.
+
+See [ROADMAP.md](ROADMAP.md) for the ordered build plan, [README.md](README.md) for the outward-facing
+summary, and the `mc-modding-notes` skill (`.claude/skills/mc-modding-notes/`) for implementation
+details, gotchas, and conventions.
