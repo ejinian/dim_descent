@@ -144,12 +144,17 @@ solid-then-carve cylinder recipe. Never `//set` + `//hollow`.
 **Round rooms capture the terrain in the box corners.** A circular room in a square capture box means
 the corners contain whatever surrounds it — grass, dirt, stone — and that gets saved into the room and
 then placed in the Null Domain. Square rooms happen to dodge this by filling their box. Fixes, best
-first: build in the air (the rig does this for you), or clear the box before saving:
+first: build in the air (the rig does this for you), or clear the terrain before saving - either
+inside a selection, or with the radius-based utility commands which need no selection at all:
 
 ```
-//replace minecraft:grass_block minecraft:air
-//replace minecraft:dirt minecraft:air
+//replace minecraft:grass_block minecraft:air     # needs a selection
+/replacenear 30 grass_block air                   # no selection - <size> <mask> <pattern>
+/removenear grass_block 30                        # no selection - <mask> <size>  (order is reversed!)
 ```
+
+`//distr` prints a block breakdown of the selection, which is the quickest way to catch stray
+terrain before hitting SAVE.
 
 **Three shapes centred "on the player" will drift.** Building a floor disc, then walls, then a
 ceiling as three separate commands relies on standing in exactly the same spot three times; a

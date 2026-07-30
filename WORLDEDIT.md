@@ -44,12 +44,25 @@ Quick reference for building dim_descent rooms. Full workflow lives in the `room
 
 Diameter is `2r+1`, so **keep r ≤ 23** to fit the 48 cap.
 
+## No selection needed — radius around you
+
+Single slash, not double. Handy when you can't be bothered selecting.
+
+| | |
+|---|---|
+| `/replacenear 30 grass_block air` | replace nearby blocks — `<size> <mask> <pattern>` |
+| `/removenear grass_block 30` | delete nearby blocks — `<mask> <size>` (note: reversed!) |
+| `/removeabove 20 10` | delete the column above you — fast fix for a botched ceiling |
+| `/removebelow 20 10` | same, downward |
+| `/butcher 50` | remove nearby mobs |
+| `//fill B 20` | fill air downward from where you stand |
+
 ## Counting / checking
 
 | | |
 |---|---|
 | `//count B` | how many of that block are in the selection |
-| `//distr` | full block breakdown of the selection |
+| `//distr` | full block breakdown of the selection — spot stray grass before saving |
 
 ---
 
@@ -77,10 +90,16 @@ Carve radius = outer − 1. Carve height = outer − 2.
 //set dimdescent:altar_stone_bricks
 ```
 
-**Clear terrain out of a capture box**
+**Clear terrain out of a capture box** — with a selection:
 ```
 //replace minecraft:grass_block minecraft:air
 //replace minecraft:dirt minecraft:air
+```
+
+...or without one, standing in the middle of the build:
+```
+/replacenear 30 grass_block air
+/replacenear 30 dirt air
 ```
 
 ---
