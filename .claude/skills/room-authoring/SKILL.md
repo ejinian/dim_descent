@@ -89,6 +89,10 @@ blockstate alone doesn't configure the block entity.
 
 ## WorldEdit recipes
 
+A skimmable command cheat sheet for the user lives at [WORLDEDIT.md](../../../WORLDEDIT.md) in
+the repo root - keep the two in sync when a new command or gotcha is learned.
+
+
 Select with `//wand` (wooden axe): **left-click** = corner 1, **right-click** = corner 2. `//sel`
 clears the selection — it's only a visual overlay, it never affects placed blocks. `//undo` steps
 back one command at a time and is reliable.
