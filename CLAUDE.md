@@ -300,8 +300,9 @@ same in every case: a small Python script owns the artefact, the artefact is nev
 and the script *asserts its own invariants* so a bad constant fails in the terminal rather than
 shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop, and
 `generate_void_stone_textures.py` emits Nullstone and Allstone together and proves every channel of
-every pixel sums to 255 — "polar opposite" as a test rather than a description. Three room scripts
-(`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`) emit
+every pixel sums to 255 — "polar opposite" as a test rather than a description. Four room scripts
+(`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
+`generate_oubliette_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
@@ -316,7 +317,11 @@ crawl. The **Causeway** checks that its walkway is one connected path reachable 
 and that its single lava source is fully enclosed at walkway level so it cannot spread. Its whole
 design is one block of elevation: an all-Nullstone room renders perfectly flat, so a floor is
 indistinguishable from a hole, and a lit brick walkway one block above it reads as a bridge over
-void. Stepping off is a one-block drop onto a floor the player was certain was not there.
+void. Stepping off is a one-block drop onto a floor the player was certain was not there. The
+**Oubliette** checks headroom never drops under the 2 blocks a player occupies, the dark bed is
+reachable on foot from the pale one, and the walk between them is at least `MIN_PATH` long — that
+last one catches the open doors drifting onto the same side of each nested ring, which collapses the
+labyrinth into a straight line without breaking anything a seal check would notice.
 
 Still not built, and the mod's central premise: **the depth axis itself**. Room selection is a flat
 random pick, so nothing gets harder, richer or stranger the further in you go — and with it,

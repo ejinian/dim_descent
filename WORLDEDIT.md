@@ -193,6 +193,7 @@ Stand outside it first. The floor becoming air is a long way down.
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
 | `tools/generate_basin_room.py` | `/function build:basin` | rippled floor + mirrored ceiling, 41×17×41 |
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
+| `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 
 Two tricks worth stealing:
 
@@ -200,6 +201,15 @@ Two tricks worth stealing:
 surfaces antiparallel makes headroom swing by *twice* the ripple amplitude — a 13-block vault
 pinching to a 3-block crawl on an amplitude of 3. Parallel surfaces read as a corridor; mirrored ones
 read as a room being squeezed.
+
+**Make ceiling height a function of distance from the centre.** `headroom(d) = BASE + round(d*SLOPE)`
+turns a flat room into a funnel — Chebyshev distance (`max(|x|,|z|)`) for square rooms, Euclidean for
+round. Land the steps mid-corridor rather than at the walls and there is never a doorway to brace
+for; the room just quietly closes as you walk in. Costs the same number of blocks as a flat ceiling.
+
+**Two-thick walls let a doorway be a lie.** Cut the door through the outer layer only and you get a
+one-block-deep recess with a brick face behind it. Three bricked-up doors and one real one means
+every exit is visible from the moment you arrive and you still have to walk the whole ring.
 
 **Raise a walkway one block over a Nullstone floor.** Nullstone renders perfectly flat — no face
 shading, no ambient occlusion, no lightmap falloff, because black times anything is black — so a

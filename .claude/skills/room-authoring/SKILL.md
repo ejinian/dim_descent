@@ -174,6 +174,7 @@ Three exist:
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
 | `tools/generate_basin_room.py` | `/function build:basin` | antiphase rippled floor + ceiling, 41×17×41 |
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
+| `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 
 ### Design tricks worth reusing
 
@@ -193,6 +194,19 @@ Note the corollary: **white does not survive that shading**, which is why plain 
 quartz until its model got `"shade": false`, `"ambientocclusion": false` and NeoForge's
 `"neoforge_data": {"block_light": 15, "sky_light": 15}`. Nullstone needs none of it and Allstone
 needs all of it, for the same reason.
+
+**Ceiling height as a function of distance from the centre.** `headroom(d) = BASE + round(d * SLOPE)`
+turns a flat room into a funnel. Use **Chebyshev** distance (`max(|x|, |z|)`) for square rooms and
+Euclidean (`hypot`) for round ones. The Oubliette runs six blocks of headroom at the outer wall down
+to two at the centre, and the steps deliberately land mid-corridor rather than at the walls, so there
+is never a doorway to brace for — the room just quietly closes as you go in. Costs nothing; a flat
+ceiling was the same number of blocks.
+
+**Two-thick walls let a doorway be a lie.** Cut a door through the outer layer only and it becomes a
+one-block-deep recess with a brick face at the back. Three bricked-up doors and one real one per ring
+means every exit is visible from the moment you arrive and you still have to walk the whole thing —
+no hidden switches, no puzzle, just refusal. Put the real door on a different side each ring and the
+route switchbacks.
 
 **A Nullstone skin over a different interior.** Build the shell two layers thick — the interior
 material inside, one layer of Nullstone outside. From within the room the palette is whatever you
@@ -216,6 +230,10 @@ that, each checks whatever its own shape can get wrong:
 - **Causeway** — the walkway is one connected path reachable on foot from the entrance (otherwise
   part of the room is decoration the player can only look at), both beds stand on it, and the single
   lava source is fully enclosed at walkway level so it cannot spread.
+- **Oubliette** — headroom never drops under the 2 blocks a player occupies, the dark bed is
+  reachable on foot from the pale one, and the walk is at least `MIN_PATH` blocks long. That last one
+  is the interesting check: it fails if the open doors drift onto the same side of each ring, which
+  turns the labyrinth into a straight line without breaking anything a seal check would notice.
 
 Same philosophy as the texture scripts, which assert their own tiling, loop seams and (for the
 Nullstone/Allstone pair) that the two are exact channel-wise inverses. Fail loudly rather than ship
