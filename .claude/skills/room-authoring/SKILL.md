@@ -173,22 +173,33 @@ Three exist:
 |---|---|---|
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
 | `tools/generate_basin_room.py` | `/function build:basin` | antiphase rippled floor + ceiling, 41×17×41 |
-| `tools/generate_anechoic_room.py` | `/function build:anechoic` | white wedge-lined chamber, 31×25×31 |
+| `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 
-### Two design tricks worth reusing
+### Design tricks worth reusing
 
 **Antiphase surfaces.** `ceiling = CLEARANCE - floor(r)` instead of `CLEARANCE + floor(r)`: the two
 surfaces mirror rather than run parallel, so headroom swings by *twice* the ripple amplitude. The
 Basin goes from a 13-block vault to a 3-block crawl and back on an amplitude of only 3. Parallel
 surfaces feel like a corridor; mirrored ones feel like the room is squeezing.
 
+**A walkway one block over a Nullstone floor.** Nullstone renders perfectly flat — no directional
+face shading, no ambient occlusion, no visible lightmap falloff, because black times any shading term
+is still black. A Nullstone floor is therefore indistinguishable from a hole in the world, and a lit
+brick path raised one block above it reads as a bridge over void. Stepping off the edge is a
+one-block drop onto a floor the player was certain was not there. The Causeway is built entirely on
+this; it costs one block of elevation.
+
+Note the corollary: **white does not survive that shading**, which is why plain Allstone read as
+quartz until its model got `"shade": false`, `"ambientocclusion": false` and NeoForge's
+`"neoforge_data": {"block_light": 15, "sky_light": 15}`. Nullstone needs none of it and Allstone
+needs all of it, for the same reason.
+
 **A Nullstone skin over a different interior.** Build the shell two layers thick — the interior
 material inside, one layer of Nullstone outside. From within the room the palette is whatever you
 chose; from outside, or through a hole a player digs, the build reads as void rather than as a box
-someone assembled. The Anechoic Chamber is pure white Allstone inside a black Nullstone skin. (The
-Domain's own shrink-wrap already coats rooms in Nullstone on placement, so this mostly matters for
-how the room reads in the builder world and behind a breached wall — but it costs one extra layer and
-makes the intent explicit.)
+someone assembled. (The Domain's own shrink-wrap already coats rooms in Nullstone on placement, so
+this mostly matters for how the room reads in the builder world and behind a breached wall — but it
+costs one extra layer and makes the intent explicit.)
 
 ### A generator must assert its own invariants
 
@@ -202,9 +213,9 @@ that, each checks whatever its own shape can get wrong:
 
 - **Basin** — no orthogonal floor step over 1 block (walkable; keep `AMP * 2π / WAVELENGTH` under
   ~0.8), and headroom never under 3 (passable).
-- **Anechoic** — the wedge grid tiles the interior exactly (`2*INNER+1` and `TOP-1` both multiples
-  of `PITCH`, or a surface ends in a ragged strip), both beds have clearance and a floor under them,
-  and the single lava source has four solid horizontal neighbours so it falls rather than spreading.
+- **Causeway** — the walkway is one connected path reachable on foot from the entrance (otherwise
+  part of the room is decoration the player can only look at), both beds stand on it, and the single
+  lava source is fully enclosed at walkway level so it cannot spread.
 
 Same philosophy as the texture scripts, which assert their own tiling, loop seams and (for the
 Nullstone/Allstone pair) that the two are exact channel-wise inverses. Fail loudly rather than ship
@@ -212,9 +223,9 @@ a broken artefact.
 
 ### Ordering matters when emitting
 
-Emit **fluids last**. The Anechoic Chamber's lava source is the final line in its function so the
-room is already sealed when it starts to fall; placed earlier it would flow across an unfinished
-floor. Same reasoning for beds — place both halves adjacently so the second one resolves the first's
+Emit **fluids last**. The Causeway's lava source is the final line in its function so the room is
+already finished when it appears; placed earlier it would flow across an unbuilt floor. Same
+reasoning for beds — place both halves adjacently so the second one resolves the first's
 `updateShape` while the other half exists.
 
 ## Gotchas already paid for

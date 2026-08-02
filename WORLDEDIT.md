@@ -176,7 +176,7 @@ runs from one command wherever you stand:
 |---|---|---|
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
 | `tools/generate_basin_room.py` | `/function build:basin` | rippled floor + mirrored ceiling, 41×17×41 |
-| `tools/generate_anechoic_room.py` | `/function build:anechoic` | white wedge-lined chamber, 31×25×31 |
+| `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 
 Two tricks worth stealing:
 
@@ -185,13 +185,15 @@ surfaces antiparallel makes headroom swing by *twice* the ripple amplitude — a
 pinching to a 3-block crawl on an amplitude of 3. Parallel surfaces read as a corridor; mirrored ones
 read as a room being squeezed.
 
-**Skin the build in Nullstone.** Shell it two layers thick: your material inside, one layer of
-Nullstone outside. From within, the room is whatever you built; from outside — or through a hole a
-player dug — it reads as void rather than as a box someone assembled.
+**Raise a walkway one block over a Nullstone floor.** Nullstone renders perfectly flat — no face
+shading, no ambient occlusion, no lightmap falloff, because black times anything is black — so a
+Nullstone floor is indistinguishable from a hole in the world. Put a lit brick path one block above
+it and the room reads as a bridge over void. Stepping off is a one-block drop onto a floor the player
+was sure wasn't there. Costs one block of elevation.
 
 These scripts **check their own geometry** before writing: max floor step, minimum headroom, that a
-wedge grid tiles its surface exactly, that a lava source has four solid sides so it falls instead of
-spreading, and a flood-fill proof that the room is sealed. A bad constant fails in the terminal
+walkway is one connected path rather than stranded islands, that a lava source is fully enclosed so
+it can't spread, and a flood-fill proof that the room is sealed. A bad constant fails in the terminal
 instead of after you've captured it.
 
 ## Don't

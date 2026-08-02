@@ -1,6 +1,25 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "__comment": "Not cube_all. Minecraft shades every block face by direction (top 1.0, sides 0.8/0.6, bottom 0.5), darkens corners with ambient occlusion, and multiplies by the lightmap. Nullstone survives all three because black times anything is black - white does not, which is why plain white read as quartz. shade:false kills the directional shading, ambientocclusion:false kills the corner darkening, and neoforge_data's block_light/sky_light 15 pins the lightmap to full so external light cannot touch it. This is render-only: the block still emits no light of its own.",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
+    "particle": "dimdescent:block/allstone",
     "all": "dimdescent:block/allstone"
-  }
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "shade": false,
+      "neoforge_data": { "block_light": 15, "sky_light": 15, "ambient_occlusion": false },
+      "faces": {
+        "down":  { "texture": "#all", "cullface": "down" },
+        "up":    { "texture": "#all", "cullface": "up" },
+        "north": { "texture": "#all", "cullface": "north" },
+        "south": { "texture": "#all", "cullface": "south" },
+        "west":  { "texture": "#all", "cullface": "west" },
+        "east":  { "texture": "#all", "cullface": "east" }
+      }
+    }
+  ]
 }

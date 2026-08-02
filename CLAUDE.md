@@ -266,10 +266,18 @@ dropless, flat and untextured). Both are deliberately featureless — every othe
 grain to read, and these two have none, so a surface built from them gives the eye nothing to measure
 distance or scale against. That is what makes a Nullstone void look bottomless and an Allstone room
 look like it has no far wall; adding noise "to break it up" would undo the only thing they are for.
-Both now break with a **stone** sound rather than glass, which read as fragile scenery for what are
-walls and floors. Allstone exists as an interior material for rooms that should feel clinical rather
-than ruined, always skinned in a layer of Nullstone so the outside of the build still reads as void —
-see the Anechoic Chamber.
+Both break with a **stone** sound rather than glass, which read as fragile scenery for what are walls
+and floors. No room uses Allstone yet — it exists for interiors that should feel clinical rather than
+ruined.
+
+Getting a *flat white* block took a custom model, and the reason is worth remembering: Minecraft
+shades every face by direction (top 1.0, sides 0.8/0.6, bottom 0.5), darkens corners with ambient
+occlusion, and multiplies by the lightmap. **Nullstone survives all three because black times
+anything is black.** White does not, so plain `cube_all` Allstone read as quartz. `block/allstone.json`
+therefore declares its own element with `"shade": false`, `"ambientocclusion": false` and NeoForge's
+`"neoforge_data": {"block_light": 15, "sky_light": 15}`, which pins the lightmap to full. That is
+render-only — the block still emits no light. Any future block that must look unlit and unshaded
+needs the same three, and none of them are reachable through a vanilla parent model.
 
 **Forsaken Essence** (renamed from Forsaken Fiber) is the cage's unbreakable outer shell, and its
 animated texture is **generated, not drawn** — `tools/generate_forsaken_essence_texture.py` builds
@@ -293,7 +301,7 @@ and the script *asserts its own invariants* so a bad constant fails in the termi
 shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop, and
 `generate_void_stone_textures.py` emits Nullstone and Allstone together and proves every channel of
 every pixel sums to 255 — "polar opposite" as a test rather than a description. Three room scripts
-(`generate_spiral_function.py`, `generate_basin_room.py`, `generate_anechoic_room.py`) emit
+(`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
@@ -303,9 +311,12 @@ the room is **sealed**, which is the one authoring rule the shrink-wrap depends 
 else that room can get wrong. The **Basin** checks it is walkable (no floor step over 1) and passable
 (headroom ≥ 3); its shape comes from mirroring the ceiling against the floor (`CLEARANCE - h(r)`, not
 `+`), so headroom swings by twice the ripple amplitude — a 13-block vault pinching to a 3-block
-crawl. The **Anechoic Chamber** checks the wedge grid tiles the interior exactly, that both beds have
-clearance and support, and that its single lava source has four solid horizontal neighbours so it
-falls instead of spreading.
+crawl. The **Causeway** checks that its walkway is one connected path reachable from the entrance
+(otherwise part of the room is decoration the player can only look at), that both beds stand on it,
+and that its single lava source is fully enclosed at walkway level so it cannot spread. Its whole
+design is one block of elevation: an all-Nullstone room renders perfectly flat, so a floor is
+indistinguishable from a hole, and a lit brick walkway one block above it reads as a bridge over
+void. Stepping off is a one-block drop onto a floor the player was certain was not there.
 
 Still not built, and the mod's central premise: **the depth axis itself**. Room selection is a flat
 random pick, so nothing gets harder, richer or stranger the further in you go — and with it,
