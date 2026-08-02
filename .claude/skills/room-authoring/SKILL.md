@@ -175,6 +175,7 @@ Three exist:
 | `tools/generate_basin_room.py` | `/function build:basin` | antiphase rippled floor + ceiling, 41×17×41 |
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
+| `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 
 ### Design tricks worth reusing
 
@@ -194,6 +195,26 @@ Note the corollary: **white does not survive that shading**, which is why plain 
 quartz until its model got `"shade": false`, `"ambientocclusion": false` and NeoForge's
 `"neoforge_data": {"block_light": 15, "sky_light": 15}`. Nullstone needs none of it and Allstone
 needs all of it, for the same reason.
+
+**Self-similarity defeats scale judgement.** A fractal floor looks identical at every zoom, so a
+player cannot tell how far across the room is or how far they have come. That is the most liminal
+thing geometry can do and it costs nothing — the fractal does it, not the decoration.
+
+Pick the fractal by its **connectivity**, not its looks. The Sierpinski carpet is a connected set
+whose complement is not, so *filled = floor, holes = holes* is walkable everywhere at every scale;
+invert it (walls on the carpet, walk in the gaps) and the walkable space shatters into eight sealed
+chambers. A Menger sponge has the same appeal and the opposite problem — its tunnel network is
+connected but largely vertical, so most of it is unreachable without ladders. Level count is capped
+by the 48 limit: a level-N carpet is 3^N across, so 3 levels (27) is the most that fits.
+
+Whenever a room hinges on a property like that, **assert the property**. `generate_carpet_room.py`
+BFSes the carpet and fails if any cell is an island.
+
+**A drop must not soft-lock.** A pit a player cannot climb out of is a run ender in a mod whose only
+escape is waiting for a drug to expire. Give it a floor they land on and a way back up. Better, make
+falling a *shortcut*: the Carpet puts the dark Nexus on the sub-floor, so the safe route (cross the
+fractal, find the stair in the big central hole, walk down) is strictly longer than stepping into a
+hole. The room rewards the mistake.
 
 **Ceiling height as a function of distance from the centre.** `headroom(d) = BASE + round(d * SLOPE)`
 turns a flat room into a funnel. Use **Chebyshev** distance (`max(|x|, |z|)`) for square rooms and
@@ -328,7 +349,22 @@ src/main/resources/data/dimdescent/structure/rooms/<name>.nbt
 ```
 
 The pool is discovered at runtime from that folder, so a new `.nbt` joins the rotation with **no code
-change**. Verify a handed-over room before importing — size within 48³, exactly one pale bed, at
-least one dark bed, and no stray terrain blocks — by parsing the NBT (see the round-trip-safe codec
-notes in `mc-modding-notes`, and don't edit an `.nbt` without proving the codec round-trips the
-original byte-for-byte first).
+change** — and with no compile error to catch a bad one. Always run the gate:
+
+```
+python tools/verify_room_nbt.py <path to .nbt>
+```
+
+It parses the capture read-only and checks it is **sealed** (air flooded from outside the box cannot
+reach the space above any Nexus bed — RoomContainment's own algorithm), has exactly one pale bed and
+at least one dark bed, fits in 48³, and caught no stray terrain.
+
+Run it **after any hand-tweaking**, not just on rooms from a collaborator. A generator proves its own
+output is sealed; nothing proves it is still sealed once someone has dug a hole in the floor to see
+what was under it. That is not hypothetical — it is exactly how the Causeway's shell got a 2×3 hole
+punched through both floor layers, which nothing else would have noticed until Nullstone appeared on
+the inside walls in game.
+
+Never *edit* an `.nbt` — the verifier is read-only on purpose. Editing needs a codec proven to
+round-trip the original byte-for-byte first (see `mc-modding-notes`); fix the build in world and
+re-capture instead.

@@ -13,6 +13,11 @@ READ ONLY. It never writes NBT - editing a structure file needs a codec proven t
 original byte-for-byte first, which is a different and much more dangerous job.
 
 Checks, in order of how badly they bite:
+  * SEALED - air flooded in from outside the capture box cannot reach the space above any Nexus bed.
+    This is the check that matters after a room has been hand-tweaked in game: the generators prove
+    their own output is sealed, but nothing proves it is STILL sealed once someone has knocked a
+    window in it. An unsealed room lets RoomContainment's shrink-wrap flood inside and coat the
+    interior walls in Nullstone.
   * exactly one PALE Nexus bed head - it is the entrance, the arrival facing and the way back
   * at least one DARK Nexus bed head - a room with none is a dead end nobody can leave forwards
   * no dimension larger than 48 - the structure-block cap
@@ -22,6 +27,7 @@ Checks, in order of how badly they bite:
 import gzip
 import struct
 import sys
+from collections import deque
 from pathlib import Path
 
 MAX_DIM = 48
@@ -102,6 +108,28 @@ def load(path):
     return Reader(raw).root()
 
 
+def flood_from_outside(solid, size):
+    """Air cells of the capture box reachable from outside it - RoomContainment's own algorithm."""
+    lo = (-1, -1, -1)
+    hi = (size[0], size[1], size[2])
+    seen, queue = set(), deque()
+    for x in range(lo[0], hi[0] + 1):
+        for y in range(lo[1], hi[1] + 1):
+            for z in range(lo[2], hi[2] + 1):
+                on_shell = x in (lo[0], hi[0]) or y in (lo[1], hi[1]) or z in (lo[2], hi[2])
+                if on_shell and (x, y, z) not in solid:
+                    seen.add((x, y, z))
+                    queue.append((x, y, z))
+    while queue:
+        x, y, z = queue.popleft()
+        for d in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)):
+            n = (x + d[0], y + d[1], z + d[2])
+            if all(lo[i] <= n[i] <= hi[i] for i in range(3)) and n not in seen and n not in solid:
+                seen.add(n)
+                queue.append(n)
+    return seen
+
+
 def verify(path):
     root = load(path)
     size = root.get("size") or []
@@ -111,11 +139,17 @@ def verify(path):
     names = [p.get("Name", "?") for p in palette]
     # A bed occupies two cells; count HEAD halves so one bed counts once.
     heads = {PALE_BED: 0, DARK_BED: 0}
+    solid, bed_heads = set(), []
     for b in blocks:
         entry = palette[b["state"]] if b.get("state", -1) < len(palette) else {}
         name = entry.get("Name")
+        pos = tuple(b.get("pos") or ())
+        if name != "minecraft:air" and len(pos) == 3:
+            solid.add(pos)
         if name in heads and (entry.get("Properties") or {}).get("part") == "head":
             heads[name] += 1
+            if len(pos) == 3:
+                bed_heads.append((name, pos))
 
     problems, notes = [], []
     if len(size) == 3:
@@ -136,6 +170,18 @@ def verify(path):
     stray = sorted(set(names) & TERRAIN)
     if stray:
         problems.append(f"stray terrain captured: {', '.join(stray)}")
+
+    if len(size) == 3 and bed_heads:
+        outside = flood_from_outside(solid, size)
+        # The cell a player stands in, directly above a bed head. If outside air reaches it, the
+        # shell has a hole in it somewhere and the shrink-wrap will leak into the room.
+        breached = [(n, p) for n, p in bed_heads if (p[0], p[1] + 1, p[2]) in outside]
+        if breached:
+            n, p = breached[0]
+            problems.append(f"NOT SEALED - outside air reaches the space above the {n.split(':')[-1]} "
+                            f"at {p}; {len(outside)} cells of the box are open to the outside")
+        else:
+            notes.append("sealed")
 
     ok = not problems
     print(f"{'PASS' if ok else 'FAIL'}  {Path(path).name}")

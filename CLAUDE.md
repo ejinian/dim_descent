@@ -287,11 +287,15 @@ loop without a visible snap; the script asserts all three seams and fails rather
 Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
 
 **Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Nine exist
-so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall` and `basin`). The
-pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new file joins the
-rotation with no code change — which also means a bad `.nbt` reaches players with no compile error to
-catch it, so run `tools/verify_room_nbt.py` on a capture before importing it (exactly one pale bed,
-at least one dark bed, nothing over 48, no stray terrain). Authoring happens in-game with WorldEdit
+so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall`, `basin` and
+`oubliette`). The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
+file joins the rotation with no code change — which also means a bad `.nbt` reaches players with no
+compile error to catch it. **`tools/verify_room_nbt.py` is the gate**: a read-only NBT parse checking
+the room is sealed (flooding air from outside the box and asserting it cannot reach the space above
+any Nexus bed — `RoomContainment`'s own algorithm), has exactly one pale bed and at least one dark
+bed, fits in 48³, and caught no stray terrain. Run it after hand-tweaking too, not just on rooms from
+a collaborator: a generator proves its own output is sealed, but nothing proves it still is once
+someone has dug a hole in the floor to see what is under it. Authoring happens in-game with WorldEdit
 (installed in the gitignored `run/mods/`) — see the `room-authoring` skill and
 [WORLDEDIT.md](WORLDEDIT.md).
 
@@ -300,9 +304,9 @@ same in every case: a small Python script owns the artefact, the artefact is nev
 and the script *asserts its own invariants* so a bad constant fails in the terminal rather than
 shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop, and
 `generate_void_stone_textures.py` emits Nullstone and Allstone together and proves every channel of
-every pixel sums to 255 — "polar opposite" as a test rather than a description. Four room scripts
+every pixel sums to 255 — "polar opposite" as a test rather than a description. Five room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
-`generate_oubliette_room.py`) emit
+`generate_oubliette_room.py`, `generate_carpet_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
@@ -321,7 +325,13 @@ void. Stepping off is a one-block drop onto a floor the player was certain was n
 **Oubliette** checks headroom never drops under the 2 blocks a player occupies, the dark bed is
 reachable on foot from the pale one, and the walk between them is at least `MIN_PATH` long — that
 last one catches the open doors drifting onto the same side of each nested ring, which collapses the
-labyrinth into a straight line without breaking anything a seal check would notice.
+labyrinth into a straight line without breaking anything a seal check would notice. The **Carpet**
+proves its Sierpinski floor is one connected surface and that the dark Nexus is reachable on foot
+(with falling) from the pale one. Its fractal was chosen for exactly that connectivity: the carpet is
+a connected set whose complement is not, so filled-as-floor is walkable at every scale, while the
+inverse — walls on the carpet — shatters the walkable space into eight sealed chambers. Self-similar
+geometry also defeats scale judgement outright, which is the most liminal thing a room can do for
+free.
 
 Still not built, and the mod's central premise: **the depth axis itself**. Room selection is a flat
 random pick, so nothing gets harder, richer or stranger the further in you go — and with it,
