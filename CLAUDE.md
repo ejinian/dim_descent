@@ -74,7 +74,12 @@ often with partial or total amnesia of the episode afterwards.
 It also closes its own loop for free. The **Unicursal** proves its Hilbert-curve corridor never branches (every cell has exactly two
 corridor neighbours bar the two ends) and that the shortest walk between the Nexus beds stays above a
 floor — which catches an end pocket accidentally opening a shortcut between two arms of the curve.
-Its beds are 30 blocks apart in a straight line and 502 apart on foot. Vanilla sleeping sets the player's spawn to
+Its beds are 10 blocks apart in a straight line and 66 on foot — about twenty seconds. An earlier cut
+ran an order-4 curve end to end at 502 blocks and three minutes, which played as a commute rather
+than a room; the fix was a smaller curve plus putting the dark Nexus partway along it instead of at
+the far end, leaving 56 cells of corridor running on past the exit that the player never has to
+enter. A maze you have completely traversed is solved; one that visibly continues past your exit is
+not. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.

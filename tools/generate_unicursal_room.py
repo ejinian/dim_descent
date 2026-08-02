@@ -14,9 +14,19 @@ hand-drawn maze can:
                         unicursal by construction. Every junction you think you see is a turn.
   IT IS SELF-SIMILAR.   Every stretch of it is a scaled copy of every other stretch. There is no
                         landmark anywhere, because the fractal guarantees there cannot be one.
-  IT IS SPACE-FILLING.  That is the entire point. The curve packs ~500 blocks of corridor into a
-                        31-block square, so the two Nexus beds sit about thirty blocks apart in a
-                        straight line and about five hundred apart on foot.
+  IT IS SPACE-FILLING.  The curve packs far more corridor into a square than a straight line could:
+                        the two Nexus beds sit ten blocks apart in a straight line and sixty-six
+                        apart on foot.
+
+SIZE IS A DESIGN CONSTRAINT, NOT A FLEX
+The first cut of this was an order-4 curve walked end to end: 502 blocks, about three minutes of
+identical corridor. That is a commute, not a room. This one is order 3 and the dark Nexus sits
+partway along the curve rather than at its far end, which puts the walk at roughly twenty seconds -
+long enough to lose your bearings, short enough that nobody resents it.
+
+Fifty-six cells of corridor carry on past the dark Nexus into cells the player never has to enter.
+That is deliberate. A maze you have completely traversed is solved; one that visibly continues past
+your exit is not, and the windows keep showing it to you.
 
 THE WINDOWS
 Every so often a one-block slot is cut through a wall at chest height - too low to climb through,
@@ -52,15 +62,20 @@ PALE_BED = "dimdescent:pale_dream_bed"
 # PITCH 2 means a one-block corridor separated by a one-block wall - which is what makes a window a
 # window rather than a tunnel.
 # ---------------------------------------------------------------------------
-ORDER = 4
+ORDER = 3
 PITCH = 2
 HEIGHT = 3               # corridor headroom. Three, uniform, forever.
 
-WINDOW_Y = 2             # chest height: you can see through, you cannot climb through
-WINDOW_MIN_GAP = 60      # only look at corridor you are far from, in curve-distance
-WINDOW_CHANCE = 0.20
+# The dark Nexus sits HERE along the curve, not at the far end. One cell is one block, so this is
+# the walk in blocks: about twenty seconds. An order-4 curve walked end to end was 502 blocks and
+# roughly three minutes, which is a commute, not a room.
+WALK_CELLS = 70
 
-MIN_WALK = 400           # a shortcut through an end chamber would show up here
+WINDOW_Y = 2             # chest height: you can see through, you cannot climb through
+WINDOW_MIN_GAP = 24      # only look at corridor you are far from, in curve-distance
+WINDOW_CHANCE = 0.45
+
+MIN_WALK, MAX_WALK = 60, 85   # a pocket opening a shortcut between two arms would show up here
 
 CRACK_CHANCE = 0.16
 random.seed(20260804)
@@ -99,15 +114,20 @@ def main():
     half = (n - 1) * PITCH // 2
     pts = [(gx * PITCH - half, gz * PITCH - half) for gx, gz in hilbert(n)]
 
-    # Walk the curve, recording every cell it passes through and how far along it that cell is.
-    order_of = {}
+    # Walk the curve, recording every cell it passes through in order. Consecutive cells are one
+    # block apart, so an index into `path` is a distance in blocks.
+    path = []
     for i, p in enumerate(pts):
-        order_of.setdefault(p, len(order_of))
+        path.append(p)
         if i + 1 < len(pts):
             q = pts[i + 1]
-            mid = ((p[0] + q[0]) // 2, (p[1] + q[1]) // 2)
-            order_of.setdefault(mid, len(order_of))
-    corridor = set(order_of)
+            path.append(((p[0] + q[0]) // 2, (p[1] + q[1]) // 2))
+    order_of = {c: i for i, c in enumerate(path)}
+    corridor = set(path)
+    if WALK_CELLS + 1 >= len(path):
+        raise AssertionError(
+            f"WALK_CELLS {WALK_CELLS} does not fit on an order-{ORDER} curve ({len(path)} cells). "
+            f"Raise ORDER or lower WALK_CELLS.")
 
     # A Hilbert curve does not branch, so every cell must have exactly two corridor neighbours except
     # the two ends. If that ever fails the curve code is wrong and the room is not unicursal.
@@ -123,14 +143,16 @@ def main():
     wall = inner                        # brick outer wall
     skin = wall + 1                     # Nullstone shell
 
-    # Arrival needs more than a one-wide dead end, so each end of the curve opens into a 3x3 pocket,
-    # anchored at the corner so it cannot eat the wall.
-    for end in (pts[0], pts[-1]):
-        sx = -1 if end[0] > 0 else 1
-        sz = -1 if end[1] > 0 else 1
-        for i in range(3):
-            for j in range(3):
-                corridor.add((end[0] + sx * i, end[1] + sz * j))
+    # Arrival needs more than a one-wide dead end, so the START of the curve opens into a 3x3 pocket,
+    # anchored at the corner so it cannot eat the wall. The dark Nexus gets no pocket: it sits in the
+    # corridor proper, with the maze carrying on past it into cells the player never has to enter.
+    # That is deliberate - the room is meant to be bigger than the route through it.
+    end = pts[0]
+    sx = -1 if end[0] > 0 else 1
+    sz = -1 if end[1] > 0 else 1
+    for i in range(3):
+        for j in range(3):
+            corridor.add((end[0] + sx * i, end[1] + sz * j))
 
     blocks = {}
 
@@ -175,8 +197,9 @@ def main():
         return ((x, y - 1, z) in solid
                 and all((x, y + k, z) not in solid for k in range(0, 2)))
 
-    start = (pts[0][0], 1, pts[0][1])
-    goal = (pts[-1][0], 1, pts[-1][1])
+    goal_cell = path[WALK_CELLS]
+    start = (path[0][0], 1, path[0][1])
+    goal = (goal_cell[0], 1, goal_cell[1])
     for label, p in (("pale", start), ("dark", goal)):
         if not standable(p):
             raise AssertionError(f"the {label} Nexus at {p} is not standing on anything.")
@@ -192,10 +215,11 @@ def main():
                 queue.append(nb)
     if goal not in steps:
         raise AssertionError("the dark Nexus is unreachable on foot.")
-    if steps[goal] < MIN_WALK:
+    if not MIN_WALK <= steps[goal] <= MAX_WALK:
         raise AssertionError(
-            f"shortest walk is only {steps[goal]} blocks, under MIN_WALK {MIN_WALK} - an end pocket "
-            f"has probably opened a shortcut between two arms of the curve.")
+            f"shortest walk is {steps[goal]} blocks, outside {MIN_WALK}..{MAX_WALK}. Short means the "
+            f"arrival pocket has opened a shortcut between two arms of the curve; long means "
+            f"WALK_CELLS is wrong.")
 
     lo, hi = (-skin - 1, 0, -skin - 1), (skin + 1, HEIGHT + 3, skin + 1)
     seen, queue = set(), deque()
@@ -233,8 +257,8 @@ def main():
         lines.append(f"setblock ~{cell[0] + dx} ~{1 + shift} ~{cell[1] + dz} "
                      f"{block}[facing={facing},part=head]")
 
-    bed(PALE_BED, pts[0], pts[1], "pale")
-    bed(DARK_BED, pts[-1], pts[-2], "dark")
+    bed(PALE_BED, path[0], path[1], "pale")
+    bed(DARK_BED, goal_cell, path[WALK_CELLS + 1], "dark")
 
     os.makedirs(FUNC_DIR, exist_ok=True)
     with open(f"{PACK}/pack.mcmeta", "w") as f:
@@ -244,12 +268,14 @@ def main():
         f.write("\n".join(lines) + "\n")
 
     span_xz, span_y = 2 * skin + 1, HEIGHT + 4
-    straight = max(abs(pts[0][0] - pts[-1][0]), abs(pts[0][1] - pts[-1][1]))
+    straight = max(abs(path[0][0] - goal_cell[0]), abs(path[0][1] - goal_cell[1]))
     print(f"wrote {FUNC_DIR}/{NAME}.mcfunction")
     print(f"  {len(lines) - 5} setblock commands, {windows} windows")
-    print(f"  order-{ORDER} Hilbert curve, {len(order_of)} corridor cells, path verified unicursal")
+    print(f"  order-{ORDER} Hilbert curve, {len(path)} corridor cells, path verified unicursal")
     print(f"  Nexus to Nexus: {straight} blocks apart in a straight line, "
-          f"{steps[goal]} on foot ({steps[goal] / max(1, straight):.0f}x)")
+          f"{steps[goal]} on foot ({steps[goal] / max(1, straight):.0f}x), "
+          f"~{steps[goal] / 3.2:.0f}s at a jog")
+    print(f"  {len(path) - WALK_CELLS - 1} further corridor cells past the dark Nexus, optional")
     print(f"  capture size {span_xz} x {span_y} x {span_xz} "
           f"({'OK' if max(span_xz, span_y) <= 48 else 'TOO BIG'} for the 48 cap)")
     print(f"  branch, walk-length and seal checks all passed")
