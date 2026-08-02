@@ -184,6 +184,7 @@ Three exist:
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |
+| `tools/generate_hypostyle_room.py` | `/function build:hypostyle` | Cantor-dust colonnade, 47×47×47 |
 
 ### Design tricks worth reusing
 
@@ -223,6 +224,23 @@ a room. Order 3 with the dark Nexus placed *partway along the curve* rather than
 nobody resents it. Reckon on roughly 3 blocks/second in a one-wide corridor; you cannot sprint
 through turns. Leaving 56 cells of corridor running on past the exit is the other half of it: a maze
 you have completely traversed is solved, and one that visibly continues past your exit is not.
+
+**48 is a hard ceiling on "big".** Structure blocks cannot capture more than 48 in any axis, so the
+largest room the format can hold is 47×47×47 no matter how much space is cleared for it. The
+Hypostyle is exactly that. Say so up front when someone asks for a huge room.
+
+**A totally disconnected fractal gives a walkable hall for free.** A **Cantor dust** (the 2D product
+of a Cantor set with itself) is totally disconnected, so its complement is connected — put columns on
+the dust and every floor cell is reachable without designing a single route. Three iterations on a
+43-block span gives 64 columns of 2×2 with aisles 1, 4 and 15 wide: three scales, so every view is a
+scaled copy of every other and the aisle you are in tells you nothing about how far you have come. In
+a regular colonnade you can count your way across; in this one you cannot. Assert the aisle widths
+come in at least three distinct sizes — integer rounding can quietly flatten the recursion into a
+plain grid, and nothing else would notice.
+
+**A room this size earns being a junction.** Rooms may hold several dark Nexus beds and until the
+Hypostyle none of the authored ones did. Three of them on three sides makes the room a genuine fork
+and gives the size a purpose: choosing one means giving up the others for that trip.
 
 Pick the fractal by its **connectivity**, not its looks. The Sierpinski carpet is a connected set
 whose complement is not, so *filled = floor, holes = holes* is walkable everywhere at every scale;

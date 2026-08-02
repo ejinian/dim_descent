@@ -79,7 +79,13 @@ ran an order-4 curve end to end at 502 blocks and three minutes, which played as
 than a room; the fix was a smaller curve plus putting the dark Nexus partway along it instead of at
 the far end, leaving 56 cells of corridor running on past the exit that the player never has to
 enter. A maze you have completely traversed is solved; one that visibly continues past your exit is
-not. Vanilla sleeping sets the player's spawn to
+not. The **Hypostyle** is the largest room the structure format can hold — 47³, the 48-block cap
+minus one — and is a colonnade standing on a **Cantor dust**, which is chosen because a totally
+disconnected set has a connected complement: every floor cell is walkable without designing a route.
+Three iterations give 64 columns with aisles 1, 4 and 15 wide, so every view is a scaled copy of every
+other. It asserts those three scales survived integer rounding, and that the floor really is one
+connected region. It is also the first authored room with **three dark Nexus beds** — a genuine
+three-way fork rather than a corridor with one way on. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -318,9 +324,10 @@ same in every case: a small Python script owns the artefact, the artefact is nev
 and the script *asserts its own invariants* so a bad constant fails in the terminal rather than
 shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop, and
 `generate_void_stone_textures.py` emits Nullstone and Allstone together and proves every channel of
-every pixel sums to 255 — "polar opposite" as a test rather than a description. Six room scripts
+every pixel sums to 255 — "polar opposite" as a test rather than a description. Seven room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
-`generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`) emit
+`generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`,
+`generate_hypostyle_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
