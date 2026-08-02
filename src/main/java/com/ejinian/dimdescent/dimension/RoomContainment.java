@@ -24,8 +24,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 //      OUTSIDE is wrapped; interior faces are left alone, which is what makes it read as "the world
 //      ends here" rather than "someone built a second wall".
 //   2. A CONTAINMENT BOX five blocks further out: an inner shell of Nullstone backed by an outer
-//      shell of unbreakable Forsaken Fiber. Players can chew through the Nullstone and reach the
-//      Fiber, and that is the point - the escape is allowed to feel possible right up until it isn't.
+//      shell of unbreakable Forsaken Essence. Players can chew through the Nullstone and reach the
+//      Essence, and that is the point - the escape is allowed to feel possible right up until it isn't.
 //
 // The box has walls and a ceiling but deliberately NO floor, and its walls run all the way down to
 // the dimension's minimum build height. There is therefore nothing to stand on outside the room and
@@ -37,7 +37,7 @@ public final class RoomContainment {
     // Empty space between the room's outer surface and the inside face of the box.
     private static final int BUFFER = 5;
 
-    // Shell offsets from the room's bounding box: Nullstone first, then Forsaken Fiber behind it.
+    // Shell offsets from the room's bounding box: Nullstone first, then Forsaken Essence behind it.
     private static final int INNER_SHELL = BUFFER + 1;
     private static final int OUTER_SHELL = BUFFER + 2;
 
@@ -110,11 +110,11 @@ public final class RoomContainment {
     // Walls + ceiling, two shells thick, anchored to the bottom of the world. No floor, on purpose.
     private static void buildBox(ServerLevel level, BoundingBox room) {
         BlockState nullstone = ModRegistry.NULLSTONE.get().defaultBlockState();
-        BlockState fiber = ModRegistry.FORSAKEN_FIBER.get().defaultBlockState();
+        BlockState essence = ModRegistry.FORSAKEN_ESSENCE.get().defaultBlockState();
         int floorY = level.getMinBuildHeight();
 
         placeShell(level, room, INNER_SHELL, floorY, nullstone);
-        placeShell(level, room, OUTER_SHELL, floorY, fiber);
+        placeShell(level, room, OUTER_SHELL, floorY, essence);
     }
 
     private static void placeShell(ServerLevel level, BoundingBox room, int offset, int floorY, BlockState block) {
@@ -144,7 +144,7 @@ public final class RoomContainment {
     }
 
     // Never overwrite the room itself or an already-placed shell - the inner Nullstone shell is laid
-    // first, and the Fiber shell must not punch through it if a room is close to the buffer edge.
+    // first, and the Essence shell must not punch through it if a room is close to the buffer edge.
     private static void setIfEmpty(ServerLevel level, BlockPos pos, BlockState block) {
         if (isEmpty(level, pos)) {
             level.setBlock(pos, block, SHELL_FLAGS);

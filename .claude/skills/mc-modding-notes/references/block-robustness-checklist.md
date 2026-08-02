@@ -28,7 +28,7 @@ single `BlockBehaviour.Properties` call, cheap to get right the first time.
 
 2. **Explosion resistance.** Set via `.strength(hardness, explosionResistance)` (or `.strength(x)`
    for both equal, or `.instabreak()` for both zero). Ask: should TNT/creepers actually be able to
-   destroy this? A block meant to be a hard boundary (like Forsaken Fiber) needs bedrock-tier
+   destroy this? A block meant to be a hard boundary (like Forsaken Essence) needs bedrock-tier
    resistance (`-1.0F, 3600000.0F`), not just a high mining hardness - those are two independent
    numbers and it's easy to set one and forget the other.
 

@@ -154,7 +154,7 @@ telling anyone what to think.
 ## Status
 
 Core dimension-travel loop works end to end: a custom Rift dimension (Nullstone floor,
-Forsaken Fiber unbreakable boundary). The Rift Door is **fully retired** (block, block entity,
+Forsaken Essence unbreakable boundary). The Rift Door is **fully retired** (block, block entity,
 portal renderer and all — deleted); onward travel is now the **Nexus of Eternal Slumber**
 (block `dream_bed`), a gray, tattered, zero-saturation bed. Right-clicked inside the Null Domain it
 pulls you into the next room exactly as the door did; right-clicked anywhere else it detonates like a
@@ -254,8 +254,8 @@ now, so digging out looks viable. On placement each room is shrink-wrapped in a 
 Nullstone that follows its exact outer shape — worked out by flooding air inward from outside and
 stopping at solids, so only outward-facing surfaces are wrapped and interiors are untouched (which is
 why **an authored room must be sealed**). Five blocks further out sits a containment box: an inner
-Nullstone shell backed by unbreakable Forsaken Fiber. A player can chew through the Nullstone and
-reach the Fiber, which is the point — the escape stays plausible right until it isn't. The box has
+Nullstone shell backed by unbreakable Forsaken Essence. A player can chew through the Nullstone and
+reach the Essence, which is the point — the escape stays plausible right until it isn't. The box has
 walls and a ceiling but deliberately **no floor**, and its walls run down to the dimension's minimum
 build height, so there is nothing to stand on outside a room and nothing to tunnel under. That is
 also why rooms are now stamped at `FLOOR_Y = 0`: anchoring both to the build floor is what closes the

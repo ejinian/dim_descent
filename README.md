@@ -91,7 +91,7 @@ anyone else. Black fractal cracks creep in from the corners of the screen for th
 
 ## Content
 
-**Blocks** — Nullstone · Forsaken Fiber · Dark Iron Bars · Datura · the altar set (Altar Stone,
+**Blocks** — Nullstone · Forsaken Essence · Dark Iron Bars · Datura · the altar set (Altar Stone,
 Carved Altar Stone, Altar Heart, bricks, cracked bricks, slab, stairs) · Daemonlight (a 3D demonic
 torch, placed unlit and lit with flint and steel) · three beds (dark Nexus, pale Nexus, corrupted).
 

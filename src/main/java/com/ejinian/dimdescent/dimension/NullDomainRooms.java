@@ -104,7 +104,7 @@ public final class NullDomainRooms {
         // updateShape see a missing partner, and the pair deletes itself on the way in.
         template.placeInWorld(rift, origin, origin, settings, rng, NexusBedBlock.BED_WRITE_FLAGS);
 
-        // Shrink-wrap the build in Nullstone and cage it in Forsaken Fiber. Every block of the room
+        // Shrink-wrap the build in Nullstone and cage it in Forsaken Essence. Every block of the room
         // itself is breakable, so this is the only thing stopping a player digging out - see
         // RoomContainment for why the cage has no floor.
         Vec3i size = template.getSize();

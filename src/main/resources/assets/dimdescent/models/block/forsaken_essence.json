@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "dimdescent:block/forsaken_fiber"
+    "all": "dimdescent:block/forsaken_essence"
   }
 }

@@ -34,7 +34,7 @@ The authoring world is **`DimDescentRoomBuilder`** — a flat creative world. Se
 Note that every block a room is built from is now **breakable** (altar blocks are `strength(3.0)`,
 dropless). That is deliberate: digging out has to look possible. What a player actually finds behind
 a broken wall is the Nullstone shrink-wrap, then five blocks of empty space, then a Nullstone +
-Forsaken Fiber cage with no floor. Only the two Nexus beds and the Forsaken Fiber are unbreakable.
+Forsaken Essence cage with no floor. Only the two Nexus beds and the Forsaken Essence are unbreakable.
 
 ---
 

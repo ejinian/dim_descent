@@ -131,7 +131,7 @@ public final class ModRegistry {
     // Rift-dimension equivalent of Dimensional Doors' "Fabric of Reality": an insta-break void
     // floor. Look is meant to tie into the depth mechanic later (more unstable the deeper you
     // are) rather than being flat black. noLootTable() makes the no-drop intentional and explicit
-    // (matching its sibling FORSAKEN_FIBER below) instead of silently missing a loot table file.
+    // (matching its sibling FORSAKEN_ESSENCE below) instead of silently missing a loot table file.
     public static final DeferredBlock<Block> NULLSTONE = BLOCKS.register("nullstone", () -> new Block(
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLACK)
@@ -145,15 +145,15 @@ public final class ModRegistry {
     // Rift-dimension equivalent of Dimensional Doors' "Ancient Fabric": the unbreakable outer
     // boundary of every dungeon room, so players can't dig their way out of a room's confines.
     // Mechanically identical to bedrock (unbreakable in survival), just our own name/texture.
-    public static final DeferredBlock<Block> FORSAKEN_FIBER = BLOCKS.register("forsaken_fiber", () -> new Block(
+    public static final DeferredBlock<Block> FORSAKEN_ESSENCE = BLOCKS.register("forsaken_essence", () -> new Block(
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_RED)
                     .strength(-1.0F, 3600000.0F)
                     .noLootTable()
                     .isValidSpawn(Blocks::never)));
 
-    public static final DeferredItem<Item> FORSAKEN_FIBER_ITEM = ITEMS.register("forsaken_fiber",
-            () -> new BlockItem(FORSAKEN_FIBER.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FORSAKEN_ESSENCE_ITEM = ITEMS.register("forsaken_essence",
+            () -> new BlockItem(FORSAKEN_ESSENCE.get(), new Item.Properties()));
 
     // Attunement Gate ruin material: the reinforced bars that cage the rift door until broken.
     // Same class/geometry as vanilla iron_bars (just a darker texture) with hardness bumped to
@@ -172,13 +172,13 @@ public final class ModRegistry {
             () -> new BlockItem(DARK_IRON_BARS.get(), new Item.Properties()));
 
     // Altar block set (Phase 4). Unbreakable in survival - same strength(-1) + noLootTable() that
-    // makes FORSAKEN_FIBER bedrock-like - so a naturally-spawned altar can't be dismantled for its
+    // makes FORSAKEN_ESSENCE bedrock-like - so a naturally-spawned altar can't be dismantled for its
     // (unbreakable) blocks, while still being editable in creative for authoring. DEEPSLATE sound
     // to match the black-basalt look.
     // Deliberately BREAKABLE, and deliberately dropless. Every room in the Null Domain is built from
     // these, and the whole containment design depends on a player being able to dig into a wall and
     // believe they are getting somewhere - what they actually find is the Nullstone shrink-wrap and
-    // then the Forsaken Fiber cage (see RoomContainment). Unbreakable walls would give the game away
+    // then the Forsaken Essence cage (see RoomContainment). Unbreakable walls would give the game away
     // instantly. noLootTable keeps them from being farmed out of the dungeon.
     private static BlockBehaviour.Properties altarProps() {
         return BlockBehaviour.Properties.of()
@@ -402,7 +402,7 @@ public final class ModRegistry {
             event.accept(DREAM_BED_ITEM);
             event.accept(PALE_DREAM_BED_ITEM);
             event.accept(NULLSTONE_ITEM);
-            event.accept(FORSAKEN_FIBER_ITEM);
+            event.accept(FORSAKEN_ESSENCE_ITEM);
             event.accept(DARK_IRON_BARS_ITEM);
             event.accept(ALTAR_STONE_ITEM);
             event.accept(CARVED_ALTAR_STONE_ITEM);

@@ -22,7 +22,7 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
 
 - **Custom dimension** (`dimdescent:rift`): data-driven via `data/dimdescent/dimension_type/rift.json`
   + `data/dimdescent/dimension/rift.json`. No skylight, has a ceiling, fixed night-time lighting,
-  flat generator with `dimdescent:forsaken_fiber` (bottom, unbreakable boundary) and
+  flat generator with `dimdescent:forsaken_essence` (bottom, unbreakable boundary) and
   `dimdescent:nullstone` (the walkable "floor," insta-break void look) as its layers. See
   `dimensions-teleportation-portals.md` for the general technique.
 - **Room grid** (`NullDomainRooms`): the Null Domain is a Dimensional-Doors-style pocket dungeon,
@@ -34,7 +34,7 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   rather than marching off one axis. Collision-safety is NOT from the layout - it's the single
   global monotonic index (`GridData.takeNextIndex`), so two players at once or the same player across
   the world's whole history never get the same cell. Each room is a pitch-black box: interior faces
-  of walls + ceiling lined with Nullstone (dead black), backed by an unbreakable Forsaken Fiber shell
+  of walls + ceiling lined with Nullstone (dead black), backed by an unbreakable Forsaken Essence shell
   one block further out/up (so it's black yet unbreachable in survival), altar-brick floor with
   Daemonlight lighting, type-specific decor, and ONE onward Dream Bed against the far wall. Crucially
   there is NOTHING under the floor - the altar bricks sit directly over the void, so breaking one
@@ -127,7 +127,7 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
   noise/variation - a black texture stays black under every one of Minecraft's per-face lighting
   multipliers, satisfying "zero reflection from light" without needing emissive/fullbright
   rendering tricks).
-- **Forsaken Fiber** (`dimdescent:forsaken_fiber`): Dimensional Doors' "Ancient Fabric" equivalent
+- **Forsaken Essence** (`dimdescent:forsaken_essence`): Dimensional Doors' "Ancient Fabric" equivalent
   - unbreakable (`strength(-1, 3600000F)`, `.noLootTable()`, `.isValidSpawn(Blocks::never)`, same
   as vanilla bedrock), animated texture (dark maroon base, a barely-visible dark-orange vein
   pattern that actually scrolls across frames - see the animated-texture note in
@@ -169,4 +169,4 @@ variety (hundreds of non-repeating rooms rather than a finite pool), intentional
 
 Chosen and implemented (see also the `block-naming-fabric-analogues` memory entry, which has the
 same info for cross-session recall outside this repo): **Nullstone** = Fabric of Reality
-equivalent, **Forsaken Fiber** = Ancient Fabric equivalent.
+equivalent, **Forsaken Essence** = Ancient Fabric equivalent.
