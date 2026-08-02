@@ -176,15 +176,23 @@ runs from one command wherever you stand:
 |---|---|---|
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
 | `tools/generate_basin_room.py` | `/function build:basin` | rippled floor + mirrored ceiling, 41×17×41 |
+| `tools/generate_anechoic_room.py` | `/function build:anechoic` | white wedge-lined chamber, 31×25×31 |
 
-The Basin's trick is worth stealing: the ceiling is `CLEARANCE - floor(r)`, not `+`. Mirroring the
-two surfaces instead of running them parallel makes headroom swing by *twice* the ripple amplitude —
-a 13-block vault pinching to a 3-block crawl on an amplitude of 3. Parallel surfaces read as a
-corridor; mirrored ones read as a room being squeezed.
+Two tricks worth stealing:
 
-These scripts **check their own geometry** before writing — max floor step, minimum headroom, and a
-flood-fill proof that the room is sealed — so a bad constant fails in the terminal instead of after
-you've captured it.
+**Mirror the ceiling against the floor.** `ceiling = CLEARANCE - floor(r)`, not `+`. Running the two
+surfaces antiparallel makes headroom swing by *twice* the ripple amplitude — a 13-block vault
+pinching to a 3-block crawl on an amplitude of 3. Parallel surfaces read as a corridor; mirrored ones
+read as a room being squeezed.
+
+**Skin the build in Nullstone.** Shell it two layers thick: your material inside, one layer of
+Nullstone outside. From within, the room is whatever you built; from outside — or through a hole a
+player dug — it reads as void rather than as a box someone assembled.
+
+These scripts **check their own geometry** before writing: max floor step, minimum headroom, that a
+wedge grid tiles its surface exactly, that a lava source has four solid sides so it falls instead of
+spreading, and a flood-fill proof that the room is sealed. A bad constant fails in the terminal
+instead of after you've captured it.
 
 ## Don't
 

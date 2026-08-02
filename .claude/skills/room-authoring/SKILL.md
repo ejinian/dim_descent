@@ -167,34 +167,55 @@ primitive nor pasteable as chat commands. Write a Python generator in `tools/` t
 function of relative `setblock` lines into the builder world's own datapack; the author stands where
 they want it and runs one `/function build:<name>`.
 
-Two exist:
+Three exist:
 
 | script | function | what it makes |
 |---|---|---|
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
 | `tools/generate_basin_room.py` | `/function build:basin` | antiphase rippled floor + ceiling, 41×17×41 |
+| `tools/generate_anechoic_room.py` | `/function build:anechoic` | white wedge-lined chamber, 31×25×31 |
 
-**The trick worth reusing is antiphase.** `ceiling = CLEARANCE - floor(r)` instead of
-`CLEARANCE + floor(r)`: the two surfaces mirror rather than run parallel, so headroom swings by
-*twice* the ripple amplitude. The Basin goes from a 13-block vault to a 3-block crawl and back with
-an amplitude of only 3. Parallel surfaces feel like a corridor; mirrored ones feel like the room is
-squeezing.
+### Two design tricks worth reusing
+
+**Antiphase surfaces.** `ceiling = CLEARANCE - floor(r)` instead of `CLEARANCE + floor(r)`: the two
+surfaces mirror rather than run parallel, so headroom swings by *twice* the ripple amplitude. The
+Basin goes from a 13-block vault to a 3-block crawl and back on an amplitude of only 3. Parallel
+surfaces feel like a corridor; mirrored ones feel like the room is squeezing.
+
+**A Nullstone skin over a different interior.** Build the shell two layers thick — the interior
+material inside, one layer of Nullstone outside. From within the room the palette is whatever you
+chose; from outside, or through a hole a player digs, the build reads as void rather than as a box
+someone assembled. The Anechoic Chamber is pure white Allstone inside a black Nullstone skin. (The
+Domain's own shrink-wrap already coats rooms in Nullstone on placement, so this mostly matters for
+how the room reads in the builder world and behind a breached wall — but it costs one extra layer and
+makes the intent explicit.)
 
 ### A generator must assert its own invariants
 
 This is the whole reason generating beats hand-building — the script can prove the room is valid
 before a single block exists, so a bad constant fails in the terminal instead of after a capture.
-`generate_basin_room.py` checks three things and refuses to write otherwise:
 
-1. **Walkable** — no orthogonal step in the floor exceeds 1 block. Keep `AMP * 2π / WAVELENGTH`
-   under ~0.8; raising amplitude without raising wavelength is what breaks it.
-2. **Passable** — headroom never drops below 3 air blocks.
-3. **Sealed** — flood air inward from a shell outside the build and assert it cannot reach the
-   interior. This is the same algorithm `RoomContainment.shrinkWrap` runs at placement time, so it
-   is a true test of rule 7 above, not an approximation.
+Every room generator checks that the room is **sealed**: flood air inward from a shell outside the
+build and assert it cannot reach the interior. That is the same algorithm `RoomContainment.shrinkWrap`
+runs at placement time, so it is a true test of rule 7 above rather than an approximation. Beyond
+that, each checks whatever its own shape can get wrong:
 
-Same philosophy as `tools/generate_forsaken_essence_texture.py`, which asserts its own tiling and
-loop seams. Fail loudly rather than ship a broken artefact.
+- **Basin** — no orthogonal floor step over 1 block (walkable; keep `AMP * 2π / WAVELENGTH` under
+  ~0.8), and headroom never under 3 (passable).
+- **Anechoic** — the wedge grid tiles the interior exactly (`2*INNER+1` and `TOP-1` both multiples
+  of `PITCH`, or a surface ends in a ragged strip), both beds have clearance and a floor under them,
+  and the single lava source has four solid horizontal neighbours so it falls rather than spreading.
+
+Same philosophy as the texture scripts, which assert their own tiling, loop seams and (for the
+Nullstone/Allstone pair) that the two are exact channel-wise inverses. Fail loudly rather than ship
+a broken artefact.
+
+### Ordering matters when emitting
+
+Emit **fluids last**. The Anechoic Chamber's lava source is the final line in its function so the
+room is already sealed when it starts to fall; placed earlier it would flow across an unfinished
+floor. Same reasoning for beds — place both halves adjacently so the second one resolves the first's
+`updateShape` while the other half exists.
 
 ## Gotchas already paid for
 

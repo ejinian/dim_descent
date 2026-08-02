@@ -261,6 +261,16 @@ build height, so there is nothing to stand on outside a room and nothing to tunn
 also why rooms are now stamped at `FLOOR_Y = 0`: anchoring both to the build floor is what closes the
 last gap. Break a room's floor and you fall out of the world.
 
+**Allstone** is Nullstone's polar opposite: pure white, identical in every other respect (instabreak,
+dropless, flat and untextured). Both are deliberately featureless — every other block in the mod has
+grain to read, and these two have none, so a surface built from them gives the eye nothing to measure
+distance or scale against. That is what makes a Nullstone void look bottomless and an Allstone room
+look like it has no far wall; adding noise "to break it up" would undo the only thing they are for.
+Both now break with a **stone** sound rather than glass, which read as fragile scenery for what are
+walls and floors. Allstone exists as an interior material for rooms that should feel clinical rather
+than ruined, always skinned in a layer of Nullstone so the outside of the build still reads as void —
+see the Anechoic Chamber.
+
 **Forsaken Essence** (renamed from Forsaken Fiber) is the cage's unbreakable outer shell, and its
 animated texture is **generated, not drawn** — `tools/generate_forsaken_essence_texture.py` builds
 24 frames from a sum of sine waves whose frequencies are all integers over the 16px tile and the
@@ -268,23 +278,34 @@ frame loop. That is what makes it tile seamlessly against neighbouring blocks on
 loop without a visible snap; the script asserts all three seams and fails rather than shipping one.
 Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
 
-**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Five
-exist so far. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
-file joins the rotation with no code change. Authoring happens in-game with WorldEdit (installed in
-the gitignored `run/mods/`) — see the `room-authoring` skill and [WORLDEDIT.md](WORLDEDIT.md).
+**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Nine exist
+so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall` and `basin`). The
+pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new file joins the
+rotation with no code change — which also means a bad `.nbt` reaches players with no compile error to
+catch it, so run `tools/verify_room_nbt.py` on a capture before importing it (exactly one pale bed,
+at least one dark bed, nothing over 48, no stray terrain). Authoring happens in-game with WorldEdit
+(installed in the gitignored `run/mods/`) — see the `room-authoring` skill and
+[WORLDEDIT.md](WORLDEDIT.md).
 
 **`tools/` is where anything the mod can't draw by hand gets generated**, and the convention is the
 same in every case: a small Python script owns the artefact, the artefact is never edited directly,
 and the script *asserts its own invariants* so a bad constant fails in the terminal rather than
-shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop;
-`generate_spiral_function.py` and `generate_basin_room.py` emit thousands of relative `setblock`
-lines as a **datapack function** into the builder world (`/function build:<name>`), which is the only
-practical way to build a shape defined per block. The Basin additionally proves the room is walkable
-(no floor step over 1), passable (headroom ≥ 3) and — using the same flood-fill `RoomContainment`
-runs at placement — **sealed**, which is the one authoring rule the shrink-wrap depends on. Its shape
-comes from mirroring the ceiling against the floor (`CLEARANCE - h(r)`, not `+`) so headroom swings
-by twice the ripple amplitude: a 13-block vault pinching to a 3-block crawl. These functions live in
-the builder world's datapack and must never ship in the mod's own `data/`.
+shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop, and
+`generate_void_stone_textures.py` emits Nullstone and Allstone together and proves every channel of
+every pixel sums to 255 — "polar opposite" as a test rather than a description. Three room scripts
+(`generate_spiral_function.py`, `generate_basin_room.py`, `generate_anechoic_room.py`) emit
+thousands of relative `setblock` lines as a **datapack function** into the builder world
+(`/function build:<name>`), which is the only practical way to build a shape defined per block. These
+functions live in the builder world's datapack and must never ship in the mod's own `data/`.
+
+Every room generator proves — using the same flood-fill `RoomContainment` runs at placement — that
+the room is **sealed**, which is the one authoring rule the shrink-wrap depends on, plus whatever
+else that room can get wrong. The **Basin** checks it is walkable (no floor step over 1) and passable
+(headroom ≥ 3); its shape comes from mirroring the ceiling against the floor (`CLEARANCE - h(r)`, not
+`+`), so headroom swings by twice the ripple amplitude — a 13-block vault pinching to a 3-block
+crawl. The **Anechoic Chamber** checks the wedge grid tiles the interior exactly, that both beds have
+clearance and support, and that its single lava source has four solid horizontal neighbours so it
+falls instead of spreading.
 
 Still not built, and the mod's central premise: **the depth axis itself**. Room selection is a flat
 random pick, so nothing gets harder, richer or stranger the further in you go — and with it,
