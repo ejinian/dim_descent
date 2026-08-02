@@ -143,3 +143,27 @@ ModDevGradle template ships neither.
 
 Limits: this checks the resource tree only. It cannot catch Java-side registration being deleted -
 which is exactly why appearance belongs in the model JSON where a static test can see it.
+
+## Reloading client resources in the dev client (textures, models, blockstates)
+
+`/reload` does NOT do this - that reloads server-side datapacks only. The client-resource equivalent
+is **F3 + T**.
+
+But there is a step people miss: the dev client reads the mod's assets from `build/resources/main`,
+not from `src/main/resources`. Editing a texture or model under `src` and pressing F3+T looks like
+nothing happened, because the built copy is stale. The loop is:
+
+```bash
+<edit src/main/resources/...>
+./gradlew processResources     # copies src -> build/resources/main
+# then F3+T in the running client
+```
+
+No restart needed for assets. Java changes still require a full restart. When something looks
+unchanged, check the built copy before doubting the edit:
+
+```bash
+grep -A2 start_height build/resources/main/data/dimdescent/worldgen/structure/altar.json
+```
+
+That check is how the altar placement fix was confirmed to have actually reached the running game.

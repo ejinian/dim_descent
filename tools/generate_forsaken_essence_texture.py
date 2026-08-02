@@ -33,9 +33,9 @@ F = 24       # frames in the loop
 # reads as "blood" rather than "lava". Keep green and blue well under red and roughly equal, or it
 # drifts orange (which is what the first version got wrong).
 # ---------------------------------------------------------------------------
-BASE = (9, 4, 5)      # the dead flesh between veins - almost black
-DEEP = (58, 6, 9)     # clotted crimson, the body of a vein
-CORE = (122, 16, 18)  # the thin bright filament running down a vein's centre
+BASE = (7, 3, 4)      # the dead flesh between veins - almost black
+DEEP = (44, 5, 7)     # clotted crimson, the body of a vein
+CORE = (92, 12, 13)   # the thin bright filament running down a vein's centre
 
 # Where the vein body gives way to the bright core. Lower = thicker glowing cores.
 CORE_THRESHOLD = 0.55

@@ -261,6 +261,13 @@ build height, so there is nothing to stand on outside a room and nothing to tunn
 also why rooms are now stamped at `FLOOR_Y = 0`: anchoring both to the build floor is what closes the
 last gap. Break a room's floor and you fall out of the world.
 
+**Forsaken Essence** (renamed from Forsaken Fiber) is the cage's unbreakable outer shell, and its
+animated texture is **generated, not drawn** — `tools/generate_forsaken_essence_texture.py` builds
+24 frames from a sum of sine waves whose frequencies are all integers over the 16px tile and the
+frame loop. That is what makes it tile seamlessly against neighbouring blocks on both axes *and*
+loop without a visible snap; the script asserts all three seams and fails rather than shipping one.
+Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
+
 **Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Five
 exist so far. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
 file joins the rotation with no code change. Authoring happens in-game with WorldEdit (installed in
