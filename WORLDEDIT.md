@@ -136,12 +136,34 @@ neighbours, not the lava:
 Give a fall something to land in — existing lava, or a 1×1 pocket. And lava counts as *sealed* for
 the Nullstone shrink-wrap (it isn't air), so a lava-filled ceiling block doesn't break the room.
 
+## `//generate` — formula shapes
+
+`//generate` (aliases `//gen`, `//g`) is real: it evaluates an expression at every block in the
+selection and places the pattern wherever the result is non-zero.
+
+**The one thing that trips everybody up:** by default `x`, `y` and `z` are *normalised* — each axis
+runs about −1 to +1 across the selection, whatever its real size. So a formula written with block-unit
+constants (`radius 10`, `y == 3`) evaluates to nothing at all. Either write the formula in −1…1 terms,
+or pass one of the raw/offset coordinate flags (`-r`, `-o`). `-h` makes it hollow.
+
+Normalised, so it needs no flags — a torus in whatever cube you select:
+
+```
+//g dimdescent:altar_stone_bricks (sqrt(x*x+z*z)-0.6)*(sqrt(x*x+z*z)-0.6)+y*y<0.0625
+```
+
+`0.6` is the major radius as a fraction of the selection, `0.0625` is the minor radius squared
+(0.25²). `sqrt()` and plain multiplication avoid arguing with the parser about `^` vs `pow()`.
+
+It's a **shape** tool, though. One pattern for the whole formula, no way to say "the top block is a
+grate and the two under it are hollow", and it can't place a bed. For a room, generate a function.
+
 ## When commands aren't enough
 
-Spirals, helixes and anything per-block-mathematical can't be expressed as WorldEdit primitives and
-are far too many blocks to paste as chat commands. Generate a **datapack function** instead — see
-`tools/generate_spiral_function.py`. It writes thousands of relative `setblock` lines into
-`run/saves/<world>/datapacks/dimdescent_build/`, and you run the whole build with one command:
+Spirals, helicoids, rippled surfaces — anything per-block-mathematical — are far too many blocks to
+paste as chat commands. Generate a **datapack function** instead. The scripts write thousands of
+relative `setblock` lines into `run/saves/<world>/datapacks/dimdescent_build/`, and the whole build
+runs from one command wherever you stand:
 
 ```
 /reload
@@ -150,7 +172,19 @@ are far too many blocks to paste as chat commands. Generate a **datapack functio
 /function build:spiral
 ```
 
-Everything is relative to where you stand, so the same function works anywhere.
+| script | function | what it makes |
+|---|---|---|
+| `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
+| `tools/generate_basin_room.py` | `/function build:basin` | rippled floor + mirrored ceiling, 41×17×41 |
+
+The Basin's trick is worth stealing: the ceiling is `CLEARANCE - floor(r)`, not `+`. Mirroring the
+two surfaces instead of running them parallel makes headroom swing by *twice* the ripple amplitude —
+a 13-block vault pinching to a 3-block crawl on an amplitude of 3. Parallel surfaces read as a
+corridor; mirrored ones read as a room being squeezed.
+
+These scripts **check their own geometry** before writing — max floor step, minimum headroom, and a
+flood-fill proof that the room is sealed — so a bad constant fails in the terminal instead of after
+you've captured it.
 
 ## Don't
 

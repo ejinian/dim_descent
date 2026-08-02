@@ -158,10 +158,43 @@ never flood. `//set minecraft:lava` across a floor region gives a flush lake or 
 source floating in open air or embedded in a wall face. Lava is not air, so it still counts as
 sealed for the shrink-wrap.
 
-**Anything per-block-mathematical** (spirals, helixes) is neither a WorldEdit primitive nor
-pasteable as chat commands. Generate a datapack function - see `tools/generate_spiral_function.py`,
-which writes relative `setblock` lines into the builder world's own datapack so the build runs from
-one `/function` call, anywhere the author stands.
+---
+
+## Generated rooms — when the shape is maths
+
+**Anything per-block-mathematical** (spirals, helicoids, rippled surfaces) is neither a WorldEdit
+primitive nor pasteable as chat commands. Write a Python generator in `tools/` that emits a datapack
+function of relative `setblock` lines into the builder world's own datapack; the author stands where
+they want it and runs one `/function build:<name>`.
+
+Two exist:
+
+| script | function | what it makes |
+|---|---|---|
+| `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
+| `tools/generate_basin_room.py` | `/function build:basin` | antiphase rippled floor + ceiling, 41×17×41 |
+
+**The trick worth reusing is antiphase.** `ceiling = CLEARANCE - floor(r)` instead of
+`CLEARANCE + floor(r)`: the two surfaces mirror rather than run parallel, so headroom swings by
+*twice* the ripple amplitude. The Basin goes from a 13-block vault to a 3-block crawl and back with
+an amplitude of only 3. Parallel surfaces feel like a corridor; mirrored ones feel like the room is
+squeezing.
+
+### A generator must assert its own invariants
+
+This is the whole reason generating beats hand-building — the script can prove the room is valid
+before a single block exists, so a bad constant fails in the terminal instead of after a capture.
+`generate_basin_room.py` checks three things and refuses to write otherwise:
+
+1. **Walkable** — no orthogonal step in the floor exceeds 1 block. Keep `AMP * 2π / WAVELENGTH`
+   under ~0.8; raising amplitude without raising wavelength is what breaks it.
+2. **Passable** — headroom never drops below 3 air blocks.
+3. **Sealed** — flood air inward from a shell outside the build and assert it cannot reach the
+   interior. This is the same algorithm `RoomContainment.shrinkWrap` runs at placement time, so it
+   is a true test of rule 7 above, not an approximation.
+
+Same philosophy as `tools/generate_forsaken_essence_texture.py`, which asserts its own tiling and
+loop seams. Fail loudly rather than ship a broken artefact.
 
 ## Gotchas already paid for
 
