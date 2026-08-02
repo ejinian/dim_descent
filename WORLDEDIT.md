@@ -172,6 +172,22 @@ runs from one command wherever you stand:
 /function build:spiral
 ```
 
+Build at an exact spot without having to stand there — far more reliable than flying to a coordinate,
+since the function reads whatever block you happen to be in:
+
+```bash
+/execute positioned 100 0 100 run function build:causeway
+```
+
+To wipe one and start over, `/fill` the capture box (corners included, so the structure blocks go
+too). Keep it under **32,768** blocks or `/fill` refuses — a 33 × 27 × 33 box is 29,403 and fits:
+
+```bash
+/fill 84 -1 84 116 25 116 air
+```
+
+Stand outside it first. The floor becoming air is a long way down.
+
 | script | function | what it makes |
 |---|---|---|
 | `tools/generate_spiral_function.py` | `/function build:spiral` | helicoid stair tower, 17×41×17 |
@@ -198,6 +214,9 @@ instead of after you've captured it.
 
 ## Don't
 
+- **`/tp <x> <y> <z> <yaw> <pitch>`.** Not a valid overload — the rotation form needs an explicit
+  target: `/tp @s 100 3 88 0 0`. Yaw 0 faces south (+Z), 90 west, 180 north, 270 east; pitch 0 is
+  level. Plain `/tp <x> <y> <z>` is fine without a target, which is why this one surprises you.
 - **`//set` then `//hollow`.** `//hollow` needs air around the object inside the selection; a solid that fills its box edge-to-edge gets deleted entirely. Use `//faces` or solid-then-carve.
 - **Build round rooms on the ground.** A circle in a square capture box saves the grass in the corners, and it ends up in the Null Domain. Build in the air.
 - **Draw floor, walls and ceiling as three separate player-centred shapes.** A fraction of a block of drift and the circles don't line up. Use `/tp ~ ~1 ~` (literal `~`) for height changes.

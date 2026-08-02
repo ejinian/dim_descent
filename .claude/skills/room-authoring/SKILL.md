@@ -221,6 +221,29 @@ Same philosophy as the texture scripts, which assert their own tiling, loop seam
 Nullstone/Allstone pair) that the two are exact channel-wise inverses. Fail loudly rather than ship
 a broken artefact.
 
+### Running and re-running one
+
+Build at a fixed point rather than flying to a coordinate — the function reads whatever block the
+executor is standing in, and hovering on exactly the right block is fiddly:
+
+```
+/reload
+/execute positioned 100 0 100 run function build:causeway
+```
+
+Iterating means wiping the last attempt. `/fill` the capture box, corners included so the structure
+blocks go with it, and keep the volume under **32,768** or `/fill` refuses (33 × 27 × 33 = 29,403
+fits). Stand well outside first — when the floor becomes air it is a long way down:
+
+```
+/fill 84 -1 84 116 25 116 air
+```
+
+Two command-syntax traps that have each cost a round trip: `/tp <x> <y> <z> <yaw> <pitch>` is not a
+valid overload (the rotation form needs an explicit target, `/tp @s 100 3 88 0 0`; yaw 0 = south),
+and a `random.seed` hex literal must actually be hex — `0x5P1RAL` and `0xBA51N` have both been
+typo'd.
+
 ### Ordering matters when emitting
 
 Emit **fluids last**. The Causeway's lava source is the final line in its function so the room is
