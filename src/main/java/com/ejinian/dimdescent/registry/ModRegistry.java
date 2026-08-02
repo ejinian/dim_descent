@@ -175,10 +175,15 @@ public final class ModRegistry {
     // makes FORSAKEN_FIBER bedrock-like - so a naturally-spawned altar can't be dismantled for its
     // (unbreakable) blocks, while still being editable in creative for authoring. DEEPSLATE sound
     // to match the black-basalt look.
+    // Deliberately BREAKABLE, and deliberately dropless. Every room in the Null Domain is built from
+    // these, and the whole containment design depends on a player being able to dig into a wall and
+    // believe they are getting somewhere - what they actually find is the Nullstone shrink-wrap and
+    // then the Forsaken Fiber cage (see RoomContainment). Unbreakable walls would give the game away
+    // instantly. noLootTable keeps them from being farmed out of the dungeon.
     private static BlockBehaviour.Properties altarProps() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_BLACK)
-                .strength(-1.0F, 3600000.0F)
+                .strength(3.0F, 6.0F)
                 .noLootTable()
                 .isValidSpawn(Blocks::never)
                 .sound(SoundType.DEEPSLATE);

@@ -83,8 +83,13 @@ The bell/candles/altar ritual is **cut**. The altar keeps no mechanical role.
 ### The altars — lore landmarks
 
 Naturally-spawning **altars**, rarity comparable to villages. Ominous
-black/dark, warlock-style; blocks unbreakable in survival. Authored in-game and
-imported as NBT rather than hand-written.
+black/dark, warlock-style. Authored in-game and imported as NBT rather than
+hand-written.
+
+The altar block set is **breakable but dropless** — it used to be unbreakable, but
+the Null Domain's containment design needs those same blocks to look diggable (see
+the Status section), and a block can't be unbreakable in one dimension and not the
+other. Dropless keeps them from being farmed out of either place.
 
 Each altar spawns together with an adjoining **room containing eight empty
 beds** — both are one structure (`dimdescent:altar`), so they always appear as a
@@ -243,6 +248,18 @@ colour of `Vec3.ZERO` — it used to point at `minecraft:the_end`, whose purple 
 through gaps and read as "somewhere"), and **nothing spawns** (`NullDomainSpawns` cancels
 `FinalizeSpawnEvent` outright, the sole exception being the Hallucination, which is a symptom rather
 than an inhabitant).
+
+**Every room is caged, and the cage is a lie** (`RoomContainment`). Room blocks are all breakable
+now, so digging out looks viable. On placement each room is shrink-wrapped in a single layer of
+Nullstone that follows its exact outer shape — worked out by flooding air inward from outside and
+stopping at solids, so only outward-facing surfaces are wrapped and interiors are untouched (which is
+why **an authored room must be sealed**). Five blocks further out sits a containment box: an inner
+Nullstone shell backed by unbreakable Forsaken Fiber. A player can chew through the Nullstone and
+reach the Fiber, which is the point — the escape stays plausible right until it isn't. The box has
+walls and a ceiling but deliberately **no floor**, and its walls run down to the dimension's minimum
+build height, so there is nothing to stand on outside a room and nothing to tunnel under. That is
+also why rooms are now stamped at `FLOOR_Y = 0`: anchoring both to the build floor is what closes the
+last gap. Break a room's floor and you fall out of the world.
 
 **Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Five
 exist so far. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new

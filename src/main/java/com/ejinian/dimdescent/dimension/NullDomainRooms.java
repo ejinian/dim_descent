@@ -11,6 +11,7 @@ import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -41,7 +43,11 @@ import net.minecraft.world.phys.Vec3;
 // LazyPocketGenerator) and then persists forever, since travel is keyed on beds (see BedLinkData).
 public final class NullDomainRooms {
 
-    public static final int FLOOR_Y = 100;
+    // Rooms sit on the very bottom of the dimension. That is load-bearing rather than tidy: the
+    // containment box around each room (RoomContainment) has no floor, and its walls run down to this
+    // same level, so there is nothing to stand on outside a room and no way to tunnel underneath one.
+    // Anchoring both to the build floor is what makes the cage inescapable.
+    public static final int FLOOR_Y = 0;
     private static final int SPACING = 512;
 
     // Rooms are discovered from data/dimdescent/structure/rooms/*.nbt, so dropping a new .nbt in that
@@ -97,6 +103,16 @@ public final class NullDomainRooms {
         // UPDATE_KNOWN_SHAPE the first half of a bed placed by the template makes the other half's
         // updateShape see a missing partner, and the pair deletes itself on the way in.
         template.placeInWorld(rift, origin, origin, settings, rng, NexusBedBlock.BED_WRITE_FLAGS);
+
+        // Shrink-wrap the build in Nullstone and cage it in Forsaken Fiber. Every block of the room
+        // itself is breakable, so this is the only thing stopping a player digging out - see
+        // RoomContainment for why the cage has no floor.
+        Vec3i size = template.getSize();
+        RoomContainment.encase(rift, new BoundingBox(
+                origin.getX(), origin.getY(), origin.getZ(),
+                origin.getX() + size.getX() - 1,
+                origin.getY() + size.getY() - 1,
+                origin.getZ() + size.getZ() - 1));
 
         BlockPos paleHead = findEntranceBed(template, origin, settings);
         if (paleHead == null) {

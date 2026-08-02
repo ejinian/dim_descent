@@ -26,6 +26,15 @@ The authoring world is **`DimDescentRoomBuilder`** — a flat creative world. Se
 5. Lighting is decorative only — the Null Domain renders at full brightness, so Daemonlights are
    atmosphere, never utility.
 6. Empty vanilla chests are welcome; the loader points them at a loot table on placement.
+7. **The room must be SEALED** - no gaps in its outer shell. On placement the room is shrink-wrapped
+   in a layer of Nullstone worked out by flooding air inward from outside and stopping at solid
+   blocks (`RoomContainment`). A hole in the shell lets that flood leak into the interior, which
+   wraps the INSIDE walls in Nullstone too and ruins the room. Sealed rooms only.
+
+Note that every block a room is built from is now **breakable** (altar blocks are `strength(3.0)`,
+dropless). That is deliberate: digging out has to look possible. What a player actually finds behind
+a broken wall is the Nullstone shrink-wrap, then five blocks of empty space, then a Nullstone +
+Forsaken Fiber cage with no floor. Only the two Nexus beds and the Forsaken Fiber are unbreakable.
 
 ---
 
