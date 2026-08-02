@@ -104,6 +104,54 @@ Carve radius = outer − 1. Carve height = outer − 2.
 
 ---
 
+## Making it look good
+
+**Percentage patterns** are the single biggest win. Any `//set` or `//replace` takes a weighted list,
+which turns flat geometry into something that reads as old and ruined:
+
+```
+//replace dimdescent:altar_stone_bricks 80%dimdescent:altar_stone_bricks,20%dimdescent:cracked_altar_stone_bricks
+```
+Weathers a whole room in one command.
+
+```
+//replace dimdescent:altar_stone_bricks 58%dimdescent:altar_stone_bricks,42%air
+```
+Run on a ring built with `//hcyl`, this collapses it into a broken colonnade. Build clean geometry,
+then damage it — far better than trying to place ruins by hand.
+
+**Layer cylinders for a dais.** Three `//cyl` at decreasing radius, one block apart vertically, gives
+a stepped altar platform in six commands (`/tp ~ ~1 ~` between them).
+
+**Lava that doesn't spread.** A lava source spreads into any adjacent *air*, so control the
+neighbours, not the lava:
+
+| | |
+|---|---|
+| **In the ceiling** | 4 solid sides, only down is open → a perfect 1-wide lavafall |
+| Flush in the floor | `//set minecraft:lava` over a floor region → a lake or river you can walk into |
+| In a wall | ✗ the room-facing side is air, so it pours out sideways |
+| Floating in air | ✗ spreads in every direction |
+
+Give a fall something to land in — existing lava, or a 1×1 pocket. And lava counts as *sealed* for
+the Nullstone shrink-wrap (it isn't air), so a lava-filled ceiling block doesn't break the room.
+
+## When commands aren't enough
+
+Spirals, helixes and anything per-block-mathematical can't be expressed as WorldEdit primitives and
+are far too many blocks to paste as chat commands. Generate a **datapack function** instead — see
+`tools/generate_spiral_function.py`. It writes thousands of relative `setblock` lines into
+`run/saves/<world>/datapacks/dimdescent_build/`, and you run the whole build with one command:
+
+```
+/reload
+```
+```
+/function build:spiral
+```
+
+Everything is relative to where you stand, so the same function works anywhere.
+
 ## Don't
 
 - **`//set` then `//hollow`.** `//hollow` needs air around the object inside the selection; a solid that fills its box edge-to-edge gets deleted entirely. Use `//faces` or solid-then-carve.

@@ -143,6 +143,26 @@ Builder-world quality of life: `/gamerule doMobSpawning false`, `/difficulty pea
 
 ---
 
+## Techniques that make a room look built rather than generated
+
+**Damage clean geometry rather than placing ruins.** Percentage patterns work in any `//set` or
+`//replace`: `//replace <brick> 80%<brick>,20%<cracked>` weathers a whole room in one command, and
+`//replace <brick> 58%<brick>,42%air` run over an `//hcyl` ring collapses it into a broken
+colonnade. This is the highest-value trick available.
+
+**Stepped dais**: three `//cyl` of decreasing radius with `/tp ~ ~1 ~` between them.
+
+**Lava**: a source spreads into adjacent AIR, so control the neighbours. A source placed in the
+CEILING has four solid sides and only down open, giving a perfect 1-block-wide lavafall that can
+never flood. `//set minecraft:lava` across a floor region gives a flush lake or river. Never leave a
+source floating in open air or embedded in a wall face. Lava is not air, so it still counts as
+sealed for the shrink-wrap.
+
+**Anything per-block-mathematical** (spirals, helixes) is neither a WorldEdit primitive nor
+pasteable as chat commands. Generate a datapack function - see `tools/generate_spiral_function.py`,
+which writes relative `setblock` lines into the builder world's own datapack so the build runs from
+one `/function` call, anywhere the author stands.
+
 ## Gotchas already paid for
 
 **`//hollow` will eat the whole build.** It hollows an object that sits *inside* the selection with
