@@ -133,14 +133,36 @@ public final class ModRegistry {
     // are) rather than being flat black. noLootTable() makes the no-drop intentional and explicit
     // (matching its sibling FORSAKEN_ESSENCE below) instead of silently missing a loot table file.
     public static final DeferredBlock<Block> NULLSTONE = BLOCKS.register("nullstone", () -> new Block(
-            BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_BLACK)
-                    .instabreak()
-                    .sound(SoundType.GLASS)
-                    .noLootTable()));
+            voidStoneProps().mapColor(MapColor.COLOR_BLACK)));
 
     public static final DeferredItem<Item> NULLSTONE_ITEM = ITEMS.register("nullstone",
             () -> new BlockItem(NULLSTONE.get(), new Item.Properties()));
+
+    // Nullstone's polar opposite: pure white, otherwise identical in every respect. Both are flat,
+    // untextured, unshaded surfaces with nothing to read depth or scale from, which is the entire
+    // point - Nullstone reads as absence, Allstone as an absence that is lit. It is the interior
+    // material for rooms that want to feel like a laboratory rather than a ruin (see the Anechoic
+    // Chamber), wrapped in a Nullstone skin so the outside still reads as void.
+    //
+    // NOTE the shared properties include instabreak(): Allstone rooms come apart in seconds. That is
+    // consistent with Nullstone and with the containment design (digging out has to look viable, and
+    // what you find behind it is the cage), but if an Allstone room should take real effort to
+    // breach, this is the one line to change.
+    public static final DeferredBlock<Block> ALLSTONE = BLOCKS.register("allstone", () -> new Block(
+            voidStoneProps().mapColor(MapColor.SNOW)));
+
+    public static final DeferredItem<Item> ALLSTONE_ITEM = ITEMS.register("allstone",
+            () -> new BlockItem(ALLSTONE.get(), new Item.Properties()));
+
+    // STONE rather than GLASS: these are walls and floors, and the glass tinkle read as fragile
+    // scenery. noLootTable() makes the no-drop intentional and explicit (matching FORSAKEN_ESSENCE
+    // below) instead of silently missing a loot table file.
+    private static BlockBehaviour.Properties voidStoneProps() {
+        return BlockBehaviour.Properties.of()
+                .instabreak()
+                .sound(SoundType.STONE)
+                .noLootTable();
+    }
 
     // Rift-dimension equivalent of Dimensional Doors' "Ancient Fabric": the unbreakable outer
     // boundary of every dungeon room, so players can't dig their way out of a room's confines.
@@ -402,6 +424,7 @@ public final class ModRegistry {
             event.accept(DREAM_BED_ITEM);
             event.accept(PALE_DREAM_BED_ITEM);
             event.accept(NULLSTONE_ITEM);
+            event.accept(ALLSTONE_ITEM);
             event.accept(FORSAKEN_ESSENCE_ITEM);
             event.accept(DARK_IRON_BARS_ITEM);
             event.accept(ALTAR_STONE_ITEM);
