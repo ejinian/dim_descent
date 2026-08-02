@@ -194,6 +194,8 @@ Stand outside it first. The floor becoming air is a long way down.
 | `tools/generate_basin_room.py` | `/function build:basin` | rippled floor + mirrored ceiling, 41×17×41 |
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
+| `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
+| `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 37×7×37 |
 
 Two tricks worth stealing:
 

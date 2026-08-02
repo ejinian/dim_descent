@@ -26,10 +26,17 @@ The authoring world is **`DimDescentRoomBuilder`** — a flat creative world. Se
 5. Lighting is decorative only — the Null Domain renders at full brightness, so Daemonlights are
    atmosphere, never utility.
 6. Empty vanilla chests are welcome; the loader points them at a loot table on placement.
-7. **The room must be SEALED** - no gaps in its outer shell. On placement the room is shrink-wrapped
+7. **The room's WALLS and CEILING must be sealed** - no gaps. On placement the room is shrink-wrapped
    in a layer of Nullstone worked out by flooding air inward from outside and stopping at solid
-   blocks (`RoomContainment`). A hole in the shell lets that flood leak into the interior, which
-   wraps the INSIDE walls in Nullstone too and ruins the room. Sealed rooms only.
+   blocks (`RoomContainment`). A hole in a wall or the ceiling lets that flood leak into the interior,
+   which wraps the INSIDE walls in Nullstone too and ruins the room.
+
+   **The FLOOR is exempt, deliberately.** Rooms are stamped at `FLOOR_Y = 0`, which is the Null
+   Domain's min build height, so there is nothing under a room and `shrinkWrap` skips its search
+   volume's bottom plane for exactly that reason. A hole in a room's floor is therefore a hole into
+   the void — a genuine, lethal drop and a legitimate thing to author. It is one of the few actually
+   dangerous features available in a dimension where nothing spawns. `verify_room_nbt.py` models this
+   the same way, so it will not flag one.
 
 Note that every block a room is built from is now **breakable** (altar blocks are `strength(3.0)`,
 dropless). That is deliberate: digging out has to look possible. What a player actually finds behind
@@ -176,6 +183,7 @@ Three exist:
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
+| `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 37×7×37 |
 
 ### Design tricks worth reusing
 
@@ -199,6 +207,15 @@ needs all of it, for the same reason.
 **Self-similarity defeats scale judgement.** A fractal floor looks identical at every zoom, so a
 player cannot tell how far across the room is or how far they have come. That is the most liminal
 thing geometry can do and it costs nothing — the fractal does it, not the decoration.
+
+**Space-filling curves are the other half of this.** A Hilbert curve never branches and never crosses
+itself, so a corridor cut along one is a *unicursal* labyrinth - one path, no choices, no way to get
+lost and no way to shortcut - and it is self-similar, so no stretch of it can be told from any other.
+It also packs enormous distance into a small box: the Unicursal's two Nexus beds are 30 blocks apart
+in a straight line and **502 apart on foot**. Pitch 2 (one-block corridor, one-block wall) is what
+makes a one-block slot through a wall a *window* rather than a tunnel, and because every cell knows
+its own index along the curve you can place those windows where they look out onto corridor the
+player will not reach for another few hundred blocks. The maths decides where the cruelty goes.
 
 Pick the fractal by its **connectivity**, not its looks. The Sierpinski carpet is a connected set
 whose complement is not, so *filled = floor, holes = holes* is walkable everywhere at every scale;

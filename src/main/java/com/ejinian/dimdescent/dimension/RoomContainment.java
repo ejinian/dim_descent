@@ -72,10 +72,18 @@ public final class RoomContainment {
         Set<BlockPos> outside = new HashSet<>();
         Deque<BlockPos> queue = new ArrayDeque<>();
 
-        // Seed from the search volume's own surface: by construction those cells sit two blocks clear
-        // of the room, so they are outside it.
+        // Seed from the search volume's surface, MINUS its bottom plane: by construction the side and
+        // top cells sit two blocks clear of the room, so they are genuinely outside it. The bottom is
+        // different. clampToWorld pins search.minY() to the world floor, which is also the room's own
+        // floor layer - so seeding that plane would treat any hole in a room's FLOOR as a way in, and
+        // the flood would climb through it and Nullstone-coat the whole interior.
+        //
+        // Excluding it is what actually delivers the intent described above: nothing is below a room,
+        // so a hole in the floor is a hole into the void and nothing more. That makes a deliberate
+        // drop-to-your-death gap a supported thing to author, which it should be - it is one of the
+        // few genuinely lethal features available in a dimension where nothing spawns.
         forEachSurfaceCell(search, pos -> {
-            if (isEmpty(level, pos) && outside.add(pos)) {
+            if (pos.getY() > search.minY() && isEmpty(level, pos) && outside.add(pos)) {
                 queue.add(pos);
             }
         });

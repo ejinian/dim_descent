@@ -109,14 +109,20 @@ def load(path):
 
 
 def flood_from_outside(solid, size):
-    """Air cells of the capture box reachable from outside it - RoomContainment's own algorithm."""
-    lo = (-1, -1, -1)
+    """Air cells of the capture box reachable from outside it - RoomContainment's own algorithm.
+
+    The floor is deliberately NOT a way in. Rooms are stamped at FLOOR_Y = 0, which is the Null
+    Domain's min build height, so there is no cell beneath a room and RoomContainment skips its
+    search volume's bottom plane for exactly that reason. A hole in a room's floor is therefore a
+    hole into the void - lethal, and a legitimate thing to author - rather than a breach.
+    """
+    lo = (-1, 0, -1)
     hi = (size[0], size[1], size[2])
     seen, queue = set(), deque()
     for x in range(lo[0], hi[0] + 1):
         for y in range(lo[1], hi[1] + 1):
             for z in range(lo[2], hi[2] + 1):
-                on_shell = x in (lo[0], hi[0]) or y in (lo[1], hi[1]) or z in (lo[2], hi[2])
+                on_shell = (x in (lo[0], hi[0]) or y == hi[1] or z in (lo[2], hi[2]))
                 if on_shell and (x, y, z) not in solid:
                     seen.add((x, y, z))
                     queue.append((x, y, z))

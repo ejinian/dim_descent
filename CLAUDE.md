@@ -71,7 +71,10 @@ it is the most truthful mechanic in the mod. Real deliriant intoxication very
 commonly produces exactly this: an inability to separate dream from waking life,
 often with partial or total amnesia of the episode afterwards.
 
-It also closes its own loop for free. Vanilla sleeping sets the player's spawn to
+It also closes its own loop for free. The **Unicursal** proves its Hilbert-curve corridor never branches (every cell has exactly two
+corridor neighbours bar the two ends) and that the shortest walk between the Nexus beds stays above a
+floor — which catches an end pocket accidentally opening a shortcut between two arms of the curve.
+Its beds are 30 blocks apart in a straight line and 502 apart on foot. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -253,7 +256,13 @@ than an inhabitant).
 now, so digging out looks viable. On placement each room is shrink-wrapped in a single layer of
 Nullstone that follows its exact outer shape — worked out by flooding air inward from outside and
 stopping at solids, so only outward-facing surfaces are wrapped and interiors are untouched (which is
-why **an authored room must be sealed**). Five blocks further out sits a containment box: an inner
+why **an authored room's walls and ceiling must be sealed**). The **floor is exempt on purpose**: the
+flood is seeded from the search volume's sides and top but never its bottom plane, because
+`clampToWorld` pins that plane to the world floor — which is the room's own floor layer. Seeding it
+would treat any hole in a room's floor as a way in and Nullstone-coat the whole interior. Skipping it
+is what actually delivers the intent, and it makes a deliberate drop-into-the-void gap a supported
+thing to author — one of the few genuinely lethal features available in a dimension where nothing
+spawns. Five blocks further out sits a containment box: an inner
 Nullstone shell backed by unbreakable Forsaken Essence. A player can chew through the Nullstone and
 reach the Essence, which is the point — the escape stays plausible right until it isn't. The box has
 walls and a ceiling but deliberately **no floor**, and its walls run down to the dimension's minimum
@@ -286,9 +295,9 @@ frame loop. That is what makes it tile seamlessly against neighbouring blocks on
 loop without a visible snap; the script asserts all three seams and fails rather than shipping one.
 Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
 
-**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Nine exist
-so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall`, `basin` and
-`oubliette`). The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
+**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Twelve exist
+so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall`, `basin`,
+`oubliette`, `causeway` and `carpet`). The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
 file joins the rotation with no code change — which also means a bad `.nbt` reaches players with no
 compile error to catch it. **`tools/verify_room_nbt.py` is the gate**: a read-only NBT parse checking
 the room is sealed (flooding air from outside the box and asserting it cannot reach the space above
@@ -304,9 +313,9 @@ same in every case: a small Python script owns the artefact, the artefact is nev
 and the script *asserts its own invariants* so a bad constant fails in the terminal rather than
 shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and animation loop, and
 `generate_void_stone_textures.py` emits Nullstone and Allstone together and proves every channel of
-every pixel sums to 255 — "polar opposite" as a test rather than a description. Five room scripts
+every pixel sums to 255 — "polar opposite" as a test rather than a description. Six room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
-`generate_oubliette_room.py`, `generate_carpet_room.py`) emit
+`generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
