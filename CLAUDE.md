@@ -415,7 +415,14 @@ crawl. The **Causeway** checks that its walkway is one connected path reachable 
 and that its single lava source is fully enclosed at walkway level so it cannot spread. Its whole
 design is one block of elevation: an all-Nullstone room renders perfectly flat, so a floor is
 indistinguishable from a hole, and a lit brick walkway one block above it reads as a bridge over
-void. Stepping off is a one-block drop onto a floor the player was certain was not there. The
+void. Stepping off is a one-block drop onto a floor the player was certain was not there. The **Gantry** is
+its sibling and asks the next question: what if the player can see there are *other* bridges? Five
+identical walkways stacked eight blocks apart in the same void, the player's in the middle and the
+only intact one, the outer pairs progressively decayed — so the stack invites exactly the wrong
+conclusion about which way time runs. Flaying Coils hang between consecutive levels, some parted, so
+it reads as one suspended structure rather than five bridges that happen to line up. None of the
+others is reachable, and that is the point: they are identical, unreachable, and there is no reason
+for them to exist. The
 **Oubliette** checks headroom never drops under the 2 blocks a player occupies, the dark bed is
 reachable on foot from the pale one, and the walk between them is at least `MIN_PATH` long — that
 last one catches the open doors drifting onto the same side of each nested ring, which collapses the
