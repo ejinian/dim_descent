@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "dimdescent:gibbet_chain"
+          "name": "dimdescent:flaying_coil"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "dimdescent:blocks/gibbet_chain"
+  "random_sequence": "dimdescent:blocks/flaying_coil"
 }

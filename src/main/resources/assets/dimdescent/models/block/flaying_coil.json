@@ -3,8 +3,8 @@
   "parent": "minecraft:block/block",
   "render_type": "minecraft:cutout",
   "textures": {
-    "particle": "dimdescent:block/gibbet_chain",
-    "all": "dimdescent:block/gibbet_chain"
+    "particle": "dimdescent:block/flaying_coil",
+    "all": "dimdescent:block/flaying_coil"
   },
   "elements": [
     {

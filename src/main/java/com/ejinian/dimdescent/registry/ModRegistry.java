@@ -194,11 +194,11 @@ public final class ModRegistry {
     public static final DeferredItem<Item> DARK_IRON_BARS_ITEM = ITEMS.register("dark_iron_bars",
             () -> new BlockItem(DARK_IRON_BARS.get(), new Item.Properties()));
 
-    // Gibbet Chain: Dark Iron Bars' hanging sibling, same metal, with old blood dried into the links.
+    // Flaying Coil: Dark Iron Bars' hanging sibling, same metal, with old blood dried into the links.
     // Vanilla's ChainBlock is public and gives axis rotation plus waterlogging for free, so there is
     // no reason to write our own. Vanilla chain's own hardness and CHAIN sound; unlike the bars it is
     // only stone-tier, since a chain that needs a diamond pick to take down is silly.
-    public static final DeferredBlock<Block> GIBBET_CHAIN = BLOCKS.register("gibbet_chain",
+    public static final DeferredBlock<Block> FLAYING_COIL = BLOCKS.register("flaying_coil",
             () -> new ChainBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLACK)
                     .requiresCorrectToolForDrops()
@@ -206,8 +206,8 @@ public final class ModRegistry {
                     .sound(SoundType.CHAIN)
                     .noOcclusion()));
 
-    public static final DeferredItem<Item> GIBBET_CHAIN_ITEM = ITEMS.register("gibbet_chain",
-            () -> new BlockItem(GIBBET_CHAIN.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FLAYING_COIL_ITEM = ITEMS.register("flaying_coil",
+            () -> new BlockItem(FLAYING_COIL.get(), new Item.Properties()));
 
     // Altar block set (Phase 4). Unbreakable in survival - same strength(-1) + noLootTable() that
     // makes FORSAKEN_ESSENCE bedrock-like - so a naturally-spawned altar can't be dismantled for its
@@ -443,7 +443,7 @@ public final class ModRegistry {
             event.accept(ALLSTONE_ITEM);
             event.accept(FORSAKEN_ESSENCE_ITEM);
             event.accept(DARK_IRON_BARS_ITEM);
-            event.accept(GIBBET_CHAIN_ITEM);
+            event.accept(FLAYING_COIL_ITEM);
             event.accept(ALTAR_STONE_ITEM);
             event.accept(CARVED_ALTAR_STONE_ITEM);
             event.accept(ALTAR_HEART_ITEM);

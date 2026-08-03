@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate the Gibbet Chain block and item textures.
+"""Generate the Flaying Coil block and item textures.
 
-    python3 tools/generate_gibbet_chain_texture.py
+    python3 tools/generate_flaying_coil_texture.py
 
 Drawn from scratch, not traced from vanilla's chain.png - the mod ships none of Mojang's art. The
 palette is lifted from our own dark_iron_bars instead, so the two read as the same metal, and the
@@ -30,8 +30,8 @@ import random
 
 from PIL import Image
 
-BLOCK_OUT = "src/main/resources/assets/dimdescent/textures/block/gibbet_chain.png"
-ITEM_OUT = "src/main/resources/assets/dimdescent/textures/item/gibbet_chain.png"
+BLOCK_OUT = "src/main/resources/assets/dimdescent/textures/block/flaying_coil.png"
+ITEM_OUT = "src/main/resources/assets/dimdescent/textures/item/flaying_coil.png"
 
 SIZE = 16
 PERIOD = 8

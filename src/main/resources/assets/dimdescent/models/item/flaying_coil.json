@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "dimdescent:item/gibbet_chain"
+    "layer0": "dimdescent:item/flaying_coil"
   }
 }

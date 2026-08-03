@@ -345,10 +345,10 @@ therefore declares its own element with `"shade": false`, `"ambientocclusion": f
 render-only — the block still emits no light. Any future block that must look unlit and unshaded
 needs the same three, and none of them are reachable through a vanilla parent model.
 
-The **Gibbet Chain** (`gibbet_chain`) is Dark Iron Bars' hanging sibling — vanilla's `ChainBlock` is
+The **Flaying Coil** (`flaying_coil`) is Dark Iron Bars' hanging sibling — vanilla's `ChainBlock` is
 public, so axis rotation and waterlogging come free, and it is stone-tier rather than the bars'
 diamond-tier since a chain needing a diamond pick is silly. Its texture is **drawn from scratch by
-`tools/generate_gibbet_chain_texture.py`**, not traced from vanilla's — the mod ships none of Mojang's
+`tools/generate_flaying_coil_texture.py`**, not traced from vanilla's — the mod ships none of Mojang's
 art — using dark_iron_bars' own three metal tones so the pair match, with old blood dried into the
 links. Two things it asserts: the *metal* mask is period-8 in y, because chains hang in columns and a
 non-periodic tile shows a seam at every block boundary; and every blood pixel lands on metal, since

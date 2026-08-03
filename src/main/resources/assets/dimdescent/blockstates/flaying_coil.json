@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=y": { "model": "dimdescent:block/flaying_coil" },
+    "axis=z": { "model": "dimdescent:block/flaying_coil", "x": 90 },
+    "axis=x": { "model": "dimdescent:block/flaying_coil", "x": 90, "y": 90 }
+  }
+}
