@@ -306,8 +306,13 @@ small random detune, so no two plays of the same sound match. It is the same mac
 soundscape warp and lives in the same class (`SoundWarp`) **on purpose**: `PlaySoundEvent` fires once
 per sound, so two subscribers would each wrap the other's replacement and a player deliriating inside
 the Domain would hear everything pitched down twice. One handler picks one profile by precedence —
-Delirium is strictly stronger, so when both apply it simply wins. The Domain's profile is the same
-idea held steadier (0.75 base rather than 0.62, a much smaller spread) and **never drops sounds**,
+Delirium is strictly stronger, so when both apply it simply wins. **0.5 is a hard engine floor** — `SoundEngine.calculatePitch` clamps to `[0.5, 2.0]` before the value
+reaches the audio channel, so one octave down is the deepest anything can be played without shipping
+pre-pitched copies of every sound file, which is impossible for vanilla's. Delirium is pinned to that
+floor; the Domain sits just above it at 0.58. Both are expressed as a **low bound plus an upward
+range** rather than a centre plus a symmetric spread, because a centred spread reaching under 0.5
+gets flattened against the clamp and half the intended detune silently collapses into one pitch. The
+Domain's profile **never drops sounds**,
 unlike Delirium's 12%: losing footsteps and chest lids at random for ten minutes stops reading as
 dread and starts reading as a broken game. Our own sounds — the whispers, the heartbeat — still come
 through clean, since the point is that the voices are the only thing you hear clearly.

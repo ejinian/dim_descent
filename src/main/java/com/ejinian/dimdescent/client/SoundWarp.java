@@ -44,20 +44,30 @@ public final class SoundWarp {
 
     private static final RandomSource RANDOM = RandomSource.create();
 
-    private record Warp(float pitchBase, float pitchSpread, float volumeSpread, int dropoutPercent) {
+    // 0.5 is a HARD FLOOR, not a taste decision: SoundEngine.calculatePitch does
+    // Mth.clamp(getPitch(), 0.5F, 2.0F) before the value ever reaches the audio channel, so one
+    // octave down is the deepest the engine can play anything. Nothing below this is reachable
+    // without shipping pre-pitched copies of every sound file, which is impossible for vanilla's.
+    private static final float FLOOR = 0.5F;
+
+    // Expressed as a LOW BOUND plus an upward range rather than a centre plus a symmetric spread.
+    // The clamp is why: a centred spread that reaches under 0.5 gets flattened against the floor, so
+    // half the intended variation collapses into a single pitch and the detune quietly stops working.
+    private record Warp(float pitchLow, float pitchRange, float volumeSpread, int dropoutPercent) {
     }
 
-    // Delirium is an acute symptom lasting seconds, so it can afford to be violent: dragged well
-    // down, knocked off-key hard enough that no two plays of the same sound match, quieter, and one
-    // sound in eight simply never arrives - you swing at a block and nothing confirms it happened.
-    private static final Warp DELIRIUM = new Warp(0.62F, 0.30F, 0.25F, 12);
+    // Delirium is an acute symptom lasting seconds, so it can afford to be violent: pinned to the
+    // floor itself, knocked off-key hard enough that no two plays of the same sound match, quieter,
+    // and one sound in eight simply never arrives - you swing at a block and nothing confirms it
+    // happened. There is no deeper setting available; this one is against the stop.
+    private static final Warp DELIRIUM = new Warp(FLOOR, 0.10F, 0.25F, 12);
 
     // The Null Domain is where the player LIVES for the length of a trip, so its warp is the same
-    // idea held much steadier: everything is clearly lower and slightly detuned, and nothing is ever
+    // idea held steadier: everything sits well down and slightly detuned, and nothing is ever
     // dropped. Losing footsteps and chest lids at random for ten minutes stops reading as dread and
     // starts reading as a broken game - which is exactly why the dropout stays at zero here even
     // though Delirium keeps it. Deliberate, not an oversight.
-    private static final Warp DOMAIN = new Warp(0.75F, 0.12F, 0.0F, 0);
+    private static final Warp DOMAIN = new Warp(0.58F, 0.12F, 0.0F, 0);
 
     @SubscribeEvent
     public static void onPlaySound(PlaySoundEvent event) {
@@ -120,7 +130,7 @@ public final class SoundWarp {
         }
 
         float pitch = Mth.clamp(
-                warp.pitchBase() + (RANDOM.nextFloat() - 0.5F) * warp.pitchSpread(), 0.5F, 2.0F);
+                warp.pitchLow() + RANDOM.nextFloat() * warp.pitchRange(), FLOOR, 2.0F);
         float volumeScale = 1.0F - RANDOM.nextFloat() * warp.volumeSpread();
         event.setSound(new WarpedSoundInstance(sound, pitch, volumeScale));
     }
