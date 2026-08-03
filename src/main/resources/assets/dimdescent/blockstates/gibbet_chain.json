@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=y": { "model": "dimdescent:block/gibbet_chain" },
+    "axis=z": { "model": "dimdescent:block/gibbet_chain", "x": 90 },
+    "axis=x": { "model": "dimdescent:block/gibbet_chain", "x": 90, "y": 90 }
+  }
+}

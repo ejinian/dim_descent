@@ -1,0 +1,31 @@
+{
+  "__comment": "Two flat quads crossed at right angles, each taking a 3px strip of the texture (0-3 and 3-6). That is the only sensible way to build a chain out of blocks, so the construction matches vanilla's; the art in it does not. render_type cutout is required - the texture is mostly transparent, and AssetInvariantsTest fails the build without it.",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "dimdescent:block/gibbet_chain",
+    "all": "dimdescent:block/gibbet_chain"
+  },
+  "elements": [
+    {
+      "from": [6.5, 0, 8],
+      "to": [9.5, 16, 8],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": 45 },
+      "shade": false,
+      "faces": {
+        "north": { "uv": [0, 0, 3, 16], "texture": "#all" },
+        "south": { "uv": [3, 0, 0, 16], "texture": "#all" }
+      }
+    },
+    {
+      "from": [8, 0, 6.5],
+      "to": [8, 16, 9.5],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": 45 },
+      "shade": false,
+      "faces": {
+        "west": { "uv": [3, 0, 6, 16], "texture": "#all" },
+        "east": { "uv": [6, 0, 3, 16], "texture": "#all" }
+      }
+    }
+  ]
+}
