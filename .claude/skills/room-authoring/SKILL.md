@@ -186,6 +186,7 @@ Three exist:
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |
 | `tools/generate_hypostyle_room.py` | `/function build:hypostyle` | Cantor-dust colonnade, 47×47×47 |
 | `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
+| `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 
 ### Design tricks worth reusing
 
@@ -231,6 +232,24 @@ far and it cost a whole room. The Hypostyle's Cantor dust was a floor *plan*, pu
 columns — and a player standing in the pattern is in the one place they can never see it. From inside
 it read as a big room full of pillars. **A fractal room must recurse in all three axes**, or the
 maths is decoration on a map nobody looks at.
+
+**A Cantor dust can never fill a room — that is its definition.** It deletes the middle third at
+every level, so a void at the dead centre is structural, and a totally disconnected set can only ever
+be scattered identical clusters. If the brief is "fill the whole room, centre included", the answer is
+a **space-filling curve**: a 3D Hilbert curve passes within a fixed distance of every point in the
+cube by construction, is one connected line, never branches and never crosses itself. Rendered as a
+one-block pipe on a 3-block pitch it comes out around 14% density — dense enough that no direction is
+empty, open enough to see through.
+
+**Verify a space-filling curve, do not trust it.** Skilling's transform is easy to get subtly wrong
+and a wrong one still produces a plausible-looking tangle that nobody would question. Assert the point
+sequence visits all 8^order cells exactly once and that every consecutive pair differs by one on
+exactly one axis. Only a real Hilbert curve passes both.
+
+**Cut the route through, and let the cut show.** A 14%-dense knot is unwalkable, so the Knot has a
+three-wide brick bridge driven straight through the middle with a three-block channel cleared above
+it. The severed pipe ends hanging on both sides are the feature, not damage: it is obvious the cut
+came second, which is worth more than a room that politely left a corridor.
 
 **Check the fractal's projections before committing to it.** The obvious 3D pick is the Sierpinski
 tetrahedron, and it is wrong for a rectangular room: its projection along every coordinate axis is a

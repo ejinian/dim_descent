@@ -93,7 +93,15 @@ in a box whose every face is Nullstone. Flat black with no shading gives the eye
 distance against, so the walls read as absence and the blocks appear to hang in nothing; nothing in
 the room is load-bearing, connected, or a surface. A Sierpinski tetrahedron was the obvious pick and
 is the wrong one, because its projection along every coordinate axis is a filled square and it
-collapses into a slab viewed square-on — a Cantor dust projects to a Cantor dust on all three. Vanilla sleeping sets the player's spawn to
+collapses into a slab viewed square-on — a Cantor dust projects to a Cantor dust on all three. The Lattice in turn could never fill its own
+centre — deleting the middle third at every level is what a Cantor set *is* — so the **Knot** answers
+that with the opposite kind of object: an order-3 3D **Hilbert curve** rendered as a one-block pipe on
+a 3-block pitch, 1534 blocks of single unbranching line folded through the entire volume at 14%
+density, centre included, because a space-filling curve passes within a fixed distance of every point
+by construction. It verifies the curve rather than trusting it (all 512 cells visited exactly once,
+every step adjacent on one axis — Skilling's transform is easy to get subtly wrong and a wrong one
+still looks plausible), and since 14% density is unwalkable it drives a three-wide brick bridge
+straight through the middle, leaving the severed pipe ends hanging as the feature. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -335,7 +343,7 @@ shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and a
 every pixel sums to 255 — "polar opposite" as a test rather than a description. Seven room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
 `generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`,
-`generate_hypostyle_room.py`, `generate_lattice_room.py`) emit
+`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
