@@ -109,14 +109,22 @@ walks up and the room becomes a ramp; at 2 every ledge is a two-block riser, unc
 space stays something you look up into. The lava's containment is arithmetic rather than luck: the
 topmost interior cell is the one under the capstone, where the wall ring has closed to half-width 1,
 so it has brick on four sides and above with the only opening downward — asserted, along with the
-fall being unobstructed the whole way. The **Perspective** is the first room to exploit the fact that
-the pale Nexus fixes arrival position *and* facing: it is a corridor that tapers from 7×7 to 3×2 over
-thirty blocks, with the floor rising and the ceiling falling together, so the eye — which assumes
-parallel walls — puts the far end at about seventy blocks. Walk back and the taper runs the other way
-and it reads far shorter than it is, so out and back feel like different distances. The dark Nexus is
-offset off the sightline in a side chamber, because anything of known size at the far end would give
-the scale away; that offset is asserted, along with the taper never widening (which would invert the
-illusion). Vanilla sleeping sets the player's spawn to
+fall being unobstructed the whole way. The **Throat** is the first room to exploit the fact that the
+pale Nexus fixes arrival position *and* facing. It is a circular bore tapering from 11 across to 4
+over thirty-four blocks with the floor rising to meet it, so the eye — which assumes a constant bore —
+puts the far end at about ninety-four. Walk back and the taper runs the other way and it reads far
+shorter than it is, so out and back feel like different distances. Two things are asserted: the bore
+never widens (which would invert the illusion), and the dark Nexus sits off the sightline in the end
+chamber, since anything of known size at the far end gives the scale away.
+
+Its first cut was rectangular and resolved in about a second, which is the lesson: **a rectangular
+tapering corridor has a wall/ceiling join running its whole length**, a straight edge the eye
+measures along, and that gives the taper away. A circular section has no join anywhere. On top of
+that the bore is **rifled** — three helical ribs, 2.5 turns, winding faster as it narrows (`t**1.6`).
+Moving along the axis of a helix makes the ribs appear to rotate, and because the player is the thing
+moving, the rotation reads as their own. The ribs stop three blocks above the floor so the walkway
+stays clear and the spin happens entirely in peripheral vision, which is considerably worse than
+something you can look at directly. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -358,7 +366,7 @@ shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and a
 every pixel sums to 255 — "polar opposite" as a test rather than a description. Seven room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
 `generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`,
-`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`, `generate_pyramid_room.py`, `generate_perspective_room.py`) emit
+`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`, `generate_pyramid_room.py`, `generate_throat_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
@@ -401,7 +409,7 @@ else in the mod could do. Roughly ordered by appetite, not by difficulty.
    align into a coherent image — a doorway, a figure, a word — from that one spot, collapsing into
    meaningless debris the moment they step aside.
 2. **Forced-perspective corridor.** Walls, floor and ceiling converging so a short hall reads as a
-   long one. **Built — see the Perspective.**
+   long one. **Built — see the Throat.**
 3. **Cellular automaton growth.** Seed a 3D CA, run N steps, freeze it. Non-repeating and
    non-architectural: reads as something that *grew* rather than something built. The only organic
    thing the pool would have.

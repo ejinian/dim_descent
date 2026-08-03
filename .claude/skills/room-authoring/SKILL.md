@@ -188,7 +188,7 @@ Three exist:
 | `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 | `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
-| `tools/generate_perspective_room.py` | `/function build:perspective` | forced-perspective corridor, 15×12×47 |
+| `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 19×15×47 |
 
 ### Design tricks worth reusing
 
@@ -240,11 +240,23 @@ player's position and their facing, so we know exactly where their eyes are the 
 room. That permits illusions calibrated to one viewpoint — forced perspective, anamorphosis, impossible
 objects. See the "Cool build ideas" section of CLAUDE.md.
 
-The Perspective is the first to use it: a corridor tapering 7×7 → 3×2 over thirty blocks, floor rising
-and ceiling falling together so both converge on eye level. The eye assumes parallel walls, so it puts
-the far end at ~70 blocks. Two rules make it work — the taper must never widen (assert it, or the
-illusion inverts and the hall reads *shorter*), and nothing of known size may sit at the far end, so
-the dark Nexus goes off the sightline in a side chamber.
+The Throat is the first to use it: a circular bore tapering from 11 across to 4 over thirty-four
+blocks, floor rising to meet it. The eye assumes a constant bore, so it puts the far end at ~94
+blocks. Two rules make it work — the taper must never widen (assert it, or the illusion inverts and
+the tunnel reads *shorter*), and nothing of known size may sit at the far end, so the dark Nexus goes
+off the sightline in the end chamber.
+
+**Round beats rectangular for this, and for a reason worth reusing.** A rectangular tapering corridor
+has a wall/ceiling join running the whole way down it — a straight edge the eye can measure along,
+which gives the taper away almost immediately. A circular section has no join anywhere, so there is
+no line to read, and the same taper becomes much harder to see as a taper. It also stops the room
+resolving in one second, which the rectangular first cut of this room did.
+
+**Rifling makes a static room feel like it is turning.** Three helical ribs wound down the inside of
+a bore read as rotating when you move along the axis, and because you are the thing moving, the
+rotation reads as *your own*. Make the twist accelerate (`t ** 1.6`) and the apparent spin speeds up
+as you walk in. Keep the ribs above head height — the effect is far worse in peripheral vision than
+somewhere you can look directly at, and it keeps the walkway clear.
 
 **One constant can decide whether a room is a room.** The Pyramid's `RISE` is how many blocks its
 wall climbs before stepping one inward. At 1 the interior is a 45° staircase the player simply walks
