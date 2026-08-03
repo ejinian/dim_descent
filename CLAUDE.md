@@ -442,8 +442,10 @@ else in the mod could do. Roughly ordered by appetite, not by difficulty.
    position on entry is known exactly. Ray-cast from it and scatter blocks through the void so they
    align into a coherent image — a doorway, a figure, a word — from that one spot, collapsing into
    meaningless debris the moment they step aside.
-2. **Forced-perspective corridor.** Walls, floor and ceiling converging so a short hall reads as a
-   long one. **Built — see the Throat.**
+2. ~~**Forced-perspective corridor.** Walls, floor and ceiling converging so a short hall reads as a
+   long one.~~ **DONE — the Throat**, which took three cuts to get right and left two lessons behind:
+   a rectangular taper gives itself away on the wall/ceiling join, and a circle under radius ~8
+   discretises into an octagon.
 3. **Cellular automaton growth.** Seed a 3D CA, run N steps, freeze it. Non-repeating and
    non-architectural: reads as something that *grew* rather than something built. The only organic
    thing the pool would have.
