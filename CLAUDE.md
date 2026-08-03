@@ -101,7 +101,15 @@ density, centre included, because a space-filling curve passes within a fixed di
 by construction. It verifies the curve rather than trusting it (all 512 cells visited exactly once,
 every step adjacent on one axis — Skilling's transform is easy to get subtly wrong and a wrong one
 still looks plausible), and since 14% density is unwalkable it drives a three-wide brick bridge
-straight through the middle, leaving the severed pipe ends hanging as the feature. Vanilla sleeping sets the player's spawn to
+straight through the middle, leaving the severed pipe ends hanging as the feature. The **Pyramid** is the one non-fractal of the
+set — a hollow stepped pyramid in altar brick with a single lava source in the underside of its
+capstone, falling 42 blocks into a basin sunk in the floor — and it turns on one constant: `RISE`, the
+blocks the wall climbs before stepping one inward. At 1 the interior is a 45° staircase the player
+walks up and the room becomes a ramp; at 2 every ledge is a two-block riser, unclimbable, and the
+space stays something you look up into. The lava's containment is arithmetic rather than luck: the
+topmost interior cell is the one under the capstone, where the wall ring has closed to half-width 1,
+so it has brick on four sides and above with the only opening downward — asserted, along with the
+fall being unobstructed the whole way. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -343,7 +351,7 @@ shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and a
 every pixel sums to 255 — "polar opposite" as a test rather than a description. Seven room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
 `generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`,
-`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`) emit
+`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`, `generate_pyramid_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.

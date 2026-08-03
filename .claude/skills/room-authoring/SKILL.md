@@ -187,6 +187,7 @@ Three exist:
 | `tools/generate_hypostyle_room.py` | `/function build:hypostyle` | Cantor-dust colonnade, 47×47×47 |
 | `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
+| `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
 
 ### Design tricks worth reusing
 
@@ -232,6 +233,16 @@ far and it cost a whole room. The Hypostyle's Cantor dust was a floor *plan*, pu
 columns — and a player standing in the pattern is in the one place they can never see it. From inside
 it read as a big room full of pillars. **A fractal room must recurse in all three axes**, or the
 maths is decoration on a map nobody looks at.
+
+**One constant can decide whether a room is a room.** The Pyramid's `RISE` is how many blocks its
+wall climbs before stepping one inward. At 1 the interior is a 45° staircase the player simply walks
+up to the apex — a ramp, not a tomb. At 2 every ledge is a two-block riser, too tall to step or jump
+onto, so they are held on the floor and the space stays something you look *up into*. Same shape,
+same block count, completely different room. Look for the constant like that before adding anything.
+
+**A one-block sloped shell is airtight.** A 45° (or steeper) staircase of single blocks has no
+face-adjacent path from outside to inside, so a stepped pyramid seals without a second skin. Diagonal
+gaps do not leak, because the shrink-wrap flood is 6-connected.
 
 **A Cantor dust can never fill a room — that is its definition.** It deletes the middle third at
 every level, so a void at the dead centre is structural, and a totally disconnected set can only ever
