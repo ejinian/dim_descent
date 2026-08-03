@@ -189,6 +189,7 @@ Three exist:
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 | `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
 | `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 25×25×47 |
+| `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 24×44×46 |
 
 ### Design tricks worth reusing
 
@@ -234,6 +235,20 @@ far and it cost a whole room. The Hypostyle's Cantor dust was a floor *plan*, pu
 columns — and a player standing in the pattern is in the one place they can never see it. From inside
 it read as a big room full of pillars. **A fractal room must recurse in all three axes**, or the
 maths is decoration on a map nobody looks at.
+
+**Anamorphosis: depth is quantised, and you must verify by rendering.** A 1-block cube subtends
+`1/d` radians, so it fills its cell of a projected picture at exactly one distance and nowhere else -
+nearer it spills over its neighbours, further it leaves a gap. So a cell can sit at `D0` as one
+block, or `2*D0` as a 2×2×2 cluster, or `3*D0` as 3×3×3, and *nothing in between*. Assigning cells
+randomly between layers is what scatters the thing in depth. The 48-block cap allows two layers.
+
+Never eyeball an anamorph: a subtly broken one looks like scattered blocks, which is also exactly
+what a correct one looks like from anywhere but the arrival square. **Ray-march the finished block
+set from the computed eye, one ray per picture cell, and assert the silhouette equals the picture** -
+then do it again from a few blocks aside and assert it has *fallen apart*, because something that
+reads from everywhere is a statue. The first run of the Anamorph failed that check with 23 cells
+missing: the march limit was measured along the forward axis, but off-axis rays are much longer, so
+the top of the figure was beyond the end of the ray. Nothing else would have caught it.
 
 **Arrival is deterministic, and almost nothing uses that.** The pale Nexus supplies both the
 player's position and their facing, so we know exactly where their eyes are the instant they enter a

@@ -438,10 +438,13 @@ than `null_domain`; renaming would orphan saved data, so it is deferred and trac
 A backlog for `tools/` generators — things the per-block-maths toolchain makes possible that nothing
 else in the mod could do. Roughly ordered by appetite, not by difficulty.
 
-1. **Anamorphic room.** The pale Nexus fixes arrival position *and* facing, so the player's eye
-   position on entry is known exactly. Ray-cast from it and scatter blocks through the void so they
-   align into a coherent image — a doorway, a figure, a word — from that one spot, collapsing into
-   meaningless debris the moment they step aside.
+1. ~~**Anamorphic room.** Ray-cast from the known arrival eye position and scatter blocks so they
+   align into an image from that one spot, collapsing into debris the moment the player steps
+   aside.~~ **DONE — the Anamorph.** Depth turns out to be *quantised*: a 1-block cube subtends 1/d
+   radians, so it only fills its cell of the picture at one distance — `k*D0` with a `k×k×k` cluster,
+   nothing in between. The 48-block cap allows two layers. Verified by ray-marching the finished
+   blocks from the computed eye and asserting the silhouette **is** the picture, then again from four
+   blocks aside asserting it has fallen apart.
 2. ~~**Forced-perspective corridor.** Walls, floor and ceiling converging so a short hall reads as a
    long one.~~ **DONE — the Throat**, which took three cuts to get right and left two lessons behind:
    a rectangular taper gives itself away on the wall/ceiling join, and a circle under radius ~8
@@ -466,9 +469,9 @@ else in the mod could do. Roughly ordered by appetite, not by difficulty.
     more decay, more hostile. Less flashy than the rest and worth more than all of them, because it
     is the actual unbuilt half of the mod.
 
-(1) and (7) are the standouts, and for the same reason: the pale bed makes arrival deterministic.
-That is a lever nothing has used yet, and it enables illusions that only work because we know exactly
-where someone is standing.
+(7) remains open and shares (1)'s lever: the pale bed makes arrival deterministic, so the player's eye
+position on entry is known while the room is still being generated. The Throat uses it weakly and the
+Anamorph uses it totally.
 
 See [ROADMAP.md](ROADMAP.md) for the ordered build plan, [README.md](README.md) for the outward-facing
 summary, and the `mc-modding-notes` skill (`.claude/skills/mc-modding-notes/`) for implementation
