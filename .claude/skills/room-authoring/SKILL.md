@@ -188,7 +188,7 @@ Three exist:
 | `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 | `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
-| `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 19×15×47 |
+| `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 25×25×47 |
 
 ### Design tricks worth reusing
 
@@ -251,6 +251,22 @@ has a wall/ceiling join running the whole way down it — a straight edge the ey
 which gives the taper away almost immediately. A circular section has no join anywhere, so there is
 no line to read, and the same taper becomes much harder to see as a taper. It also stops the room
 resolving in one second, which the rectangular first cut of this room did.
+
+**Three things decide whether a circle reads as a circle.** All of them cost nothing and the Throat
+needed all three before it stopped looking like a chamfered box:
+
+- **Do not cut the bottom off.** A wide flat floor removes most of the lower half, and everything that
+  makes a circle look circular lives there. Use a *narrow catwalk suspended on the axis* with open
+  bore under it instead.
+- **Radius.** A discretised circle of radius 2.5 is a lozenge and radius 5 is an octagon; 8.5 is a
+  circle. This is the single biggest lever and it only costs the 48-block cap.
+- **Draw it.** Circumferential ribs every few blocks state the circle outright instead of leaving the
+  eye to infer it from a curved wall — and evenly spaced down a tapering tube they reinforce the
+  perspective as well.
+
+Line only the *underside* of a bore in Nullstone, never the whole thing: looking over the catwalk
+edge then gives void instead of a brick gutter, while the rest of the ring stays brick and legible.
+An all-black bore is a circle nobody can see.
 
 **Rifling makes a static room feel like it is turning.** Three helical ribs wound down the inside of
 a bore read as rotating when you move along the axis, and because you are the thing moving, the

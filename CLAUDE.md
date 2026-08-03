@@ -117,9 +117,16 @@ shorter than it is, so out and back feel like different distances. Two things ar
 never widens (which would invert the illusion), and the dark Nexus sits off the sightline in the end
 chamber, since anything of known size at the far end gives the scale away.
 
-Its first cut was rectangular and resolved in about a second, which is the lesson: **a rectangular
-tapering corridor has a wall/ceiling join running its whole length**, a straight edge the eye
-measures along, and that gives the taper away. A circular section has no join anywhere. On top of
+It took three cuts, and the two failures are the lesson. Rectangular resolved in about a second,
+because **a rectangular tapering corridor has a wall/ceiling join running its whole length** — a
+straight edge the eye measures along, which gives the taper away. Circular-but-floored was no better:
+a wide flat floor removes most of the lower half of a bore, and everything that makes a circle look
+circular lives there. The bore is now a **complete** circle crossed by a three-wide catwalk suspended
+on the axis with open bore beneath, at radius 8.5 rather than 5.5 (a discretised circle of radius 5
+is an octagon), with a circumferential rib every five blocks stating the circle outright instead of
+leaving the eye to infer it. Only the *underside* is lined in Nullstone — so looking over the catwalk
+edge gives void while the rest of the ring stays brick and legible; an all-black bore is a circle
+nobody can see. On top of
 that the bore is **rifled** — three helical ribs, 2.5 turns, winding faster as it narrows (`t**1.6`).
 Moving along the axis of a helix makes the ribs appear to rotate, and because the player is the thing
 moving, the rotation reads as their own. The ribs stop three blocks above the floor so the walkway
