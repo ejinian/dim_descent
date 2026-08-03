@@ -188,6 +188,7 @@ Three exist:
 | `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 | `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
+| `tools/generate_perspective_room.py` | `/function build:perspective` | forced-perspective corridor, 15×12×47 |
 
 ### Design tricks worth reusing
 
@@ -233,6 +234,17 @@ far and it cost a whole room. The Hypostyle's Cantor dust was a floor *plan*, pu
 columns — and a player standing in the pattern is in the one place they can never see it. From inside
 it read as a big room full of pillars. **A fractal room must recurse in all three axes**, or the
 maths is decoration on a map nobody looks at.
+
+**Arrival is deterministic, and almost nothing uses that.** The pale Nexus supplies both the
+player's position and their facing, so we know exactly where their eyes are the instant they enter a
+room. That permits illusions calibrated to one viewpoint — forced perspective, anamorphosis, impossible
+objects. See the "Cool build ideas" section of CLAUDE.md.
+
+The Perspective is the first to use it: a corridor tapering 7×7 → 3×2 over thirty blocks, floor rising
+and ceiling falling together so both converge on eye level. The eye assumes parallel walls, so it puts
+the far end at ~70 blocks. Two rules make it work — the taper must never widen (assert it, or the
+illusion inverts and the hall reads *shorter*), and nothing of known size may sit at the far end, so
+the dark Nexus goes off the sightline in a side chamber.
 
 **One constant can decide whether a room is a room.** The Pyramid's `RISE` is how many blocks its
 wall climbs before stepping one inward. At 1 the interior is a 45° staircase the player simply walks

@@ -109,7 +109,14 @@ walks up and the room becomes a ramp; at 2 every ledge is a two-block riser, unc
 space stays something you look up into. The lava's containment is arithmetic rather than luck: the
 topmost interior cell is the one under the capstone, where the wall ring has closed to half-width 1,
 so it has brick on four sides and above with the only opening downward — asserted, along with the
-fall being unobstructed the whole way. Vanilla sleeping sets the player's spawn to
+fall being unobstructed the whole way. The **Perspective** is the first room to exploit the fact that
+the pale Nexus fixes arrival position *and* facing: it is a corridor that tapers from 7×7 to 3×2 over
+thirty blocks, with the floor rising and the ceiling falling together, so the eye — which assumes
+parallel walls — puts the far end at about seventy blocks. Walk back and the taper runs the other way
+and it reads far shorter than it is, so out and back feel like different distances. The dark Nexus is
+offset off the sightline in a side chamber, because anything of known size at the far end would give
+the scale away; that offset is asserted, along with the taper never widening (which would invert the
+illusion). Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -351,7 +358,7 @@ shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and a
 every pixel sums to 255 — "polar opposite" as a test rather than a description. Seven room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
 `generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`,
-`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`, `generate_pyramid_room.py`) emit
+`generate_hypostyle_room.py`, `generate_lattice_room.py`, `generate_knot_room.py`, `generate_pyramid_room.py`, `generate_perspective_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.
@@ -383,6 +390,41 @@ random pick, so nothing gets harder, richer or stranger the further in you go �
 depth-tiered enemies and loot scaled to risk. Treat the current build as a traversal skeleton with
 the atmosphere already on it. The dimension is also still registered as `dimdescent:rift` rather
 than `null_domain`; renaming would orphan saved data, so it is deferred and tracked.
+
+## Cool build ideas
+
+A backlog for `tools/` generators — things the per-block-maths toolchain makes possible that nothing
+else in the mod could do. Roughly ordered by appetite, not by difficulty.
+
+1. **Anamorphic room.** The pale Nexus fixes arrival position *and* facing, so the player's eye
+   position on entry is known exactly. Ray-cast from it and scatter blocks through the void so they
+   align into a coherent image — a doorway, a figure, a word — from that one spot, collapsing into
+   meaningless debris the moment they step aside.
+2. **Forced-perspective corridor.** Walls, floor and ceiling converging so a short hall reads as a
+   long one. **Built — see the Perspective.**
+3. **Cellular automaton growth.** Seed a 3D CA, run N steps, freeze it. Non-repeating and
+   non-architectural: reads as something that *grew* rather than something built. The only organic
+   thing the pool would have.
+4. **Gyroid.** The triply-periodic minimal surface, `sin x cos y + sin y cos z + sin z cos x`. A thin
+   shell around the zero level set splits space into two interwoven labyrinths that never meet.
+   (Note the threshold: the surface is at 0, not at 0.7 — that gives disconnected blobs.)
+5. **Voronoi cavern.** Chambers on Voronoi cells, walls on the boundaries. Irregular but obviously
+   deliberate — "someone planned this and I cannot tell why".
+6. **Möbius walkway.** A band with a half twist in a tall shaft; you walk what was the underside.
+7. **Penrose staircase.** Same viewpoint lever as (1) — an impossible object that resolves only from
+   the arrival point.
+8. **Droste room.** The room contains a 1/3-scale model of itself, containing a 1/9. The dark Nexus
+   sits in the innermost, exactly where the next copy should go and cannot fit; the recursion
+   terminating on Minecraft's block size *is* the horror.
+9. **Note-block floor.** Pressure plates over tuned note blocks so crossing the room plays a
+   descending phrase. Vanilla blocks only, no code, and it plugs into the existing sound design.
+10. **A depth-tier generator.** One script emitting the same room at five tiers — tighter geometry,
+    more decay, more hostile. Less flashy than the rest and worth more than all of them, because it
+    is the actual unbuilt half of the mod.
+
+(1) and (7) are the standouts, and for the same reason: the pale bed makes arrival deterministic.
+That is a lever nothing has used yet, and it enables illusions that only work because we know exactly
+where someone is standing.
 
 See [ROADMAP.md](ROADMAP.md) for the ordered build plan, [README.md](README.md) for the outward-facing
 summary, and the `mc-modding-notes` skill (`.claude/skills/mc-modding-notes/`) for implementation
