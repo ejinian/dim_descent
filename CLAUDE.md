@@ -440,11 +440,15 @@ else in the mod could do. Roughly ordered by appetite, not by difficulty.
 
 1. ~~**Anamorphic room.** Ray-cast from the known arrival eye position and scatter blocks so they
    align into an image from that one spot, collapsing into debris the moment the player steps
-   aside.~~ **DONE — the Anamorph.** Depth turns out to be *quantised*: a 1-block cube subtends 1/d
-   radians, so it only fills its cell of the picture at one distance — `k*D0` with a `k×k×k` cluster,
-   nothing in between. The 48-block cap allows two layers. Verified by ray-marching the finished
-   blocks from the computed eye and asserting the silhouette **is** the picture, then again from four
-   blocks aside asserting it has fallen apart.
+   aside.~~ **DONE — the Anamorph.** Four flat slabs at three distances, one per body part.
+   The first cut put one cube per picture cell at a random depth and was illegible — adjacent cubes
+   at different depths project as separate shaded hexagons that do not meet edge to edge. Real
+   anamorphosis is painted on a few flat surfaces: partition the picture into contiguous regions, give
+   each one plane, and **rasterise block→cell rather than projecting cell→blocks**, which fills every
+   block exactly once and leaves each region an unbroken slab. Depth is quantised (`k*D0`, `k` whole),
+   and the vertical budget binds — a far layer scales the height *offset* too. Verified by
+   ray-marching at 9 samples per cell: 97% agreement from the arrival square, 29% after eight blocks
+   sideways.
 2. ~~**Forced-perspective corridor.** Walls, floor and ceiling converging so a short hall reads as a
    long one.~~ **DONE — the Throat**, which took three cuts to get right and left two lessons behind:
    a rectangular taper gives itself away on the wall/ceiling join, and a circle under radius ~8

@@ -201,7 +201,7 @@ Stand outside it first. The floor becoming air is a long way down.
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 | `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
 | `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 25×25×47 |
-| `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 24×44×46 |
+| `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 35×40×44 |
 
 Two tricks worth stealing:
 

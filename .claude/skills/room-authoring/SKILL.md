@@ -189,7 +189,7 @@ Three exist:
 | `tools/generate_knot_room.py` | `/function build:knot` | 3D Hilbert curve as pipe + cut bridge, 31×31×31 |
 | `tools/generate_pyramid_room.py` | `/function build:pyramid` | hollow stepped pyramid + lavafall, 45×47×45 |
 | `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 25×25×47 |
-| `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 24×44×46 |
+| `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 35×40×44 |
 
 ### Design tricks worth reusing
 
@@ -235,6 +235,30 @@ far and it cost a whole room. The Hypostyle's Cantor dust was a floor *plan*, pu
 columns — and a player standing in the pattern is in the one place they can never see it. From inside
 it read as a big room full of pillars. **A fractal room must recurse in all three axes**, or the
 maths is decoration on a map nobody looks at.
+
+**Anamorphosis: flat slabs, not a depth cloud.** The first Anamorph put one independent cube per
+picture cell at a random depth. Geometrically correct, completely illegible — two adjacent cells at
+different depths are two separate floating cubes, each projecting as a hexagon with three
+differently-shaded faces, and their outlines do not meet edge to edge. What should be one solid
+silhouette comes out gappy and mottled.
+
+Real anamorphosis is painted on a **small number of flat surfaces**:
+
+1. Partition the picture into **contiguous regions** (head, arms, torso, legs).
+2. Give each region **one plane**, one block thick, square to the sightline, at its own depth.
+3. **Rasterise, don't project** — for every block in that plane, work out which picture cell it falls
+   into and place it if that cell belongs to this region. Projecting cell→blocks leaves rounding gaps
+   between neighbours; rasterising block→cell fills every block exactly once, so each region comes
+   out as one unbroken slab with no internal seams.
+
+Region partitioning also kills occlusion for free: regions are disjoint in the picture, so no ray to
+a far region can pass through a near one. Assert that *touching* regions have different depths, or
+their shared edge never shears.
+
+**The vertical budget is the binding constraint.** A layer at `k*D0` scales the picture's height
+*offset* by `k` as well as its size, so the far layer needs `k * (IMAGE_UP + h/2)` blocks above the
+eye while the near layer still has to clear the player's head. Shortening the figure from 11 rows to
+9 is what bought a third depth layer under the 48 cap.
 
 **Anamorphosis: depth is quantised, and you must verify by rendering.** A 1-block cube subtends
 `1/d` radians, so it fills its cell of a projected picture at exactly one distance and nowhere else -
