@@ -453,9 +453,12 @@ else in the mod could do. Roughly ordered by appetite, not by difficulty.
    long one.~~ **DONE — the Throat**, which took three cuts to get right and left two lessons behind:
    a rectangular taper gives itself away on the wall/ceiling join, and a circle under radius ~8
    discretises into an octagon.
-3. **Cellular automaton growth.** Seed a 3D CA, run N steps, freeze it. Non-repeating and
-   non-architectural: reads as something that *grew* rather than something built. The only organic
-   thing the pool would have.
+3. ~~**Cellular automaton growth.** Seed a 3D CA, run N steps, freeze it.~~ **DONE — the Bloom**, the
+   3D **Ulam-Warburton** automaton: a cell switches on if *exactly one* of its six neighbours is on.
+   "Exactly" is the whole trick — a cell touching two live neighbours is refused, so growth can never
+   fill in behind itself and is forced to keep splitting. Deterministic, fractal, and the only
+   organic-looking thing in the pool. DLA was tried first and abandoned: in a closed box walkers pile
+   against the ceiling and expire, and doubling particles 2600→5200 moved the yield 825→859 cells.
 4. **Gyroid.** The triply-periodic minimal surface, `sin x cos y + sin y cos z + sin z cos x`. A thin
    shell around the zero level set splits space into two interwoven labyrinths that never meet.
    (Note the threshold: the surface is at 0, not at 0.7 — that gives disconnected blobs.)
