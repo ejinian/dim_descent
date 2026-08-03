@@ -85,7 +85,15 @@ disconnected set has a connected complement: every floor cell is walkable withou
 Three iterations give 64 columns with aisles 1, 4 and 15 wide, so every view is a scaled copy of every
 other. It asserts those three scales survived integer rounding, and that the floor really is one
 connected region. It is also the first authored room with **three dark Nexus beds** — a genuine
-three-way fork rather than a corridor with one way on. Vanilla sleeping sets the player's spawn to
+three-way fork rather than a corridor with one way on. Its fractal was also a mistake worth
+recording: a Cantor dust used as a floor *plan* and extruded into columns is **invisible from inside**,
+because the player stands in the one place the pattern cannot be seen. The **Lattice** is the
+correction — a level-3 3D Cantor dust, 512 unconnected blocks recursing in all three axes, suspended
+in a box whose every face is Nullstone. Flat black with no shading gives the eye nothing to judge
+distance against, so the walls read as absence and the blocks appear to hang in nothing; nothing in
+the room is load-bearing, connected, or a surface. A Sierpinski tetrahedron was the obvious pick and
+is the wrong one, because its projection along every coordinate axis is a filled square and it
+collapses into a slab viewed square-on — a Cantor dust projects to a Cantor dust on all three. Vanilla sleeping sets the player's spawn to
 that bed, and expiry already ejects them to their spawn — so a player doses,
 lies down, and wakes up in the very bed they lay down in, with the intervening
 hours unaccounted for.
@@ -327,7 +335,7 @@ shipping. `generate_forsaken_essence_texture.py` proves its own x/y tiling and a
 every pixel sums to 255 — "polar opposite" as a test rather than a description. Seven room scripts
 (`generate_spiral_function.py`, `generate_basin_room.py`, `generate_causeway_room.py`,
 `generate_oubliette_room.py`, `generate_carpet_room.py`, `generate_unicursal_room.py`,
-`generate_hypostyle_room.py`) emit
+`generate_hypostyle_room.py`, `generate_lattice_room.py`) emit
 thousands of relative `setblock` lines as a **datapack function** into the builder world
 (`/function build:<name>`), which is the only practical way to build a shape defined per block. These
 functions live in the builder world's datapack and must never ship in the mod's own `data/`.

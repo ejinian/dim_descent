@@ -197,6 +197,7 @@ Stand outside it first. The floor becoming air is a long way down.
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |
 | `tools/generate_hypostyle_room.py` | `/function build:hypostyle` | Cantor-dust colonnade, 47×47×47 |
+| `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
 
 Two tricks worth stealing:
 

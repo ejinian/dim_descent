@@ -185,6 +185,7 @@ Three exist:
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |
 | `tools/generate_hypostyle_room.py` | `/function build:hypostyle` | Cantor-dust colonnade, 47×47×47 |
+| `tools/generate_lattice_room.py` | `/function build:lattice` | 3D Cantor dust in a black void, 35×35×35 |
 
 ### Design tricks worth reusing
 
@@ -224,6 +225,24 @@ a room. Order 3 with the dark Nexus placed *partway along the curve* rather than
 nobody resents it. Reckon on roughly 3 blocks/second in a one-wide corridor; you cannot sprint
 through turns. Leaving 56 cells of corridor running on past the exit is the other half of it: a maze
 you have completely traversed is solved, and one that visibly continues past your exit is not.
+
+**An extruded 2D fractal is invisible from inside it.** This is the single most important lesson so
+far and it cost a whole room. The Hypostyle's Cantor dust was a floor *plan*, pushed straight up into
+columns — and a player standing in the pattern is in the one place they can never see it. From inside
+it read as a big room full of pillars. **A fractal room must recurse in all three axes**, or the
+maths is decoration on a map nobody looks at.
+
+**Check the fractal's projections before committing to it.** The obvious 3D pick is the Sierpinski
+tetrahedron, and it is wrong for a rectangular room: its projection along every coordinate axis is a
+*filled square*, so viewed straight down any wall it collapses into a solid slab. A 3D **Cantor dust**
+projects to a Cantor dust on all three axes — there is no angle from which it resolves into something
+simple. That is why the Lattice uses one.
+
+**Nullstone hides a room and shows an object.** Because it is flat black with no shading, a box whose
+every face is Nullstone gives the eye nothing at all — walls, floor and ceiling all read as absence.
+Put anything brick inside it and that object appears to hang in nothing. The Lattice is 512
+unconnected blocks suspended in exactly that, which is what sells "this should not exist": nothing is
+load-bearing, nothing is connected, nothing is a surface.
 
 **48 is a hard ceiling on "big".** Structure blocks cannot capture more than 48 in any axis, so the
 largest room the format can hold is 47×47×47 no matter how much space is cleared for it. The
