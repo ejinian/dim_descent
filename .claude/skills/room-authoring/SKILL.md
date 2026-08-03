@@ -191,6 +191,7 @@ Three exist:
 | `tools/generate_throat_room.py` | `/function build:throat` | rifled tapering circular bore, 25×25×47 |
 | `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 35×40×44 |
 | `tools/generate_bloom_room.py` | `/function build:bloom` | Ulam-Warburton dendrite in a brick hall, 35×27×35 |
+| `tools/generate_gyroid_room.py` | `/function build:gyroid` | gyroid minimal surface, 43×26×43 |
 
 ### Design tricks worth reusing
 
@@ -323,6 +324,13 @@ same block count, completely different room. Look for the constant like that bef
 **A one-block sloped shell is airtight.** A 45° (or steeper) staircase of single blocks has no
 face-adjacent path from outside to inside, so a stepped pyramid seals without a second skin. Diagonal
 gaps do not leak, because the shrink-wrap flood is 6-connected.
+
+**To connect two regions through a thick wall, carve a PATH, not a cell.** Obvious in hindsight and
+it cost a run: the Gyroid's first breaching pass looked for a single wall cell with reachable ground
+on one side and stranded ground on the other, but the walls are two to three cells thick so no such
+cell exists. It cut one doorway, gave up, and bulk-filled 649 cells instead. The fix is Dijkstra over
+the floor where crossing open ground costs 0 and cutting a wall costs 1, then carve whatever the
+cheapest path had to cut — six doorways and eight blocks total, versus half the room filled in.
 
 **A Cantor dust can never fill a room — that is its definition.** It deletes the middle third at
 every level, so a void at the dead centre is structural, and a totally disconnected set can only ever

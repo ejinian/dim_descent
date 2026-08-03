@@ -459,9 +459,13 @@ else in the mod could do. Roughly ordered by appetite, not by difficulty.
    fill in behind itself and is forced to keep splitting. Deterministic, fractal, and the only
    organic-looking thing in the pool. DLA was tried first and abandoned: in a closed box walkers pile
    against the ceiling and expire, and doubling particles 2600→5200 moved the yield 825→859 cells.
-4. **Gyroid.** The triply-periodic minimal surface, `sin x cos y + sin y cos z + sin z cos x`. A thin
-   shell around the zero level set splits space into two interwoven labyrinths that never meet.
-   (Note the threshold: the surface is at 0, not at 0.7 — that gives disconnected blobs.)
+4. ~~**Gyroid.** The triply-periodic minimal surface, `sin x cos y + sin y cos z + sin z cos x`.~~
+   **DONE — the Gyroid.** Two things had to be solved. A true gyroid labyrinth is fully 3D and
+   unplayable without ladders, so `PERIOD_Y` is stretched ~3.6× and it becomes vertical screens that
+   twist as they rise. And "two labyrinths that never connect" is a *guarantee* — the reachability
+   check found 22% of the floor reachable — so the surface gets **breached**: Dijkstra over the floor
+   where open ground is free and cutting a wall costs one, carving the cheapest path to each stranded
+   region. Six doorways, eight blocks.
 5. **Voronoi cavern.** Chambers on Voronoi cells, walls on the boundaries. Irregular but obviously
    deliberate — "someone planned this and I cannot tell why".
 6. **Möbius walkway.** A band with a half twist in a tall shaft; you walk what was the underside.
