@@ -300,6 +300,18 @@ the **Almanacus Inferni Abditi**, a readable custom book in the register of a gr
 chest loot table (`dimdescent:chests/altar`); and the authored altar-and-bed-room structure itself
 (`dimdescent:structure/altar.nbt`), with its chest already pointed at that loot table.
 
+**Everything in the Domain sounds wrong.** Every sound the world makes there — footsteps, a chest
+lid, eating, breaking a block — is intercepted at `PlaySoundEvent` and dragged down in pitch with a
+small random detune, so no two plays of the same sound match. It is the same machinery as Delirium's
+soundscape warp and lives in the same class (`SoundWarp`) **on purpose**: `PlaySoundEvent` fires once
+per sound, so two subscribers would each wrap the other's replacement and a player deliriating inside
+the Domain would hear everything pitched down twice. One handler picks one profile by precedence —
+Delirium is strictly stronger, so when both apply it simply wins. The Domain's profile is the same
+idea held steadier (0.75 base rather than 0.62, a much smaller spread) and **never drops sounds**,
+unlike Delirium's 12%: losing footsteps and chest lids at random for ten minutes stops reading as
+dread and starts reading as a broken game. Our own sounds — the whispers, the heartbeat — still come
+through clean, since the point is that the voices are the only thing you hear clearly.
+
 The Domain's atmosphere is enforced at the dimension level, and all three rules are absolute:
 **light does nothing** (`ambient_light: 1.0` plus `forceBrightLightmap`/`constantAmbientLight`, so
 every block renders at full brightness and torches are decoration rather than a tool), **the sky is

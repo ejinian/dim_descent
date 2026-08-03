@@ -1,9 +1,11 @@
 package com.ejinian.dimdescent.client;
 
 import com.ejinian.dimdescent.DimDescent;
+import com.ejinian.dimdescent.dimension.RiftTeleporter;
 import com.ejinian.dimdescent.registry.ModRegistry;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
@@ -15,7 +17,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 
-// While Delirium holds, everything the world sounds like stops being trustworthy.
+// Everything the world sounds like, made untrustworthy. Two situations warp it, and this is a single
+// handler for both ON PURPOSE: PlaySoundEvent fires once per sound, so two subscribers would each
+// wrap the other's replacement and a player deliriating inside the Null Domain would hear everything
+// pitched down twice. One handler picks one profile and there is no ordering to get wrong.
 //
 // On the original ask - literally inverting sounds: phase-inverting a mono signal (multiplying the
 // waveform by -1) is *inaudible*, so the literal reading produces no perceptible change at all. True
@@ -26,8 +31,7 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 //
 // What IS reachable is total interception. PlaySoundEvent fires for every sound the client is about
 // to play and lets the instance be swapped or dropped, which covers literally everything the world
-// makes - water, footsteps, eating, mobs, blocks. Two distortions are built on it: everything is
-// dragged down in pitch and knocked off-key, and some of it simply never arrives.
+// makes - water, footsteps, eating, chests, blocks, mobs.
 //
 // CAREFUL: the event fires BEFORE SoundEngine.play calls resolve() on the instance, and
 // AbstractSoundInstance.getVolume()/getPitch() both dereference the Sound that resolve() populates.
@@ -36,17 +40,24 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 // safe to read here; anything volume- or pitch-derived has to be deferred into the replacement
 // instance, which is why WarpedSoundInstance takes a volume MULTIPLIER rather than a value.
 @EventBusSubscriber(modid = DimDescent.MODID, value = Dist.CLIENT)
-public final class DeliriumSoundWarp {
+public final class SoundWarp {
 
     private static final RandomSource RANDOM = RandomSource.create();
 
-    // Every surviving sound is dragged down and then knocked off-key by a random amount, so nothing
-    // is ever consistent between two plays of the same sound.
-    private static final float PITCH_BASE = 0.62F;
-    private static final float PITCH_SPREAD = 0.30F;
-    private static final float VOLUME_SPREAD = 0.25F;
+    private record Warp(float pitchBase, float pitchSpread, float volumeSpread, int dropoutPercent) {
+    }
 
-    private static final int DROPOUT_PERCENT = 12;
+    // Delirium is an acute symptom lasting seconds, so it can afford to be violent: dragged well
+    // down, knocked off-key hard enough that no two plays of the same sound match, quieter, and one
+    // sound in eight simply never arrives - you swing at a block and nothing confirms it happened.
+    private static final Warp DELIRIUM = new Warp(0.62F, 0.30F, 0.25F, 12);
+
+    // The Null Domain is where the player LIVES for the length of a trip, so its warp is the same
+    // idea held much steadier: everything is clearly lower and slightly detuned, and nothing is ever
+    // dropped. Losing footsteps and chest lids at random for ten minutes stops reading as dread and
+    // starts reading as a broken game - which is exactly why the dropout stays at zero here even
+    // though Delirium keeps it. Deliberate, not an oversight.
+    private static final Warp DOMAIN = new Warp(0.75F, 0.12F, 0.0F, 0);
 
     @SubscribeEvent
     public static void onPlaySound(PlaySoundEvent event) {
@@ -55,8 +66,22 @@ public final class DeliriumSoundWarp {
             return;
         }
 
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || !player.hasEffect(ModRegistry.DELIRIUM_EFFECT)) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        ClientLevel level = mc.level;
+        if (player == null || level == null) {
+            return;
+        }
+
+        // Precedence, not addition. Delirium is strictly the stronger of the two, so when both apply
+        // it simply wins - the alternative is stacking one warp on the other, which lands the pitch
+        // somewhere neither profile was tuned for.
+        Warp warp;
+        if (player.hasEffect(ModRegistry.DELIRIUM_EFFECT)) {
+            warp = DELIRIUM;
+        } else if (level.dimension() == RiftTeleporter.RIFT_LEVEL) {
+            warp = DOMAIN;
+        } else {
             return;
         }
 
@@ -89,17 +114,17 @@ public final class DeliriumSoundWarp {
             return;
         }
 
-        if (RANDOM.nextInt(100) < DROPOUT_PERCENT) {
-            // Silence. You swing at a block and nothing confirms it happened.
+        if (warp.dropoutPercent() > 0 && RANDOM.nextInt(100) < warp.dropoutPercent()) {
             event.setSound(null);
             return;
         }
 
-        float pitch = Mth.clamp(PITCH_BASE + (RANDOM.nextFloat() - 0.5F) * PITCH_SPREAD, 0.5F, 2.0F);
-        float volumeScale = 1.0F - RANDOM.nextFloat() * VOLUME_SPREAD;
+        float pitch = Mth.clamp(
+                warp.pitchBase() + (RANDOM.nextFloat() - 0.5F) * warp.pitchSpread(), 0.5F, 2.0F);
+        float volumeScale = 1.0F - RANDOM.nextFloat() * warp.volumeSpread();
         event.setSound(new WarpedSoundInstance(sound, pitch, volumeScale));
     }
 
-    private DeliriumSoundWarp() {
+    private SoundWarp() {
     }
 }

@@ -14,7 +14,7 @@ import net.minecraft.world.effect.MobEffectCategory;
 //     the brightening is hardcoded client-side against the literal MobEffects.NIGHT_VISION instance
 //   - the noises and the hallucinated figure are scheduled by DeliriumEvents, which needs
 //     per-player timing state a MobEffect singleton has nowhere sensible to keep
-//   - the soundscape distortion is client-side, in DeliriumSoundWarp
+//   - the soundscape distortion is client-side, in SoundWarp
 //
 // All of them key off this effect's presence rather than off the trip stage, so handing it out with
 // /effect behaves exactly like the real thing.

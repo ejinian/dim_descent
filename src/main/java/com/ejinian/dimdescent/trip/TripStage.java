@@ -94,7 +94,7 @@ public enum TripStage {
     // Night vision, intermittent noises, a warped soundscape, and - usually - a figure watching you
     // partway through. None of it is applied here: the night vision is a hidden companion effect
     // owned by CompanionEffectManager, and the rest is driven by DeliriumEvents and
-    // DeliriumSoundWarp off the effect's presence rather than off this stage, so it all works
+    // SoundWarp off the effect's presence rather than off this stage, so it all works
     // identically when the effect is handed out by command.
     //
     // The hallucinated figure used to be a separate stage. It was folded in here because it's part
