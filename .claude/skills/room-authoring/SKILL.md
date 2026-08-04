@@ -184,6 +184,7 @@ Three exist:
 | `tools/generate_gantry_room.py` | `/function build:gantry` | five stacked walkways + chains, 17×45×45 |
 | `tools/generate_oasis_room.py` | `/function build:oasis` | turf island, pool and one oak, 29×21×29 |
 | `tools/generate_nave_room.py` | `/function build:nave` | causeway between ridges, crossed arcs, 41×43×41 |
+| `tools/generate_verge_room.py` | `/function build:verge` | road at night, lamps and hedges, 31×23×47 |
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |

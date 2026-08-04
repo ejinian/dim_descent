@@ -379,6 +379,16 @@ frame loop. That is what makes it tile seamlessly against neighbouring blocks on
 loop without a visible snap; the script asserts all three seams and fails rather than shipping one.
 Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
 
+The **Verge** is a stretch of road at night with the night removed and nothing put back: asphalt with
+painted lines, a raised kerb, pavements, clipped hedges in brick planters, and a row of lamp standards
+down each side — and immediately past the hedge, nothing. It is the most ordinary thing in the mod and
+should be the worst one to stand in, because every other room announces itself as a dungeon and this
+one is a road, and a road in a black box implies a town that does not exist. Built from vanilla blocks
+on purpose (concrete, stone brick, brick, flowering azalea) — altar brick would make it architecture
+again. **The markings do the work**: without the lines it reads as a dark floor rather than a road,
+which is why a minimum paint count is asserted. One lamp in five has the lights out and one has come
+down across the pavement, the only evidence in the room that time has passed.
+
 The **Nave** is cathedral geometry with no cathedral around it, and the pool's only single-material
 room: a nine-wide brick causeway running between two ridges that terrace up in one-block steps with an
 undulating ridgeline, and two ribbons of brick springing diagonally from the four corners in sine
