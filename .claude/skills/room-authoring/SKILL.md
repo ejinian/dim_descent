@@ -182,6 +182,7 @@ Three exist:
 | `tools/generate_basin_room.py` | `/function build:basin` | antiphase rippled floor + ceiling, 41×17×41 |
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 | `tools/generate_gantry_room.py` | `/function build:gantry` | five stacked walkways + chains, 17×45×45 |
+| `tools/generate_oasis_room.py` | `/function build:oasis` | turf island, pool and one oak, 29×21×29 |
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |
@@ -362,6 +363,21 @@ every face is Nullstone gives the eye nothing at all — walls, floor and ceilin
 Put anything brick inside it and that object appears to hang in nothing. The Lattice is 512
 unconnected blocks suspended in exactly that, which is what sells "this should not exist": nothing is
 load-bearing, nothing is connected, nothing is a surface.
+
+**Living blocks have failure modes that only show up in play.** The Oasis is the one room built from
+vanilla overworld blocks, and three things about them bite:
+
+- **Leaves decay.** Placed away from a log they vanish over time — write every one with
+  `persistent=true` and assert it, because the `.nbt` looks fine either way.
+- **Water spreads.** Every source needs solid ground beneath *and* water-or-solid on all four sides
+  at its own level, or the pool drains across the room the moment it is stamped. Watch terrace edges
+  especially: a pool that reaches a step-down has open air beside it one block lower.
+- **Plants pop off** anything that is not grass_block/dirt. Assert what each one is standing on.
+
+Grass itself is fine in the dark — `GrassBlock` only reverts to dirt when the block *above* it blocks
+light, not when the light level is low. It will never spread, which is what you want.
+
+Emit **ground before water**: a source placed over a hole floods before the hole is filled.
 
 **48 is a hard ceiling on "big".** Structure blocks cannot capture more than 48 in any axis, so the
 largest room the format can hold is 47×47×47 no matter how much space is cleared for it. The

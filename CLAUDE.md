@@ -379,6 +379,18 @@ frame loop. That is what makes it tile seamlessly against neighbouring blocks on
 loop without a visible snap; the script asserts all three seams and fails rather than shipping one.
 Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
 
+The **Oasis** is the pool's one exception to the palette: a turf island with a pool, flowers and a
+single oak, in a small Nullstone room. Nothing else in the Domain is alive, so the most disturbing
+thing that can be put in there is not a monster but a lawn. It is built as a *cut piece of ground*
+rather than a floor with grass on it — the island rises in three one-block courses of stone, dirt and
+turf so the soil profile shows in section all the way round, and those steps double as the way up.
+Plant density falls off with distance from the water, so the green fades into the black instead of
+stopping at a line. Living blocks have failure modes invisible in the `.nbt` and only visible in play
+later, so three are asserted: every leaf carries `persistent=true` or it decays away; every water
+source has solid ground under it and water-or-solid on all four sides at its own level or the pool
+drains across the turf; and every plant stands on grass or dirt or it pops off. Ground is emitted
+before water, since a source placed over a hole floods before the hole is filled.
+
 **Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Twelve exist
 so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall`, `basin`,
 `oubliette`, `causeway` and `carpet`). The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
