@@ -183,6 +183,7 @@ Three exist:
 | `tools/generate_causeway_room.py` | `/function build:causeway` | Nullstone void with a brick walkway, 31×25×31 |
 | `tools/generate_gantry_room.py` | `/function build:gantry` | five stacked walkways + chains, 17×45×45 |
 | `tools/generate_oasis_room.py` | `/function build:oasis` | turf island, pool and one oak, 29×21×29 |
+| `tools/generate_nave_room.py` | `/function build:nave` | causeway between ridges, crossed arcs, 41×43×41 |
 | `tools/generate_oubliette_room.py` | `/function build:oubliette` | nested rings, funnelled ceiling, 23×10×23 |
 | `tools/generate_carpet_room.py` | `/function build:carpet` | Sierpinski-carpet floor over a drop, 33×27×33 |
 | `tools/generate_unicursal_room.py` | `/function build:unicursal` | Hilbert-curve corridor maze, 21×7×21 |
@@ -363,6 +364,15 @@ every face is Nullstone gives the eye nothing at all — walls, floor and ceilin
 Put anything brick inside it and that object appears to hang in nothing. The Lattice is 512
 unconnected blocks suspended in exactly that, which is what sells "this should not exist": nothing is
 load-bearing, nothing is connected, nothing is a surface.
+
+**Curves have to be sampled, and sampling has to be checked.** A diagonal sine arch across forty
+blocks lands on no integers at all, so walk the parameter finely and fill every cell the curve passes
+through. Too coarse a step gives a dotted line rather than a ribbon — and it looks fine in the numbers,
+so **assert the curve is one connected component** before writing. The Nave does this per arc.
+
+Also: a structure that springs from raised ground needs headroom for *ground height plus rise*, not
+just rise. The Nave's arcs punched through a 29-block ceiling because they start on top of an
+11-block ridge.
 
 **Living blocks have failure modes that only show up in play.** The Oasis is the one room built from
 vanilla overworld blocks, and three things about them bite:

@@ -379,6 +379,16 @@ frame loop. That is what makes it tile seamlessly against neighbouring blocks on
 loop without a visible snap; the script asserts all three seams and fails rather than shipping one.
 Retune the look by editing `BASE`/`DEEP`/`CORE` and re-running it — never edit the PNG.
 
+The **Nave** is cathedral geometry with no cathedral around it, and the pool's only single-material
+room: a nine-wide brick causeway running between two ridges that terrace up in one-block steps with an
+undulating ridgeline, and two ribbons of brick springing diagonally from the four corners in sine
+arches to cross thirty-four blocks above it, with a tapering pendant boss hanging out of the crossing.
+Everything visible is altar stone brick; the only other block is the Nullstone shell and the void
+showing through the causeway's broken edges. The arcs are *sampled* — a diagonal arch lands on no
+integers, so the parameter is walked finely and every cell the curve passes through is filled, with
+each arc asserted to be one connected component (too coarse a step gives a dotted line that looks fine
+in the numbers).
+
 The **Oasis** is the pool's one exception to the palette: a turf island with a pool, flowers and a
 single oak, in a small Nullstone room. Nothing else in the Domain is alive, so the most disturbing
 thing that can be put in there is not a monster but a lawn. It is built as a *cut piece of ground*
