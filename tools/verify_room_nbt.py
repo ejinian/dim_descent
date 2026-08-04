@@ -21,7 +21,11 @@ Checks, in order of how badly they bite:
   * exactly one PALE Nexus bed head - it is the entrance, the arrival facing and the way back
   * at least one DARK Nexus bed head - a room with none is a dead end nobody can leave forwards
   * no dimension larger than 48 - the structure-block cap
-  * no stray terrain (grass/dirt/stone/etc.) - the classic round-room-on-the-ground capture bug
+  * no stray terrain ON THE CAPTURE BOX'S OUTER FACES - the classic round-room-on-the-ground bug,
+    where the corners of the box pick up whatever the build was standing in. It has to be tested at
+    the boundary rather than anywhere in the room, because terrain in the MIDDLE can be completely
+    deliberate: the Oasis is a turf island with a tree and a pond in it and is made almost entirely
+    of blocks on this list.
 """
 
 import gzip
@@ -173,9 +177,21 @@ def verify(path):
     if heads[DARK_BED] < 1:
         problems.append("no dark Nexus bed - the room would be a dead end")
 
-    stray = sorted(set(names) & TERRAIN)
-    if stray:
-        problems.append(f"stray terrain captured: {', '.join(stray)}")
+    # Only terrain on the outer shell of the box counts. Accidentally-captured surroundings always
+    # touch the boundary; a deliberate garden in the middle never does, because the room's own shell
+    # is between it and the edge.
+    if len(size) == 3:
+        edge = set()
+        for b in blocks:
+            pos = tuple(b.get("pos") or ())
+            if len(pos) != 3:
+                continue
+            if any(pos[i] in (0, size[i] - 1) for i in range(3)):
+                entry = palette[b["state"]] if b.get("state", -1) < len(palette) else {}
+                if entry.get("Name") in TERRAIN:
+                    edge.add(entry["Name"])
+        if edge:
+            problems.append(f"stray terrain on the capture box's faces: {', '.join(sorted(edge))}")
 
     if len(size) == 3 and bed_heads:
         outside = flood_from_outside(solid, size)

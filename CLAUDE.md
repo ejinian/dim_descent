@@ -411,6 +411,45 @@ source has solid ground under it and water-or-solid on all four sides at its own
 drains across the turf; and every plant stands on grass or dirt or it pops off. Ground is emitted
 before water, since a source placed over a hole floods before the hole is filled.
 
+### The room pool
+
+23 rooms. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, and selection is
+still a **flat random pick** — the depth axis does not exist yet, so nothing gets harder or stranger
+the further in you go.
+
+Five were hand-built with WorldEdit; the rest come from generators in `tools/` (see below). Every one
+is a sealed shell with exactly one pale Nexus and at least one dark Nexus.
+
+| room | size | what it is |
+|---|---|---|
+| `hallway` | 20×4×4 | short straight corridor. One of the five originals |
+| `left` | 20×4×18 | L-bend corridor |
+| `t` | 38×4×17 | T-junction, two dark Nexus beds |
+| `u` | 21×4×17 | U-bend corridor |
+| `hangul` | 20×4×27 | branching corridor, two dark Nexus beds |
+| `rotunda` | 33×22×33 | round pillared chamber, built by hand with WorldEdit |
+| `lavafall` | 33×16×19 | brick room with a one-block lavafall from the ceiling |
+| `spiral` | 17×41×17 | helicoid stair tower — a continuous surface, not cut steps |
+| `basin` | 41×17×41 | floor and ceiling rippled in **antiphase**, so headroom swings by twice the amplitude: a 13-block vault pinching to a 3-block crawl |
+| `oubliette` | 23×10×23 | three nested square rings, ceiling funnelling from 6 to 2, every doorway bricked up but one. 57 blocks of walking to cross 23 |
+| `causeway` | 31×25×31 | brick walkway one block above a Nullstone floor, which reads as a bridge over void because black renders flat |
+| `gantry` | 17×45×45 | the Causeway's sibling: five identical walkways stacked, yours the only intact one, hung together with Flaying Coils |
+| `carpet` | 33×27×33 | level-3 Sierpinski carpet floor over a drop, mirrored overhead. Falling is a *shortcut* |
+| `knot` | 31×31×31 | 3D Hilbert curve as 1534 blocks of pipe filling the whole volume, with a bridge cut through it |
+| `unicursal` | 21×7×21 | Hilbert-curve corridor: one path, no choices, with slots looking onto corridor hundreds of blocks away |
+| `hypostyle` | 47×47×47 | the largest room the format allows. 64 columns on a Cantor dust, aisles at three scales. **Three** dark Nexus beds |
+| `gyroid` | 43×26×43 | triply-periodic minimal surface, stretched vertically until walkable, breached six times because its two labyrinths never connect |
+| `bloom` | 35×27×35 | brick chamber with a **Ulam-Warburton** dendrite growing out of the ceiling. Grown, not drawn |
+| `pyramid` | 45×47×45 | hollow stepped pyramid, unclimbable by design, one lava source in the capstone falling 42 blocks |
+| `throat` | 25×25×47 | rifled circular bore tapering 17→5, reads as 116 blocks long when it is 34 |
+| `nave` | 41×43×41 | causeway between terraced ridges under two brick arcs crossing 34 blocks up, with a pendant boss |
+| `oasis` | 29×21×29 | a cut piece of living ground — turf, pool, flowers, one oak — in a black box. The only living thing in the Domain |
+| `verge` | 31×23×47 | a stretch of road at night with the night removed. Asphalt, markings, hedges, lamp standards, one of them down |
+
+`tools/generate_anamorph_room.py` exists and works — four flat slabs at three distances that resolve
+into a standing figure from the arrival square alone — but it was never captured, so it is **not** in
+the pool. Build it and save it if you want it.
+
 **Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Twelve exist
 so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall`, `basin`,
 `oubliette`, `causeway` and `carpet`). The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
