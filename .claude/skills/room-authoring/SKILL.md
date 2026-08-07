@@ -196,6 +196,16 @@ Three exist:
 | `tools/generate_anamorph_room.py` | `/function build:anamorph` | anamorphic figure in void, 35×40×44 |
 | `tools/generate_bloom_room.py` | `/function build:bloom` | Ulam-Warburton dendrite in a brick hall, 35×27×35 |
 | `tools/generate_gyroid_room.py` | `/function build:gyroid` | gyroid minimal surface, 43×26×43 |
+| `tools/generate_fault_room.py` | `/function build:fault` | Far Lands canyon, degrading grid, 45×31×41 |
+| `tools/generate_scaffold_room.py` | `/function build:scaffold` | brick wireframe lattice, no floor, 47×47×47 |
+
+`anamorph` and `fault` were generated but **never captured**, so they are not in the pool. Everything
+else in this table is.
+
+**A generator is the starting point, not the shipped room.** Several rooms were finished by hand after
+the function ran — `scaffold` most of all, whose four Nexus beds were all re-placed in game. Re-running
+a generator and re-capturing over the top will silently discard that work. Diff the bed count with
+`verify_room_nbt.py` before overwriting an `.nbt` that already exists.
 
 ### Design tricks worth reusing
 

@@ -411,11 +411,39 @@ source has solid ground under it and water-or-solid on all four sides at its own
 drains across the turf; and every plant stands on grass or dirt or it pops off. Ground is emitted
 before water, since a source placed over a hole floods before the hole is filled.
 
+The **Scaffold** is a brick armature for a building that was never built, at the format's maximum 47³,
+and it contains nothing else at all: no floor, no walls, no decoration. A cell is brick where at least
+**two** of its three coordinates land on a 6-block grid, which gives the *edges* of the cubes — one of
+three would give their faces and the room would be a honeycomb of sealed boxes instead of an open
+frame. It comes out 7% solid, so the room is all sightline, and it is exactly invariant under one pitch
+of translation on every axis, which is asserted because "there is nowhere to navigate by" is a property
+of the generator rather than of the eye. Three earlier features were cut for one reason, and it is the
+reason worth keeping: **the frame has to be a single connected piece**, checked by flood fill. Diagonal
+braces across the openings touch their own neighbours at the *corners* only, so they read as part of
+the frame and are attached to nothing; and a half-pitch vertical displacement of one region — which was
+the room's best idea, a seam where the geometry simply stops being the same geometry — severs every
+beam crossing into it and leaves the room in two halves. Both were invisible in a screenshot and
+obvious in play. The lattice is also **clamped in y**: vertical posts are solid wherever x and z are
+both on-grid, at *every* y including the three above the top grid the player stands on, so left alone a
+post rises out of every intersection of the walkway and the top level is impassable. Its beams stop
+mid-span rather than at nodes, because the pitch does not divide the half-width — a beam ending at a
+node looks finished, one sawn off looks like the room is a fragment of something larger. It is the only
+room with no floor of any kind: stepping off a beam is a forty-block drop, and since a six-block gap
+between grids cannot be climbed, the descent to its lower Nexus beds is one-way by construction.
+
 ### The room pool
 
-23 rooms. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, and selection is
+24 rooms. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, and selection is
 still a **flat random pick** — the depth axis does not exist yet, so nothing gets harder or stranger
 the further in you go.
+
+The pick is uniform but **not fresh**: `NullDomainRooms.stampAt` seeds from the grid index
+(`seedFor(index)`), so room 7 is the same room in every world forever. That is deliberate — it is what
+lets a link be re-stamped to heal it — and it has one consequence worth knowing. Because the draw is
+`rng.nextInt(pool.size())`, **adding a room re-deals every index**, so the same grid cell can heal to
+a different room than it was built as. Rooms already stamped keep their blocks and are unaffected. All
+24 do come up: simulating the fixed sequence, the last of them appears by room index 126, and none is
+ever orphaned.
 
 Five were hand-built with WorldEdit; the rest come from generators in `tools/` (see below). Every one
 is a sealed shell with exactly one pale Nexus and at least one dark Nexus.
@@ -445,14 +473,18 @@ is a sealed shell with exactly one pale Nexus and at least one dark Nexus.
 | `nave` | 41×43×41 | causeway between terraced ridges under two brick arcs crossing 34 blocks up, with a pendant boss |
 | `oasis` | 29×21×29 | a cut piece of living ground — turf, pool, flowers, one oak — in a black box. The only living thing in the Domain |
 | `verge` | 31×23×47 | a stretch of road at night with the night removed. Asphalt, markings, hedges, lamp standards, one of them down |
+| `scaffold` | 47×47×47 | a brick wireframe on a 6-block pitch and nothing else — no floor, no walls. **Three** dark Nexus beds, on three different levels |
 
-`tools/generate_anamorph_room.py` exists and works — four flat slabs at three distances that resolve
-into a standing figure from the arrival square alone — but it was never captured, so it is **not** in
-the pool. Build it and save it if you want it.
+Two generators exist whose rooms were **never captured**, so neither is in the pool — build and save
+them if you want them. `tools/generate_anamorph_room.py` puts four flat slabs at three distances that
+resolve into a standing figure from the arrival square alone. `tools/generate_fault_room.py` builds
+the Far Lands: a canyon between extruded, exactly-repeating walls whose lattice coarsens 1 → 2 → 4 → 8
+as you go deeper, so the far end of the room is built out of eight-block lumps and the materials come
+in eight-block lumps too.
 
-**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Twelve exist
-so far (`hallway`, `hangul`, `left`, `t`, `u`, plus `spiral`, `rotunda`, `lavafall`, `basin`,
-`oubliette`, `causeway` and `carpet`). The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
+**Rooms are hand-authored** `.nbt` structures, and building them is the main ongoing work. Five were
+built by hand with WorldEdit (`hallway`, `hangul`, `left`, `t`, `u`); the rest come from `tools/`
+generators, several of them finished off by hand afterwards. The pool is discovered at runtime from `data/dimdescent/structure/rooms/`, so a new
 file joins the rotation with no code change — which also means a bad `.nbt` reaches players with no
 compile error to catch it. **`tools/verify_room_nbt.py` is the gate**: a read-only NBT parse checking
 the room is sealed (flooding air from outside the box and asserting it cannot reach the space above
