@@ -19,6 +19,14 @@ Quick reference for building dim_descent rooms. Full workflow lives in the `room
 | `//size` | print the selection's dimensions |
 | `//sel` | clear the box (visual only, never touches blocks) |
 
+**The wand gives you a FLAT selection unless you climb.** The two clicks are opposite corners of a
+cuboid, taken at the block you clicked — so clicking two corners while standing on the floor selects
+one block of height, however wide the footprint looks. WorldEdit draws no outline without the CUI
+mod, so nothing tells you; the first symptom is `//copy` + `//paste` producing a single flat layer.
+Any red/white grid box you can see belongs to a **structure block**, not to WorldEdit. **Run `//size`
+before `//copy`** — it is the only feedback there is. Fix with `//expand <n> up`, or skip the wand and
+type `//pos1`/`//pos2` coordinates.
+
 ## Build
 
 | | |
@@ -29,8 +37,14 @@ Quick reference for building dim_descent rooms. Full workflow lives in the `room
 | `//walls B` | four vertical sides only (keeps an existing floor) |
 | `//replace from to` | swap one block for another |
 | `//stack 5 north` | repeat the selection 5 times — corridors instantly |
-| `//copy` / `//paste` | relative to where you stand |
+| `//copy` / `//paste` | relative to where you stand — see below |
+| `//paste -o` | paste back at the ORIGINAL coordinates, ignoring where you stand |
+| `//paste -a` | skip air, so the paste overlays instead of blanking |
 | `//undo` | step back one command. Use freely. |
+
+**`//copy` stores your OFFSET from the selection, and `//paste` reapplies it from wherever you are
+now.** Copy standing on the ground and paste while flying twenty blocks up and the build lands twenty
+blocks up. Stand somewhere comparable both times, or use `//paste -o`.
 
 ## Shapes — generated at your feet, centred on you
 

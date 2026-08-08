@@ -113,6 +113,16 @@ Select with `//wand` (wooden axe): **left-click** = corner 1, **right-click** = 
 clears the selection — it's only a visual overlay, it never affects placed blocks. `//undo` steps
 back one command at a time and is reliable.
 
+**The wand selects a cuboid between the two blocks you clicked, so two clicks made from the floor
+give a selection ONE BLOCK TALL** — however large the footprint looks. WorldEdit renders no outline
+without the CUI mod, so there is no feedback at all; the first symptom is `//copy` then `//paste`
+laying down a single flat layer (this cost time once, on a 47³ room whose Nullstone shell floor was
+all that came across). The red/white grid box visible in-world belongs to a **structure block**, not
+to WorldEdit — do not read it as the selection. **Run `//size` before `//copy`.** For anything whose
+bounds are already known, skip the wand: `//pos1 x,y,z` / `//pos2 x,y,z` take literal coordinates and
+work from anywhere. And note `//copy` records your offset from the selection, which `//paste` reapplies
+from wherever you now stand — `//paste -o` forces the original coordinates instead.
+
 **Rectangular room**
 
 ```
